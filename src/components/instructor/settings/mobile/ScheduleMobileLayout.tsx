@@ -1,31 +1,34 @@
 import { ReactNode } from "react";
-import { Calendar, Clock, BookOpen, Users, RefreshCw, Bell, CreditCard } from "lucide-react";
-import { useAreaSections, type AreaItem } from "./areas";
+import { useNavigate } from "react-router-dom";
+import {
+  ChevronLeft,
+  Calendar,
+  Clock,
+  BookOpen,
+  Users,
+  RefreshCw,
+  Bell,
+  CreditCard,
+} from "lucide-react";
+import type { SettingsCategory } from "@/components/instructor/settings/SettingsLayout";
 
 /**
- * Bespoke layout for the "Schedule" (working-hours) settings area.
+ * Mobile-only redesigned layout for the Schedule settings category.
  *
- * Visual-only redesign: keeps every existing editor and its logic intact, but
- * presents them inside the labelled card structure described in the brief.
+ * Visual-only redesign: every existing editor (WorkingHoursEditor,
+ * LessonLengthBufferEditor, PupilBookingSettingsEditor, IcsCalendarSync,
+ * ReminderSettings) is reused unchanged — only the surrounding chrome
+ * (page header, uppercase group labels, card styling) is new.
  *
- *   - Custom page header (calendar tile + Schedule + subtitle)
- *   - Small uppercase muted labels above each card
- *   - White cards, hairline 0.5px border, 16px radius
- *
- * Section -> editor mapping (existing components are reused verbatim):
- *   Working hours              -> hours        (WorkingHoursEditor)
- *   Lesson settings            -> lesson-length(LessonLengthBufferEditor)
- *   Pupil booking              -> self-service (PupilBookingSettingsEditor)
- *   Calendar sync              -> calendar     (IcsCalendarSync)
- *   Reminders & notifications  -> reminders    (ReminderSettings — includes
- *                                               instructor features + payment
- *                                               chasing controls)
+ * The Payments group uses the same `reminders` section as the Reminders
+ * group because payment-chasing controls live inside ReminderSettings;
+ * we surface a pointer rather than double-mounting that editor's state.
  */
-export function ScheduleAreaLayout({ item }: { item: AreaItem }) {
-  const sections = useAreaSections(item);
-  const byId = new Map(sections.map(s => [s.id, s]));
+export function ScheduleMobileLayout({ category }: { category: SettingsCategory }) {
+  const navigate = useNavigate();
+  const byId = new Map(category.sections.map((s) => [s.id, s]));
 
-  const groups: Array<{
+  type Group = {
     label: string;
     sectionId: string;
     icon: typeof Clock;
@@ -33,7 +36,10 @@ export function ScheduleAreaLayout({ item }: { item: AreaItem }) {
     iconColor: string;
     title: string;
     subtitle: string;
-  }> = [
+    pointer?: boolean;
+  };
+
+  const groups: Group[] = [
     {
       label: "Working hours",
       sectionId: "hours",
@@ -41,7 +47,7 @@ export function ScheduleAreaLayout({ item }: { item: AreaItem }) {
       iconBg: "#DBEAFE",
       iconColor: "#1E40AF",
       title: "Weekly schedule",
-      subtitle: "Presets, day-by-day hours and one-off date overrides",
+      subtitle: "Presets, day-by-day hours and date overrides",
     },
     {
       label: "Lesson settings",
@@ -81,49 +87,75 @@ export function ScheduleAreaLayout({ item }: { item: AreaItem }) {
     },
     {
       label: "Payments",
-      sectionId: "reminders", // payment chasing lives inside ReminderSettings
+      sectionId: "reminders",
       icon: CreditCard,
       iconBg: "#FEE2E2",
       iconColor: "#B91C1C",
       title: "Payment chasing",
       subtitle: "Automatically remind pupils about outstanding payments",
-      hideBody: true,
-    } as any,
+      pointer: true,
+    },
   ];
 
   return (
-    <>
+    <div className="pb-24" style={{ paddingTop: 4 }}>
+      {/* Back chevron */}
+      <button
+        type="button"
+        onClick={() => navigate("/instructor/settings")}
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        style={{ marginBottom: 12 }}
+      >
+        <ChevronLeft className="h-4 w-4" /> Settings
+      </button>
+
       {/* Page header */}
-      <header className="mb-5 flex items-start gap-3">
+      <header
+        style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 18 }}
+      >
         <span
-          className="inline-flex items-center justify-center shrink-0"
           style={{
             width: 44,
             height: 44,
             borderRadius: 12,
             backgroundColor: "#DBEAFE",
             color: "#1E40AF",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
           }}
         >
           <Calendar className="h-5 w-5" />
         </span>
-        <div className="min-w-0">
-          <h1 className="text-xl font-semibold leading-tight">Schedule</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+        <div style={{ minWidth: 0 }}>
+          <h1
+            style={{
+              fontSize: 20,
+              fontWeight: 600,
+              lineHeight: 1.15,
+              color: "var(--foreground, #1a1a1f)",
+            }}
+          >
+            Schedule
+          </h1>
+          <p
+            style={{
+              fontSize: 13,
+              marginTop: 2,
+              color: "hsl(var(--muted-foreground))",
+            }}
+          >
             Working hours, bookings, calendar and reminders
           </p>
         </div>
       </header>
 
-      <div className="space-y-6">
+      <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
         {groups.map((g, idx) => {
           const section = byId.get(g.sectionId);
           if (!section) return null;
           const Icon = g.icon;
-          const hideBody = (g as any).hideBody;
-          // For the Payments group, we render the label + a soft pointer card
-          // that explains the controls live inside the Reminders card above —
-          // we do not duplicate the editor (avoids double-mounting state).
           return (
             <section key={`${g.label}-${idx}`}>
               <SectionLabel>{g.label}</SectionLabel>
@@ -135,28 +167,41 @@ export function ScheduleAreaLayout({ item }: { item: AreaItem }) {
                   title={g.title}
                   subtitle={g.subtitle}
                 />
-                {hideBody ? (
-                  <div className="px-5 pb-5 -mt-1 text-sm text-muted-foreground">
+                {g.pointer ? (
+                  <div
+                    style={{
+                      padding: "0 16px 16px",
+                      marginTop: -4,
+                      fontSize: 13,
+                      color: "hsl(var(--muted-foreground))",
+                    }}
+                  >
                     Auto-chase, frequency and stop-after limits are configured in the
-                    <span className="font-medium text-foreground"> Reminders</span> card above.
+                    <span style={{ fontWeight: 600, color: "var(--foreground, #1a1a1f)" }}>
+                      {" "}Reminders{" "}
+                    </span>
+                    card above.
                   </div>
                 ) : (
-                  <div className="px-5 pb-5 -mt-1">{section.render()}</div>
+                  <div style={{ padding: "0 16px 16px", marginTop: -4 }}>
+                    {section.render()}
+                  </div>
                 )}
               </Card>
             </section>
           );
         })}
       </div>
-    </>
+    </div>
   );
 }
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <div
-      className="px-1 mb-2"
       style={{
+        padding: "0 4px",
+        marginBottom: 8,
         fontSize: 11,
         letterSpacing: "0.08em",
         fontWeight: 700,
@@ -172,8 +217,8 @@ function SectionLabel({ children }: { children: ReactNode }) {
 function Card({ children }: { children: ReactNode }) {
   return (
     <div
-      className="bg-card"
       style={{
+        background: "#fff",
         borderRadius: 16,
         border: "0.5px solid hsl(var(--border) / 0.7)",
         overflow: "hidden",
@@ -198,22 +243,40 @@ function CardHeader({
   subtitle: string;
 }) {
   return (
-    <div className="flex items-start gap-3 p-5 pb-4">
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+        padding: "16px 16px 12px",
+      }}
+    >
       <span
-        className="inline-flex items-center justify-center shrink-0"
         style={{
           width: 32,
           height: 32,
           borderRadius: 10,
           backgroundColor: iconBg,
           color: iconColor,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
         }}
       >
         {icon}
       </span>
-      <div className="min-w-0 flex-1">
-        <div className="text-[15px] font-semibold leading-tight">{title}</div>
-        <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.15 }}>{title}</div>
+        <p
+          style={{
+            fontSize: 12,
+            marginTop: 2,
+            color: "hsl(var(--muted-foreground))",
+          }}
+        >
+          {subtitle}
+        </p>
       </div>
     </div>
   );

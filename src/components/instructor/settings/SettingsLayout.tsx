@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen, Search, User 
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { ScheduleMobileLayout } from "@/components/instructor/settings/mobile/ScheduleMobileLayout";
 
 const SIDEBAR_WIDTH_KEY = "instructor-settings-sidebar-width";
 const SIDEBAR_COLLAPSED_KEY = "instructor-settings-sidebar-collapsed";
@@ -138,6 +139,15 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
       return (
         <div className="py-12 text-center text-sm text-muted-foreground">
           Settings category not found.
+        </div>
+      );
+    }
+
+    // Bespoke layout for the Schedule category on mobile (visual-only redesign).
+    if (activeCategory.id === "schedule") {
+      return (
+        <div className="pb-24">
+          <ScheduleMobileLayout category={activeCategory} />
         </div>
       );
     }

@@ -4,7 +4,6 @@ import { ChevronRight, Search, ArrowLeft } from "lucide-react";
 import { SettingsDirtyProvider } from "@/components/instructor/settings/SettingsDirtyContext";
 import { SettingsSaveBar } from "@/components/instructor/settings/SettingsSaveBar";
 import { AREA_GROUPS, useAreaSections, LEGACY_ID_MAP, ALL_ITEM_IDS, type AreaItem, type AreaGroup } from "./areas";
-import { ScheduleAreaLayout } from "./ScheduleAreaLayout";
 
 interface Props {
   instructorId: string;
@@ -205,12 +204,6 @@ function DetailView({ item, group }: { item: AreaItem; group?: AreaGroup }) {
 }
 
 function ItemDetail({ item }: { item: AreaItem }) {
-  // Schedule area gets a bespoke labelled-card layout (visual-only redesign,
-  // reuses every existing editor unchanged).
-  if (item.id === "working-hours") {
-    return <ScheduleAreaLayout item={item} />;
-  }
-
   const sections = useAreaSections(item);
   const Icon = item.icon;
 
