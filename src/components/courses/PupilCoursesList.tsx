@@ -217,20 +217,34 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
                       No live lessons recorded
                     </span>
                   )}
-                  {(r.account_balance || 0) < 0 && (
+                  {r.account_balance !== null && (
                     <span
                       style={{
-                        backgroundColor: "#FEE2E2",
-                        color: "#C0271F",
+                        backgroundColor:
+                          r.account_balance < 0 ? "#FEE2E2" : r.account_balance > 0 ? "#DCFCE7" : "#F1F5F9",
+                        color:
+                          r.account_balance < 0 ? "#C0271F" : r.account_balance > 0 ? "#15803D" : "#64748B",
                         fontSize: 10,
                         fontWeight: 700,
                         padding: "2px 8px",
                         borderRadius: 999,
                       }}
+                      title={
+                        r.account_balance < 0
+                          ? "Pupil owes this amount"
+                          : r.account_balance > 0
+                          ? "Pupil is in credit"
+                          : "Balance is zero"
+                      }
                     >
-                      {fmt(Math.abs(r.account_balance!))} owed
+                      {r.account_balance < 0
+                        ? `${fmt(Math.abs(r.account_balance))} owed`
+                        : r.account_balance > 0
+                        ? `${fmt(r.account_balance)} credit`
+                        : fmt(0)}
                     </span>
                   )}
+
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </button>
               ))}
