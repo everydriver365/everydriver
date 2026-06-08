@@ -79,9 +79,31 @@ Deno.serve(async (req) => {
     const signed = body.isRefund ? -positive : positive;
     const methodLabel = body.method === "card" ? "Square" : body.method === "cash" ? "Cash" : "Bank Transfer";
 
-    // ---- Card: not currently available ----
+    // ---- Card: hand off to Square hosted checkout ----
     if (body.method === "card") {
-      return json({ error: "Card payments are not currently available. Please use Klarna or Clearpay." }, 400);
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const resp = await fetch(`${supabaseUrl}/functions/v1/square-checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+        },
+        body: JSON.stringify({
+          pupilId: body.pupilId,
+          instructorId,
+          amount: positive,
+          customerEmail: body.customerEmail ?? pupil.email ?? undefined,
+          customerName: body.customerName ?? pupil.name ?? undefined,
+          customerPhone: body.customerPhone,
+          returnUrl: body.returnUrl,
+          cancelUrl: body.cancelUrl,
+        }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        return json({ error: data?.error || "Failed to create Square checkout" }, resp.status);
+      }
+      return json({ ok: true, kind: "card", ...data });
     }
 
     // ---- Cash / Bank: atomic insert + balance increment ----

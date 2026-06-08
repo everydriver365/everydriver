@@ -1,46 +1,24 @@
-# Fix: Instructor mobile pages rendering too narrow
+# Restore Square card payments
 
-## Root cause
+Re-enable the card path in `supabase/functions/record-payment/index.ts` that was removed in Fix 1 (Bug 3).
 
-The shared mobile root wrapper in `src/components/layout/InstructorPortalLayout.tsx` (line 1122) applies horizontal padding to every instructor route:
+## Change
 
-```tsx
-<main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-2.5 py-4'}`} ...>
-  {children}
-</main>
+Replace the current 400-error stub:
+
+```ts
+if (body.method === "card") {
+  return json({ error: "Card payments are not currently available..." }, 400);
+}
 ```
 
-That `px-2.5` (10px each side) is added to every page. Most pages then add their own wrapper with `px-4` (16px each side) on top, so every screen ends up with ~26px of padding on each side and cards never reach the screen edges.
+with the original Square checkout invocation: call the `square-checkout` edge function with `pupilId`, `instructorId`, `amount`, `customerEmail`, `customerName`, `customerPhone`, `returnUrl`, `cancelUrl`, and return its `{ checkoutUrl, paymentId }` response to the client. Cash/bank atomic insert path below it is untouched.
 
-Despite the user mentioning `max-w-*`, `w-96`, `container`, etc., a scan of `InstructorPortalLayout.tsx` shows no max-width or fixed width on the root wrapper — the only constraint is this padding. Per-page `max-w-5xl mx-auto` wrappers exist but do not constrain on a 390px viewport.
+## Not changing
 
-## Fix (single change)
+- Cash/bank insert (already snake_case, working)
+- Receipt/push/pupil-notify fan-out
+- `square-checkout`, `square-webhook`, `square-oauth` functions
+- Any frontend code
 
-In `src/components/layout/InstructorPortalLayout.tsx`, line 1122, drop the horizontal padding from the root `<main>` so it is true full-width (`width: 100%`, no max-width, no side padding). Keep `py-4` for vertical breathing room, and keep the `/instructor` (home) carve-out unchanged.
-
-Before:
-```tsx
-<main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-2.5 py-4'}`} ...>
-```
-
-After:
-```tsx
-<main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'py-4'}`} ...>
-```
-
-That's it — one line, cascades to every instructor page automatically.
-
-## What I am NOT changing
-
-- No edits to per-page wrappers, cards, or layouts.
-- No changes to the desktop sidebar/main split (the change only affects the mobile root `<main>` which is the wrapper for instructor pages on small screens).
-- No functionality, data, or styling changes other than removing the 10px horizontal padding.
-- Fullscreen mode branch (line 1118) is already padding-free and stays as-is.
-
-## Verification
-
-After the change, open `/instructor/settings/schedule` at 390px viewport and confirm cards now reach the screen edges (limited only by each page's own `px-4`/`px-3` inner padding, which is the intended per-page padding the user described).
-
-## Follow-up (optional, ask before doing)
-
-A handful of pages still wrap their own content in `max-w-5xl mx-auto px-4` (e.g. `SettingsPage.tsx`, `InstructorSettingsHub.tsx`). On mobile `max-w-5xl` does not constrain, but the extra `px-4` doubles up with each page's own card padding. If, after the root fix, any page still looks too narrow, the second pass is to audit those page-level wrappers — but I'll wait for confirmation rather than touching them blindly.
+After the edit I'll redeploy `record-payment` and confirm the file compiles.
