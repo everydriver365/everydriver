@@ -195,7 +195,7 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
       </header>
 
       {/* Page content */}
-      <div style={{ padding: "16px 12px 24px", display: "flex", flexDirection: "column", gap: 22 }}>
+      <div style={{ width: "100%", padding: "16px 16px 24px", display: "flex", flexDirection: "column", gap: 22 }}>
         {groups.map((g) => (
           <section key={g.label}>
             <SectionLabel>{g.label}</SectionLabel>
