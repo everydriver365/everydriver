@@ -137,6 +137,7 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
             course_type: p.course_type,
             course_status: p.course_status,
             lesson_count: s?.count ?? 0,
+            completed_lesson_count: s?.completed ?? 0,
             next_lesson_date: s?.next ?? null,
             account_balance: p.account_balance,
           };
