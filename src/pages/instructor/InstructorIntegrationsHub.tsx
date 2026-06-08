@@ -4,7 +4,7 @@ import { Calendar, CreditCard, FileSpreadsheet, Satellite, Wifi, WifiOff, Plug, 
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
+import { IcsCalendarSync } from "@/components/instructor/IcsCalendarSync";
 import { SquareConnectSettings } from "@/components/instructor/SquareConnectSettings";
 import { AccountingExport } from "@/components/instructor/accounting-export/AccountingExport";
 import { IntegrationStatusBadge, IntegrationStatusKind } from "@/components/instructor/integrations/IntegrationStatusBadge";
