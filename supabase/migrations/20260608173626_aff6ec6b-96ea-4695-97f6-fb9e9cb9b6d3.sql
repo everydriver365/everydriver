@@ -1,0 +1,2 @@
+ALTER TABLE public.scheduled_lessons ADD COLUMN IF NOT EXISTS stuck_payment_alerted_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_scheduled_lessons_stuck_payment ON public.scheduled_lessons (created_at) WHERE awaiting_initial_payment = true AND stuck_payment_alerted_at IS NULL AND deleted_at IS NULL;
