@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Copy, RefreshCw, Trash2, RotateCcw, ExternalLink, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { Copy, RefreshCw, Trash2, RotateCcw, ExternalLink, CheckCircle2, AlertCircle, Clock, ChevronDown, ChevronRight } from "lucide-react";
+
 
 interface Props {
   instructorId: string;
