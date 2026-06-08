@@ -21,6 +21,7 @@ import {
 } from "@/lib/pupilFormValidation";
 import { useVoiceToText } from "@/hooks/useVoiceToText";
 import { useQueryClient } from "@tanstack/react-query";
+import { recordBlockBooking } from "@/lib/recordBlockBooking";
 
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
