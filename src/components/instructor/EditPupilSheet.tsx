@@ -21,6 +21,7 @@ import {
 } from "@/lib/pupilFormValidation";
 import { useVoiceToText } from "@/hooks/useVoiceToText";
 import { useQueryClient } from "@tanstack/react-query";
+import { recordBlockBooking } from "@/lib/recordBlockBooking";
 
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Roboto", sans-serif';
@@ -191,6 +192,13 @@ export function EditPupilSheet({
   const [postcodeManual, setPostcodeManual] = useState(false);
   const [focused, setFocused] = useState<string | null>(null);
 
+  // Block-booking entry (recorded immediately, not via main Save).
+  const [blockAmount, setBlockAmount] = useState("");
+  const [blockHours, setBlockHours] = useState("");
+  const [blockMethod, setBlockMethod] = useState("Cash");
+  const [blockNotes, setBlockNotes] = useState("");
+  const [blockSaving, setBlockSaving] = useState(false);
+
   useEffect(() => {
     if (pupil) {
       const theory_status =
@@ -334,6 +342,56 @@ export function EditPupilSheet({
       setSaving(false);
     }
   };
+
+  const handleRecordBlock = async () => {
+    if (!pupil || !instructorId) return;
+    const amt = parseFloat(blockAmount);
+    const hrs = parseFloat(blockHours);
+    if (!Number.isFinite(amt) || amt <= 0) {
+      toast.error("Enter a £ amount greater than zero");
+      return;
+    }
+    if (!Number.isFinite(hrs) || hrs <= 0) {
+      toast.error("Enter hours greater than zero");
+      return;
+    }
+    setBlockSaving(true);
+    try {
+      await recordBlockBooking({
+        pupilId: pupil.id,
+        instructorId,
+        amount: amt,
+        hours: hrs,
+        method: blockMethod,
+        notes: blockNotes,
+      });
+      // Reflect new balances in the open sheet without forcing a close.
+      setForm((f: any) => ({
+        ...f,
+        account_balance: (Number(f.account_balance) || 0) + amt,
+        prepaid_hours: Math.round(((Number(f.prepaid_hours) || 0) + hrs) * 100) / 100,
+      }));
+      setInitial((f: any) => ({
+        ...f,
+        account_balance: (Number(f.account_balance) || 0) + amt,
+        prepaid_hours: Math.round(((Number(f.prepaid_hours) || 0) + hrs) * 100) / 100,
+      }));
+      setBlockAmount("");
+      setBlockHours("");
+      setBlockNotes("");
+      toast.success(`Block booking recorded: £${amt.toFixed(2)} / ${hrs}h`);
+      queryClient.invalidateQueries({ queryKey: ["pupil-payment-status", pupil.id] });
+      queryClient.invalidateQueries({ queryKey: ["pupil-balances"] });
+      queryClient.invalidateQueries({ queryKey: ["payment-history", pupil.id] });
+      onSaved?.();
+    } catch (err: any) {
+      console.error("Block booking error:", err);
+      toast.error(err?.message || "Failed to record block booking");
+    } finally {
+      setBlockSaving(false);
+    }
+  };
+
 
   /* ---- photo upload ---- */
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -839,6 +897,184 @@ export function EditPupilSheet({
                 </select>
               </InputShell>
             </div>
+
+            {/* Block booking */}
+            <div
+              style={{
+                marginTop: 8,
+                paddingTop: 16,
+                borderTop: `0.5px solid ${C.hairline}`,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: C.text,
+                  fontFamily: FONT_STACK,
+                  margin: "0 0 4px",
+                }}
+              >
+                Block booking
+              </p>
+              <p
+                style={{
+                  fontSize: 11,
+                  color: C.muted,
+                  fontFamily: FONT_STACK,
+                  margin: "0 0 10px",
+                }}
+              >
+                Record a paid bundle of hours. Hours come off automatically as
+                lessons are completed.
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  marginBottom: 10,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div
+                  style={{
+                    flex: "1 1 140px",
+                    background: C.greySurface,
+                    borderRadius: 10,
+                    padding: "8px 12px",
+                  }}
+                >
+                  <p style={{ fontSize: 10, color: C.muted, margin: 0, fontFamily: FONT_STACK, letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                    Prepaid hours
+                  </p>
+                  <p style={{ fontSize: 16, fontWeight: 600, color: C.text, margin: "2px 0 0", fontFamily: FONT_STACK }}>
+                    {Number(form.prepaid_hours || 0).toFixed(2)}h
+                  </p>
+                </div>
+                <div
+                  style={{
+                    flex: "1 1 140px",
+                    background: C.greySurface,
+                    borderRadius: 10,
+                    padding: "8px 12px",
+                  }}
+                >
+                  <p style={{ fontSize: 10, color: C.muted, margin: 0, fontFamily: FONT_STACK, letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                    £ balance
+                  </p>
+                  <p style={{ fontSize: 16, fontWeight: 600, color: C.text, margin: "2px 0 0", fontFamily: FONT_STACK }}>
+                    £{Number(form.account_balance || 0).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 8,
+                }}
+              >
+                <div>
+                  <Eyebrow>Amount paid (£)</Eyebrow>
+                  <InputShell focused={focused === "block_amount"}>
+                    <input
+                      style={{ ...baseInputStyle, fontSize: 14 }}
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      step="0.01"
+                      value={blockAmount}
+                      onChange={(e) => setBlockAmount(e.target.value)}
+                      onFocus={() => setFocused("block_amount")}
+                      onBlur={() => setFocused(null)}
+                      placeholder="e.g. 300"
+                    />
+                  </InputShell>
+                </div>
+                <div>
+                  <Eyebrow>Hours purchased</Eyebrow>
+                  <InputShell focused={focused === "block_hours"}>
+                    <input
+                      style={{ ...baseInputStyle, fontSize: 14 }}
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      step="0.5"
+                      value={blockHours}
+                      onChange={(e) => setBlockHours(e.target.value)}
+                      onFocus={() => setFocused("block_hours")}
+                      onBlur={() => setFocused(null)}
+                      placeholder="e.g. 10"
+                    />
+                  </InputShell>
+                </div>
+              </div>
+
+              {blockAmount && blockHours && parseFloat(blockHours) > 0 && (
+                <HelperText>
+                  Rate: £
+                  {(parseFloat(blockAmount) / parseFloat(blockHours)).toFixed(2)}/hr
+                </HelperText>
+              )}
+
+              <div style={{ marginTop: 10 }}>
+                <Eyebrow>Payment method</Eyebrow>
+                <InputShell focused={focused === "block_method"}>
+                  <select
+                    style={{ ...baseInputStyle, fontSize: 14, appearance: "none" }}
+                    value={blockMethod}
+                    onChange={(e) => setBlockMethod(e.target.value)}
+                    onFocus={() => setFocused("block_method")}
+                    onBlur={() => setFocused(null)}
+                  >
+                    <option value="Cash">Cash</option>
+                    <option value="Card">Card</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </InputShell>
+              </div>
+
+              <div style={{ marginTop: 10 }}>
+                <Eyebrow>Notes (optional)</Eyebrow>
+                <InputShell focused={focused === "block_notes"}>
+                  <input
+                    style={{ ...baseInputStyle, fontSize: 14 }}
+                    value={blockNotes}
+                    onChange={(e) => setBlockNotes(e.target.value)}
+                    onFocus={() => setFocused("block_notes")}
+                    onBlur={() => setFocused(null)}
+                    placeholder="e.g. 10hr starter bundle"
+                  />
+                </InputShell>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleRecordBlock}
+                disabled={blockSaving || !blockAmount || !blockHours}
+                style={{
+                  marginTop: 12,
+                  width: "100%",
+                  background: C.blue,
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "11px 14px",
+                  fontFamily: FONT_STACK,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: blockSaving || !blockAmount || !blockHours ? "not-allowed" : "pointer",
+                  opacity: blockSaving || !blockAmount || !blockHours ? 0.5 : 1,
+                }}
+              >
+                {blockSaving ? "Recording…" : "Record block booking"}
+              </button>
+            </div>
+
+
 
             {/* Additional details */}
             <div

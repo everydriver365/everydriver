@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { recordBlockBooking } from "@/lib/recordBlockBooking";
 import {
   Search, Plus, Download, Phone, MessageSquare, X, ArrowLeft,
   ChevronLeft, ChevronRight, MoreVertical, ChevronDown, Loader2,
@@ -329,6 +330,7 @@ export default function InstructorPupilsDesktop() {
     test_booked: false, test_centre_id: "", test_centre_label: "",
     test_date: "", test_time: "", duration: "", custom_hourly_rate: "",
     source: "", intensive_hours_paid: "", intensive_course_payout: "", intensive_pupil_payment: "",
+    block_amount: "", block_hours: "", block_method: "Cash", block_notes: "",
   });
   const [addErrors, setAddErrors] = useState<{
     email?: string;
@@ -429,6 +431,26 @@ export default function InstructorPupilsDesktop() {
     if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
     toast.success(`Added ${composedName || "pupil"}`);
 
+    // Record optional block booking against the new pupil.
+    const newId = (insertedRows as { id: string } | null)?.id;
+    const blkAmt = parseFloat(String(addForm.block_amount || ""));
+    const blkHrs = parseFloat(String(addForm.block_hours || ""));
+    if (newId && Number.isFinite(blkAmt) && blkAmt > 0 && Number.isFinite(blkHrs) && blkHrs > 0) {
+      try {
+        await recordBlockBooking({
+          pupilId: newId,
+          instructorId,
+          amount: blkAmt,
+          hours: blkHrs,
+          method: addForm.block_method || "Cash",
+          notes: addForm.block_notes,
+        });
+      } catch (err: any) {
+        console.error("Block booking error:", err);
+        toast.error(err?.message || "Pupil added, but block booking failed");
+      }
+    }
+
     // Suggest Test Swap if a future driving test was booked at creation
     const newPupilId = (insertedRows as { id: string } | null)?.id;
     if (newPupilId && addForm.test_booked && addForm.test_date) {
@@ -472,6 +494,7 @@ export default function InstructorPupilsDesktop() {
       test_booked: false, test_centre_id: "", test_centre_label: "",
       test_date: "", test_time: "", duration: "", custom_hourly_rate: "",
       source: "", intensive_hours_paid: "", intensive_course_payout: "", intensive_pupil_payment: "",
+      block_amount: "", block_hours: "", block_method: "Cash", block_notes: "",
     });
     setAddErrors({});
     setAddOpen(false);

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { invalidateInstructorDashboard } from "@/lib/dashboardInvalidate";
+import { recordBlockBooking } from "@/lib/recordBlockBooking";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IOSLargeTitle } from "@/components/ui/IOSLargeTitle";
@@ -204,6 +205,10 @@ export default function InstructorPupils() {
     intensive_hours_paid: "",
     intensive_course_payout: "",
     intensive_pupil_payment: "",
+    block_amount: "",
+    block_hours: "",
+    block_method: "Cash",
+    block_notes: "",
   });
   const [newPupilId, setNewPupilId] = useState<string | null>(null);
   const [showPostAddPayment, setShowPostAddPayment] = useState(false);
@@ -493,13 +498,36 @@ export default function InstructorPupils() {
 
       console.log("Pupil added successfully:", data);
       const createdPupil = data?.[0];
-      
+
+      // Record optional block booking against the new pupil.
+      const blockAmount = parseFloat(String(addForm.block_amount || ""));
+      const blockHours = parseFloat(String(addForm.block_hours || ""));
+      if (
+        createdPupil?.id &&
+        Number.isFinite(blockAmount) && blockAmount > 0 &&
+        Number.isFinite(blockHours) && blockHours > 0
+      ) {
+        try {
+          await recordBlockBooking({
+            pupilId: createdPupil.id,
+            instructorId,
+            amount: blockAmount,
+            hours: blockHours,
+            method: addForm.block_method || "Cash",
+            notes: addForm.block_notes,
+          });
+        } catch (err: any) {
+          console.error("Block booking error:", err);
+          toast.error(err?.message || "Pupil added, but block booking failed");
+        }
+      }
+
       // If payment method requires action, show post-add options
       if (addForm.payment_method === 'send_link' || addForm.payment_method === 'take_payment') {
         setNewPupilId(createdPupil?.id || null);
         setShowPostAddPayment(true);
       }
-      
+
       toast.success("Pupil added successfully");
       invalidateInstructorDashboard(queryClient, instructorId);
       setIsAddOpen(false);
@@ -537,6 +565,10 @@ export default function InstructorPupils() {
         intensive_hours_paid: "",
         intensive_course_payout: "",
         intensive_pupil_payment: "",
+        block_amount: "",
+        block_hours: "",
+        block_method: "Cash",
+        block_notes: "",
       });
       fetchPupils();
     } catch (error: any) {

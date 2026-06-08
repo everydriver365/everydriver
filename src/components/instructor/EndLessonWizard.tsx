@@ -224,15 +224,17 @@ export function EndLessonWizard({
         console.error("Rewards error:", e);
       }
 
-      // 4. Deduct lesson — prefer prepaid intensive hours; fall back to money balance.
-      // National Intensive pupils (linked to course_enquiries) are billed in hours.
-      // Non-intensive pupils are billed in £ as before.
+      // 4. Deduct lesson — prefer prepaid intensive hours, then block-booking
+      // prepaid hours, then money balance.
+      // National Intensive pupils (linked to course_enquiries) are billed in
+      // intensive hours first. All other pupils with a block-booking balance
+      // are billed in prepaid_hours first. Anything left over hits £ balance.
       try {
         const lessonHours = Math.round((durationMinutes / 60) * 100) / 100;
 
         const { data: fresh } = await supabase
           .from("pupils")
-          .select("account_balance, intensive_hours_paid, enquiry_id")
+          .select("account_balance, intensive_hours_paid, prepaid_hours, enquiry_id")
           .eq("id", pupilId)
           .single();
 
@@ -240,14 +242,18 @@ export function EndLessonWizard({
           0,
           Number((fresh as any)?.intensive_hours_paid ?? 0),
         );
+        const prepaidAvailable = Math.max(
+          0,
+          Number((fresh as any)?.prepaid_hours ?? 0),
+        );
         const isNationalIntensive = Boolean((fresh as any)?.enquiry_id);
+        const perHourRate = lessonHours > 0 ? lessonCost / lessonHours : 0;
 
         if (isNationalIntensive && lessonHours > 0 && intensiveAvailable > 0) {
           // Use up whatever hours remain; charge the shortfall to money.
           const hoursUsed = Math.min(intensiveAvailable, lessonHours);
           const remainingHours = Math.round((intensiveAvailable - hoursUsed) * 100) / 100;
           const shortfallHours = Math.round((lessonHours - hoursUsed) * 100) / 100;
-          const perHourRate = lessonHours > 0 ? lessonCost / lessonHours : 0;
           const shortfallCost = Math.round(shortfallHours * perHourRate * 100) / 100;
 
           await supabase
@@ -281,6 +287,49 @@ export function EndLessonWizard({
               notes: `${shortfallHours}h shortfall on ${lessonDate} (intensive hours exhausted)`,
             });
           }
+        } else if (lessonHours > 0 && prepaidAvailable > 0) {
+          // Block-booking prepaid hours path (mirrors intensive logic above).
+          const hoursUsed = Math.min(prepaidAvailable, lessonHours);
+          const remainingHours = Math.round((prepaidAvailable - hoursUsed) * 100) / 100;
+          const shortfallHours = Math.round((lessonHours - hoursUsed) * 100) / 100;
+          const shortfallCost = Math.round(shortfallHours * perHourRate * 100) / 100;
+
+          await supabase
+            .from("pupils")
+            .update({ prepaid_hours: remainingHours } as any)
+            .eq("id", pupilId);
+
+          // Record hours used against this lesson so reports show block usage.
+          await supabase
+            .from("scheduled_lessons")
+            .update({ prepaid_hours_used: hoursUsed } as any)
+            .eq("id", lessonId);
+
+          await supabase.from("payment_history").insert({
+            pupil_id: pupilId,
+            instructor_id: instructorId,
+            amount: 0,
+            payment_method: "Prepaid Hours",
+            payment_type: "prepaid_hours",
+            notes: `Block booking: ${hoursUsed}h used (${remainingHours}h remaining) — ${durationMinutes}min lesson on ${lessonDate}`,
+          });
+
+          if (shortfallCost > 0) {
+            const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+              p_pupil_id: pupilId,
+              p_amount: -shortfallCost,
+            });
+            if (balErr) throw balErr;
+
+            await supabase.from("payment_history").insert({
+              pupil_id: pupilId,
+              instructor_id: instructorId,
+              amount: -shortfallCost,
+              payment_method: "Lesson Charge",
+              payment_type: "lesson_payment",
+              notes: `${shortfallHours}h shortfall on ${lessonDate} (prepaid hours exhausted)`,
+            });
+          }
         } else {
           // Money path — use atomic RPC, not read/modify/write.
           const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
@@ -298,6 +347,7 @@ export function EndLessonWizard({
             notes: `${durationMinutes}min lesson on ${lessonDate}`,
           });
         }
+
 
         invalidatePaymentQueries({ pupilId, instructorId });
       } catch (e) {
