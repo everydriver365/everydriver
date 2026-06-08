@@ -191,6 +191,13 @@ export function EditPupilSheet({
   const [postcodeManual, setPostcodeManual] = useState(false);
   const [focused, setFocused] = useState<string | null>(null);
 
+  // Block-booking entry (recorded immediately, not via main Save).
+  const [blockAmount, setBlockAmount] = useState("");
+  const [blockHours, setBlockHours] = useState("");
+  const [blockMethod, setBlockMethod] = useState("Cash");
+  const [blockNotes, setBlockNotes] = useState("");
+  const [blockSaving, setBlockSaving] = useState(false);
+
   useEffect(() => {
     if (pupil) {
       const theory_status =
