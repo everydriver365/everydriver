@@ -85,6 +85,15 @@ serve(async (req) => {
           }
         );
         console.log("Instructor notification result:", await notifyResponse.json());
+
+        // Persist in-app notification row so the booking shows in the bell.
+        await supabase.from("instructor_notifications").insert({
+          instructor_id: instructorId,
+          type: "new_booking",
+          title: "New booking",
+          message: `${pupil.name} has booked a lesson on ${sortedLessons[0]?.lesson_date ?? "a scheduled date"}.`,
+          is_read: false,
+        });
       }
     } catch (notifyError) {
       console.error("Instructor notification error (non-fatal):", notifyError);
