@@ -286,15 +286,16 @@ function CardHeader({
     <div
       style={{
         display: "flex",
-        alignItems: "flex-start",
+        alignItems: "center",
         gap: 12,
-        padding: "16px 16px 12px",
+        padding: "14px 16px",
+        borderBottom: "0.5px solid rgba(15,23,42,0.06)",
       }}
     >
       <span
         style={{
-          width: 32,
-          height: 32,
+          width: 36,
+          height: 36,
           borderRadius: 10,
           backgroundColor: iconBg,
           color: iconColor,
@@ -307,12 +308,15 @@ function CardHeader({
         {icon}
       </span>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.15 }}>{title}</div>
+        <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.2, color: "#0F172A" }}>
+          {title}
+        </div>
         <p
           style={{
             fontSize: 12,
             marginTop: 2,
-            color: "hsl(var(--muted-foreground))",
+            color: "#6B7280",
+            lineHeight: 1.3,
           }}
         >
           {subtitle}
