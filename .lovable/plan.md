@@ -1,127 +1,73 @@
-## Product: Test Date Guarantee
+# Plan: Replace Google OAuth sync with two-way ICS subscriptions
 
-Premium add-on for any pupil who has a DVSA practical test booked. We commit to:
-1. An assigned instructor for every lesson in the run-up to the test.
-2. The full number of lesson hours the pupil booked, completed before the test date.
-3. If we fail to deliver either → **full refund of the Guarantee fee + £62 DVSA test fee covered**.
+Match the Total Drive model exactly. No OAuth, no service account, no webhooks, no token refresh. Just two ICS URLs per instructor: one DSM publishes (lessons out), one or more DSM subscribes to (busy events in).
 
-Replaces the working name "car for test" everywhere.
+## How it will work
 
-## Pricing
+**Outbound — DSM → calendar app:**
+- Each instructor gets a private `.ics` feed URL from DSM containing all confirmed lessons + manual blocks for the next 12 months.
+- Instructor pastes it once into Google / Apple / Outlook ("Add calendar from URL").
+- The calendar app polls it on its own schedule.
 
-| Tier | Price | What's included |
-|---|---|---|
-| **Test Date Guarantee** | **£79 one-off** | Assigned instructor, all booked hours delivered before test, money-back promise, priority cover if instructor falls ill |
+**Inbound — Google/Apple/Outlook → DSM:**
+- Instructor copies the "Secret address in iCal format" from each Google calendar they want DSM to respect (personal, family, work — multiple supported).
+- Pastes each URL into DSM ("Block bookings from this calendar").
+- DSM polls every 5 minutes (per user choice) and stores each event as a busy block.
+- Availability engine treats every event in those feeds as "instructor busy" — booking is impossible during them.
 
-Margin split (instructor / contingency pot / platform):
-- Instructor: **£25** (skin in the game)
-- Contingency pot: **£20** (funds cover instructors when things go wrong — owned by platform)
-- Platform net: **£34**
+No DSM ↔ Google API call ever happens. Everything is a plain HTTPS GET of a text file.
 
-At 6,000 users with even a 15% attach rate on test-booked pupils → ~£300k/yr platform revenue from this SKU alone. Not a side feature.
+## Hard cut-over (per user choice)
 
-## Pupil-facing UX (Drive365)
+- Old Google OAuth + service-account flow is removed entirely.
+- `instructor_calendar_events` is wiped and the table is dropped (or kept empty and unused).
+- Every instructor must add their ICS feeds once. Until they do, only DSM lessons + manual blocks count as busy — exactly what they would expect.
+- Admin "Google sync" dashboards, "reconnect Google", weekly resync, unmatched events, sync alerts — all removed.
 
-Triggered the moment a pupil enters or confirms a DVSA test date in their portal.
+## Phases
 
-```text
-┌──────────────────────────────────────────┐
-│  Your test: Tue 14 Jul, 09:24 — Basingstoke│
-│                                          │
-│  ★ Add Test Date Guarantee — £79         │
-│  ─────────────────────────────────────── │
-│  • Same instructor every lesson          │
-│  • All your booked hours, before test day│
-│  • If we don't deliver → full refund +   │
-│    your £62 test fee back                │
-│                                          │
-│  [ Add Guarantee ]   [ No thanks ]       │
-└──────────────────────────────────────────┘
-```
+**Phase 1 — Outbound feed**
+- New edge function `instructor-calendar-feed` serves valid RFC 5545 `.ics`.
+- New column `instructors.calendar_feed_token` (random, unique, indexed). One-click "Rotate URL" button.
+- Settings page "Calendar sync" shows the feed URL + copy button + step-by-step instructions for Google, Apple, Outlook.
 
-Surfaces:
-- Pupil dashboard tile (top, gold accent on dark slate per Portal tokens)
-- Test-date entry modal (CTA at bottom)
-- Pre-test reminder email/WhatsApp 4 weeks out, if not yet purchased
-- Settings → "My Guarantee" status page once purchased (countdown, hours delivered, hours remaining)
+**Phase 2 — Inbound subscriptions**
+- New table `instructor_ics_subscriptions` (id, instructor_id, url, label, last_polled_at, last_status, last_event_count, is_active). Multiple rows per instructor.
+- New table `instructor_ics_events` (id, subscription_id, instructor_id, uid, start_at, end_at, title, last_seen_at). Replaces `instructor_calendar_events` as the inbound "busy" source.
+- New edge function `poll-ics-subscriptions`: every 5 min via `pg_cron`, fetches each active feed, parses ICS, upserts events for the next 12 months, deletes events not seen in the latest fetch. Idempotent on `(subscription_id, uid, recurrence_id)`.
+- Settings UI: add/remove/relabel feeds, show last poll time + status + event count, "Refresh now" button.
 
-## Instructor-facing UX (DSM)
+**Phase 3 — Availability engine swap**
+- `buildDayConflicts` reads `instructor_ics_events` + `instructor_manual_blocks` (currently reads `instructor_calendar_events` + manual blocks — drop-in replacement).
+- All availability rules (buffers, working hours, holiday blocks, lead time, horizon, London timezone clipping) unchanged.
+- `useGoogleCalendarRefresh` hook removed everywhere it's mounted (LessonScheduler, add/reschedule sheets, find-a-slot, pupil self-booking). Booking surfaces no longer trigger any sync.
 
-- Settings → Bookings: toggle **"Accept Test Date Guarantee pupils"** (default on for active instructors)
-- Diary: Guarantee pupils' lessons get a small gold dot + "TDG" label
-- Inbox: clear flag when a TDG pupil books, with a one-tap **"Confirm I can deliver all hours"**
-- Failure flow: if instructor cancels a TDG lesson < 48h, system auto-offers it to cover pool (paid from contingency)
+**Phase 4 — Remove old machinery**
+- Delete edge functions: `google-calendar-service`, `google-calendar-sync`, `google-calendar-webhook`, `sync-lesson-now`, plus any reconcile/resync/unmatched-events jobs.
+- Drop pg_cron entries for the old sync.
+- Remove components: `useGoogleServiceCalendar`, `useGoogleCalendarRefresh`, `refreshGoogleCalendar`, Google connect/disconnect UI, admin Google sync dashboards, `unmatched_google_events`, `google_sync_alerts`, `calendar_sync_queue`, `instructor_google_service_calendar`, `instructor_calendar_tokens`, `instructor_calendar_events` (after migration completes).
+- Soft-delete pipeline keeps working — it just stops calling Google. Removing a lesson in DSM disappears from the instructor's calendar app on the app's next ICS poll (Google: a few hours; Apple: ~15 min; can refresh manually).
 
-## Admin UX
+## Technical notes
 
-- New section: **Test Date Guarantee** → live list of all active guarantees, days-to-test, hours-delivered vs hours-booked, at-risk flag
-- Refund queue: any guarantee that lapsed → one-click refund (fee + £62 test fee) via existing payment rails
+- ICS output: VTIMEZONE Europe/London, stable `UID` per lesson + per manual block, `LAST-MODIFIED` for change detection, `STATUS:CONFIRMED`, location set to pickup postcode.
+- ICS poll: 5-minute `pg_cron` job, batched, with per-feed timeout + retry, status surfaced in settings UI. Treats any all-day event as full-day busy. Honours `EXDATE` and recurrence (`RRULE`) for the 12-month window.
+- Token security: 32-byte random URL-safe token; rotating it instantly invalidates the old URL.
+- No mobile layout changes — only adds a "Calendar sync" settings panel and a busy-feed manager in the existing settings sections.
+- Existing DB clash trigger on `scheduled_lessons` stays as last-resort guard.
+- Update memory: `mem://constraints/google-calendar-source-of-truth` and `mem://features/instructor/automated-google-calendar-sync` will be rewritten to reflect ICS-only model.
 
-## Marketing
+## What the user gets
 
-Dedicated landing page `/test-date-guarantee`:
-- H1: **"Don't lose your test date."**
-- Sub: "An instructor, every lesson, before your test — guaranteed. Or your money back, plus your DVSA fee."
-- 3 benefit blocks: Same instructor · All your hours · Money back if we fail
-- Social proof slot (3 quotes)
-- Pricing card: £79 with the 3 promises listed
-- FAQ (10 Qs incl. refund mechanics, what counts as failure, how cover works)
-- Sticky bottom CTA on mobile
+- No weekly repair loop.
+- Personal events still block bookings (the thing you wanted).
+- Multiple personal calendars supported per instructor.
+- Reaction time to a new personal event: up to 5 min.
+- DSM keeps working perfectly even if Google is down.
+- ~6 fewer edge functions and ~5 fewer tables to maintain.
 
-Homepage:
-- New hero secondary CTA: "Booked a test? Get Test Date Guarantee →"
-- Trust strip mention near the existing "Why Drive365" section
+## Trade-offs (worth being explicit)
 
-SEO:
-- Title: "Test Date Guarantee — Don't Lose Your Driving Test Slot | Drive365" (<60)
-- Meta desc: "Booked a driving test? We guarantee an instructor and all your lesson hours before test day, or your money back plus DVSA fee. £79." (<160)
-- JSON-LD `Service` with name "Test Date Guarantee", provider Drive365, offer £79
-- OG/Twitter card with the gold-on-slate hero
-
-## Design direction
-
-- Visual language: dark slate Portal background + **gold accent (#C9A84C, from "Noir & Gold" palette)** to signal premium — only used for this SKU
-- Card style: rounded-2xl, subtle gold border (1px hairline), gold check icons, generous whitespace
-- Typography: existing portal stack, headings tightened (-0.02em) for premium feel
-- Motion: gentle scale-in on the Guarantee card, gold shimmer once on first reveal only (no loops — premium ≠ flashy)
-- Mobile-first; mobile layouts untouched elsewhere per project rule
-
-(When you come back tomorrow we can run design directions on the landing-page hero + the pupil dashboard tile to choose the exact visual before any code lands.)
-
-## Rename scope (when we build)
-
-Pure copy/identifier refactor — no behaviour change:
-1. UI strings across Drive365, DSM, Admin → "Test Date Guarantee"
-2. Routes: `/car-for-test*` → `/test-date-guarantee*` with `<Navigate replace>` redirect from old paths
-3. Code identifiers (components, hooks, types, edge function names) renamed where safe in one pass
-4. DB columns/tables: keep current names if already in production (too risky to rename live for 6,000 users); add a code-side label mapper so UI shows new name. If not yet shipped, rename in same migration.
-5. SEO tags + JSON-LD updated
-6. New memory entry: `mem://features/payments/test-date-guarantee` capturing name, £79 price, margin split, refund rules
-
-## Build steps (for tomorrow)
-
-1. DB migration: `test_date_guarantee` table (pupil_id, test_date, hours_booked, hours_delivered, status, purchased_at, fee_amount, contingency_amount, instructor_amount, refunded_at) + GRANTs + RLS
-2. Edge function `purchase-test-date-guarantee` — creates row, takes £79 via existing payment rails (GoCardless / Square / SumUp per pupil's chosen method), splits to instructor + contingency on completion
-3. Edge function `evaluate-test-date-guarantee` — nightly cron: for any guarantee where test_date has passed, check hours_delivered vs hours_booked + instructor continuity; mark `fulfilled` or `failed` → triggers refund if failed
-4. Pupil portal: dashboard tile + test-date modal CTA + status page
-5. Instructor portal: toggle + diary label + cover-offer flow
-6. Admin section + refund queue
-7. Marketing landing page + homepage CTA + SEO + JSON-LD
-8. Reminder email/WhatsApp 4 weeks pre-test for non-purchasers
-9. Rename pass across codebase
-
-## Out of scope
-
-- No changes to existing lesson booking flow, fee splits on regular lessons, or matching logic
-- No changes to mobile layouts beyond the new TDG surfaces (per mobile-update policy)
-- No new payment provider — uses existing GoCardless / Square / SumUp rails
-- No changes to instructor payout architecture beyond the new £25 line item
-
----
-
-Locked decisions (so we don't re-debate tomorrow):
-- **Name:** Test Date Guarantee
-- **Price:** £79 one-off
-- **Promise:** assigned instructor + all booked hours + money back (fee + DVSA £62) if we fail
-- **Visual:** dark slate + gold accent (#C9A84C), used only for this SKU
-- **Refund trigger:** automated nightly check after test date
+- Outbound lesson updates appear in Google on Google's own poll schedule (typically 1–3 hours). Apple/Outlook are faster. Acceptable for personal-calendar viewing; not for real-time coordination — but DSM is the source of truth for that anyway.
+- Cancellations in DSM disappear from the instructor's calendar app the same way (next poll). The DSM app itself shows them instantly.
+- One-time setup cost per instructor: paste two URLs. Documented with screenshots.
