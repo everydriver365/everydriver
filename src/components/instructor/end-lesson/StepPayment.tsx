@@ -533,7 +533,7 @@ export function StepPayment({
             >
               {[
                 { kind: "no_payment_due" as const, label: "No payment due", sub: "Comp this lesson", Icon: Gift },
-                { kind: "included_in_package" as const, label: "Included in package", sub: "Already paid up front", Icon: Package },
+                ...(hasPrepaidHours ? [] : [{ kind: "included_in_package" as const, label: "Included in package", sub: "Already paid up front", Icon: Package }]),
               ].map((opt, i) => {
                 const Icon = opt.Icon;
                 return (
