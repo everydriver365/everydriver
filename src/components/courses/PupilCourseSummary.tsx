@@ -768,6 +768,15 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
                             {working === `refund-${p.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : (<><Undo2 className="h-3 w-3 mr-1" /> Refund</>)}
                           </Button>
                         )}
+                        <Button
+                          size="sm" variant="ghost"
+                          disabled={working === `delete-payment-${p.id}`}
+                          onClick={() => handleDeletePayment(p)}
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                          title="Soft-delete payment"
+                        >
+                          {working === `delete-payment-${p.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                        </Button>
                       </div>
                     );
                   })}
