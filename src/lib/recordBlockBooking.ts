@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { invalidatePaymentQueries } from "@/hooks/usePaymentInvalidation";
 
 export interface BlockBookingInput {
   pupilId: string;
