@@ -23,6 +23,7 @@ type Row = {
   course_type: string | null;
   course_status: string | null;
   lesson_count: number;
+  completed_lesson_count: number;
   next_lesson_date: string | null;
   account_balance: number | null;
 };
@@ -99,7 +100,7 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
       const instructorMap = new Map<string, string>(
         (instructorRows || []).map((i) => [i.id, i.name])
       );
-      const lessonStats = new Map<string, { count: number; next: string | null }>();
+      const lessonStats = new Map<string, { count: number; completed: number; next: string | null }>();
       const today = londonTodayStr();
       const nowLondon = toLondonParts(new Date());
       const nowMinutes = nowLondon.hour * 60 + nowLondon.minute;
@@ -108,15 +109,19 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
         if (
           inactiveLessonStatuses.has(status) ||
           l.cancelled_at ||
-          l.marked_no_show_at ||
-          !isUpcomingLesson(l.lesson_date, l.start_time, today, nowMinutes)
+          l.marked_no_show_at
         ) {
           return;
         }
-        const cur = lessonStats.get(l.pupil_id) || { count: 0, next: null };
-        cur.count += 1;
-        if (!cur.next || l.lesson_date < cur.next) {
-          cur.next = l.lesson_date;
+        const cur = lessonStats.get(l.pupil_id) || { count: 0, completed: 0, next: null };
+        if (isUpcomingLesson(l.lesson_date, l.start_time, today, nowMinutes)) {
+          cur.count += 1;
+          if (!cur.next || l.lesson_date < cur.next) {
+            cur.next = l.lesson_date;
+          }
+        }
+        if (status === "completed") {
+          cur.completed += 1;
         }
         lessonStats.set(l.pupil_id, cur);
       });
@@ -132,6 +137,7 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
             course_type: p.course_type,
             course_status: p.course_status,
             lesson_count: s?.count ?? 0,
+            completed_lesson_count: s?.completed ?? 0,
             next_lesson_date: s?.next ?? null,
             account_balance: p.account_balance,
           };
@@ -198,11 +204,12 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
                     <div className="text-xs text-muted-foreground truncate">
                       {r.course_type || "Course"}
                       {r.instructor_name ? ` · with ${r.instructor_name}` : ""}
+                      {r.completed_lesson_count > 0 ? ` · ${r.completed_lesson_count} completed lesson${r.completed_lesson_count === 1 ? "" : "s"}` : ""}
                       {r.lesson_count > 0 ? ` · ${r.lesson_count} upcoming lesson${r.lesson_count === 1 ? "" : "s"}` : ""}
                       {r.next_lesson_date ? ` · next ${new Date(r.next_lesson_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}` : ""}
                     </div>
                   </div>
-                  {r.lesson_count === 0 && (
+                  {r.lesson_count === 0 && r.completed_lesson_count === 0 && (
                     <span
                       style={{
                         backgroundColor: "#F1F5F9",
