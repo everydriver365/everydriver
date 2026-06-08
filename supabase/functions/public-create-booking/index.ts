@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
         price_per_hour: hourly,
         notes: body.notes ?? null,
         booking_method: `partner:${body.partner_key}`,
-        awaiting_initial_payment: true,
+        awaiting_initial_payment: false,
       })
       .select("id")
       .single();
