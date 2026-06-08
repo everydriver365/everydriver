@@ -37,7 +37,7 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
 
   return (
     <div
-      className="px-4 pb-24"
+      className="px-3 pb-24"
       style={{
         background: "#F4F7F6",
         paddingTop: 8,
@@ -107,7 +107,7 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
             <section key={`${g.label}-${idx}`}>
               <SectionLabel>{g.label}</SectionLabel>
               <Card>
-                <div style={{ padding: "14px 16px 16px" }} id={g.sectionId}>
+                <div style={{ padding: "12px 10px" }} id={g.sectionId}>
                   {section.render()}
                 </div>
               </Card>
