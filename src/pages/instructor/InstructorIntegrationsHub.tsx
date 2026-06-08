@@ -314,7 +314,7 @@ export default function InstructorIntegrationsHub() {
 
         {/* Existing functional setup component for the active tab (logic untouched) */}
         <div className="bg-card rounded-2xl border p-6 space-y-4">
-          {tab === "google-calendar" && <GoogleServiceAccountSetup instructorId={instructorId} />}
+          {tab === "google-calendar" && <IcsCalendarSync instructorId={instructorId} />}
           {tab === "square" && (
             <SquareConnectSettings
               instructorId={instructorId}
