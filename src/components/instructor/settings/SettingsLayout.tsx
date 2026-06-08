@@ -143,6 +143,15 @@ export function SettingsLayout({ categories, search, onSearchChange }: SettingsL
       );
     }
 
+    // Bespoke layout for the Schedule category on mobile (visual-only redesign).
+    if (activeCategory.id === "schedule") {
+      return (
+        <div className="pb-24">
+          <ScheduleMobileLayout category={activeCategory} />
+        </div>
+      );
+    }
+
     const isAccount = activeCategory.id === "account";
     return (
       <div
