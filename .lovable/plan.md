@@ -1,13 +1,26 @@
-Suzanna's "lesson on 27 June" is a `cancelled` row (`status='cancelled'`, `deleted_at` null). The current query in `PupilCoursesList.tsx` only filters by `deleted_at IS NULL`, so cancelled lessons still inflate `lesson_count` and feed `next_lesson_date`.
+## Plan
 
-### Change
-In `src/components/courses/PupilCoursesList.tsx`, narrow the `scheduled_lessons` query so cancelled/no-show rows are excluded:
+1. **Stop presenting missing lessons as a valid course total**
+   - Update the course-summary list so `0 lessons` only means there are genuinely zero live upcoming lesson records.
+   - If a pupil has no active lesson rows at all, show a clearer live-data state such as `No live lessons recorded` rather than implying the course summary is complete.
 
-- Add `.not("status", "in", "(cancelled,no_show,no-show)")` alongside the existing `.is("deleted_at", null)` filter.
-- Also pull `status` into the select for safety and skip any row whose status indicates it's not an active lesson.
+2. **Use one consistent live-lesson filter everywhere**
+   - Apply the same rules in both:
+     - `Course summaries` list
+     - Individual pupil course-summary detail page
+   - Exclude lessons that are deleted, cancelled, no-show, cancelled via `cancelled_at`, or marked no-show via `marked_no_show_at`.
+   - Use Europe/London time for “next lesson” checks.
 
-Result: Susanna shows 0 active lessons → "No upcoming lessons" tag, no fake "next 27/06/26".
+3. **Separate course/account data from lesson data**
+   - Keep course type, instructor, and balances sourced from the pupil/account records.
+   - Keep lesson counts and next lesson sourced only from live lesson records.
+   - Do not add mock values, fallback lesson dates, or inferred lessons.
 
-### Out of scope
-- No DB changes, no schema changes.
-- No change to the detail page (`PupilCourseSummary`) — that's a separate review if you also see ghost rows there.
+4. **Add a visible data warning for missing live lesson records**
+   - For pupils like Joseph/Luke/Soraya where the backend currently has no live scheduled lessons, show an explicit status so it’s clear the system has no lesson records to summarise.
+   - This avoids silently showing misleading course data.
+
+5. **Verify against the current live rows**
+   - Confirm Susanna does not show the cancelled 27 June lesson.
+   - Confirm pupils with no live lesson rows show the missing/live-data state.
+   - Confirm any pupil with real upcoming active lessons shows the correct next lesson and count.

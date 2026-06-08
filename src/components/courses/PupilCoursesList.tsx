@@ -196,9 +196,9 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm">{r.pupil_name}</div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {r.course_type || "Course"} ·{" "}
-                      {r.instructor_name ? `with ${r.instructor_name}` : ""} ·{" "}
-                      {r.lesson_count} lessons
+                      {r.course_type || "Course"}
+                      {r.instructor_name ? ` · with ${r.instructor_name}` : ""}
+                      {r.lesson_count > 0 ? ` · ${r.lesson_count} upcoming lesson${r.lesson_count === 1 ? "" : "s"}` : ""}
                       {r.next_lesson_date ? ` · next ${new Date(r.next_lesson_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}` : ""}
                     </div>
                   </div>
@@ -212,8 +212,9 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
                         padding: "2px 8px",
                         borderRadius: 999,
                       }}
+                      title="No live scheduled lessons on record for this pupil"
                     >
-                      No upcoming lessons
+                      No live lessons recorded
                     </span>
                   )}
                   {(r.account_balance || 0) < 0 && (
