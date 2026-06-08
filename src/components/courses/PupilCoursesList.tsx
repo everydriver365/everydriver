@@ -178,6 +178,20 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
                       {r.next_lesson_date ? ` · next ${new Date(r.next_lesson_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}` : ""}
                     </div>
                   </div>
+                  {r.lesson_count === 0 && (
+                    <span
+                      style={{
+                        backgroundColor: "#F1F5F9",
+                        color: "#64748B",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: "2px 8px",
+                        borderRadius: 999,
+                      }}
+                    >
+                      No upcoming lessons
+                    </span>
+                  )}
                   {(r.account_balance || 0) < 0 && (
                     <span
                       style={{
