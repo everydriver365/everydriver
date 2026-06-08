@@ -98,9 +98,8 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
       });
 
       const out: Row[] = (pupilRows || [])
-        .filter((p) => lessonStats.has(p.id))
         .map((p) => {
-          const s = lessonStats.get(p.id)!;
+          const s = lessonStats.get(p.id);
           return {
             pupil_id: p.id,
             pupil_name: p.name,
@@ -108,12 +107,18 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
             instructor_name: instructorMap.get(p.instructor_id) ?? null,
             course_type: p.course_type,
             course_status: p.course_status,
-            lesson_count: s.count,
-            next_lesson_date: s.next,
+            lesson_count: s?.count ?? 0,
+            next_lesson_date: s?.next ?? null,
             account_balance: p.account_balance,
           };
         })
-        .sort((a, b) => (a.next_lesson_date || "").localeCompare(b.next_lesson_date || ""));
+        .sort((a, b) => {
+          if (a.next_lesson_date && b.next_lesson_date)
+            return a.next_lesson_date.localeCompare(b.next_lesson_date);
+          if (a.next_lesson_date) return -1;
+          if (b.next_lesson_date) return 1;
+          return a.pupil_name.localeCompare(b.pupil_name);
+        });
 
       setRows(out);
       setLoading(false);
