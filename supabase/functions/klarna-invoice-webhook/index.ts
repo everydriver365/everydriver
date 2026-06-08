@@ -101,7 +101,7 @@ serve(async (req) => {
 
     const { data: row, error: rowErr } = await supabase
       .from("square_invoices")
-      .select("id, status, paid_at, klarna_status, pupil_id, instructor_id, amount_due")
+      .select("id, status, paid_at, klarna_status, recipient_pupil_id, issuer_instructor_id, amount_cents")
       .eq("klarna_order_id", orderId)
       .maybeSingle();
 
