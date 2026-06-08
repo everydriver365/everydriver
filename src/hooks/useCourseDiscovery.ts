@@ -22,6 +22,8 @@ export interface Instructor {
   car_model: string | null;
   home_postcode: string;
   home_address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   hourly_rate: number | null;
   bio: string | null;
   brand_colour: string | null;
@@ -31,6 +33,42 @@ export interface Instructor {
   is_network_placeholder?: boolean | null;
   placeholder_district?: string | null;
   booking_mode?: string | null;
+}
+
+// Resolve an instructor's coordinates: prefer the lat/lng stored on the
+// instructor row, fall back to the bulk-geocoded postcode cache. Callers
+// should kick off `liveGeocodePostcode` for any instructor that returns null
+// here so they aren't silently excluded from radius search.
+function resolveInstructorCoords(
+  instructor: Pick<Instructor, "lat" | "lng" | "home_postcode">,
+  geoCache: Record<string, { lat: number; lng: number } | null>,
+): { lat: number; lng: number } | null {
+  if (typeof instructor.lat === "number" && typeof instructor.lng === "number") {
+    return { lat: instructor.lat, lng: instructor.lng };
+  }
+  const key = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+  const cached = geoCache[key];
+  return cached || null;
+}
+
+// On-the-fly fallback when neither the row nor the bulk geocode cache has
+// coords. Hits postcodes.io directly so the instructor is still considered.
+async function liveGeocodePostcode(
+  postcode: string,
+): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const r = await fetch(
+      `https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`,
+    );
+    if (!r.ok) return null;
+    const j = await r.json();
+    const lat = j?.result?.latitude;
+    const lng = j?.result?.longitude;
+    if (typeof lat === "number" && typeof lng === "number") return { lat, lng };
+  } catch {
+    /* ignore */
+  }
+  return null;
 }
 
 // Extract the UK postcode district (outcode) from any postcode string.
