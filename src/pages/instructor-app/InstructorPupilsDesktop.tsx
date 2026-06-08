@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { recordBlockBooking } from "@/lib/recordBlockBooking";
 import {
   Search, Plus, Download, Phone, MessageSquare, X, ArrowLeft,
   ChevronLeft, ChevronRight, MoreVertical, ChevronDown, Loader2,
