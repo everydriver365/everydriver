@@ -83,7 +83,6 @@ export function CoursePaymentBlock({
   cashPaymentsEnabled,
   squareAvailable,
   clearpayAvailable,
-  isElavonLoading,
   isKlarnaLoading,
   isClearpayLoading,
   isInstantBankPayLoading,
