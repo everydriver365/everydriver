@@ -1,17 +1,8 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  Clock,
-  BookOpen,
-  Users,
-  RefreshCw,
-  Bell,
-  CreditCard,
-} from "lucide-react";
+import { ChevronLeft, Calendar } from "lucide-react";
 import type { SettingsCategory } from "@/components/instructor/settings/SettingsLayout";
+
 
 /**
  * Mobile-only redesigned layout for the Schedule settings category.
