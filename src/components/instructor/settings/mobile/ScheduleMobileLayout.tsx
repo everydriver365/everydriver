@@ -163,68 +163,16 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
 
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
         {groups.map((g, idx) => {
+          if (g.pointer) return null;
           const section = byId.get(g.sectionId);
           if (!section) return null;
-          const Icon = g.icon;
           return (
             <section key={`${g.label}-${idx}`}>
               <SectionLabel>{g.label}</SectionLabel>
               <Card>
-                <CardHeader
-                  icon={<Icon className="h-[18px] w-[18px]" />}
-                  iconBg={g.iconBg}
-                  iconColor={g.iconColor}
-                  title={g.title}
-                  subtitle={g.subtitle}
-                />
-                {g.pointer ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const el = document.getElementById("reminders");
-                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
-                      padding: "14px 16px",
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      gap: 12,
-                    }}
-                  >
-                    <span
-                      style={{
-                        flex: 1,
-                        minWidth: 0,
-                        fontSize: 14,
-                        color: "#0F172A",
-                        fontWeight: 500,
-                      }}
-                    >
-                      Configured in Reminders
-                      <span
-                        style={{
-                          display: "block",
-                          fontSize: 12,
-                          color: "#6B7280",
-                          fontWeight: 400,
-                          marginTop: 2,
-                        }}
-                      >
-                        Auto-chase, frequency and stop-after limits
-                      </span>
-                    </span>
-                    <ChevronRight className="h-4 w-4" style={{ color: "#9CA3AF" }} />
-                  </button>
-                ) : (
-                  <div style={{ padding: "14px 16px 16px" }} id={g.sectionId}>
-                    {section.render()}
-                  </div>
-                )}
+                <div style={{ padding: "14px 16px 16px" }} id={g.sectionId}>
+                  {section.render()}
+                </div>
               </Card>
             </section>
           );
@@ -233,6 +181,7 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
     </div>
   );
 }
+
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
