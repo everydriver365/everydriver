@@ -303,7 +303,7 @@ export function EndLessonWizard({
           await supabase
             .from("scheduled_lessons")
             .update({ prepaid_hours_used: hoursUsed } as any)
-            .eq("id", lesson.id);
+            .eq("id", lessonId);
 
           await supabase.from("payment_history").insert({
             pupil_id: pupilId,
