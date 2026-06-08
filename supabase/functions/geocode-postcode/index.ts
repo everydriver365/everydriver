@@ -81,6 +81,31 @@ serve(async (req) => {
       })
     );
 
+    // If caller passed an instructor_id, persist the geocoded coords for the
+    // first postcode result onto the instructor row so future distance
+    // filters can skip the live geocode round-trip.
+    if (instructor_id && results.length > 0) {
+      const first = results[0];
+      if (first.latitude != null && first.longitude != null) {
+        try {
+          const admin = createClient(
+            Deno.env.get("SUPABASE_URL")!,
+            Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+          );
+          await admin
+            .from("instructors")
+            .update({
+              lat: first.latitude,
+              lng: first.longitude,
+              location_name: first.area_name,
+            })
+            .eq("id", instructor_id);
+        } catch (e) {
+          console.error("Failed to persist instructor coords:", e);
+        }
+      }
+    }
+
     return new Response(
       JSON.stringify({ results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
