@@ -79,50 +79,9 @@ Deno.serve(async (req) => {
     const signed = body.isRefund ? -positive : positive;
     const methodLabel = body.method === "card" ? "Square" : body.method === "cash" ? "Cash" : "Bank Transfer";
 
-    // ---- Card: create Square checkout link, record pending tx ----
+    // ---- Card: not currently available ----
     if (body.method === "card") {
-      const orderRef = `manual-${Date.now()}-${body.pupilId.slice(0, 6)}`;
-      const { data: ck, error: ckErr } = await admin.functions.invoke("square-checkout", {
-        body: {
-          amount: positive,
-          orderReference: orderRef,
-          customerEmail: body.customerEmail || pupil.email || undefined,
-          customerName: body.customerName || pupil.name,
-          customerPhone: body.customerPhone || undefined,
-          description: body.note || `Payment from ${pupil.name}`,
-          returnUrl: body.returnUrl,
-          cancelUrl: body.cancelUrl,
-          instructorId,
-          pupilId: body.pupilId,
-        },
-      });
-      if (ckErr) throw ckErr;
-      const checkoutUrl: string | undefined =
-        ck?.checkoutUrl || ck?.url || ck?.payment_link?.url;
-      if (!checkoutUrl) return json({ error: ck?.error || "Failed to create payment link" }, 502);
-
-      const { data: inserted, error: insErr } = await admin
-        .from("payment_history")
-        .insert({
-          pupil_id: body.pupilId,
-          instructor_id: instructorId,
-          amount: positive,
-          payment_method: "Square",
-          payment_type: "lesson_payment",
-          notes: `${body.note ? body.note + " · " : ""}Awaiting payment · ${orderRef} pending`,
-          payout_status: "pending",
-        })
-        .select("id")
-        .single();
-      if (insErr) throw insErr;
-
-      return json({
-        ok: true,
-        kind: "card",
-        paymentId: inserted?.id,
-        checkoutUrl,
-        message: "Payment link created. Share with pupil to complete.",
-      });
+      return json({ error: "Card payments are not currently available. Please use Klarna or Clearpay." }, 400);
     }
 
     // ---- Cash / Bank: atomic insert + balance increment ----
