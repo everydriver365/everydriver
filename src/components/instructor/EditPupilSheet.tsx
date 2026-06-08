@@ -343,6 +343,56 @@ export function EditPupilSheet({
     }
   };
 
+  const handleRecordBlock = async () => {
+    if (!pupil || !instructorId) return;
+    const amt = parseFloat(blockAmount);
+    const hrs = parseFloat(blockHours);
+    if (!Number.isFinite(amt) || amt <= 0) {
+      toast.error("Enter a £ amount greater than zero");
+      return;
+    }
+    if (!Number.isFinite(hrs) || hrs <= 0) {
+      toast.error("Enter hours greater than zero");
+      return;
+    }
+    setBlockSaving(true);
+    try {
+      await recordBlockBooking({
+        pupilId: pupil.id,
+        instructorId,
+        amount: amt,
+        hours: hrs,
+        method: blockMethod,
+        notes: blockNotes,
+      });
+      // Reflect new balances in the open sheet without forcing a close.
+      setForm((f: any) => ({
+        ...f,
+        account_balance: (Number(f.account_balance) || 0) + amt,
+        prepaid_hours: Math.round(((Number(f.prepaid_hours) || 0) + hrs) * 100) / 100,
+      }));
+      setInitial((f: any) => ({
+        ...f,
+        account_balance: (Number(f.account_balance) || 0) + amt,
+        prepaid_hours: Math.round(((Number(f.prepaid_hours) || 0) + hrs) * 100) / 100,
+      }));
+      setBlockAmount("");
+      setBlockHours("");
+      setBlockNotes("");
+      toast.success(`Block booking recorded: £${amt.toFixed(2)} / ${hrs}h`);
+      queryClient.invalidateQueries({ queryKey: ["pupil-payment-status", pupil.id] });
+      queryClient.invalidateQueries({ queryKey: ["pupil-balances"] });
+      queryClient.invalidateQueries({ queryKey: ["payment-history", pupil.id] });
+      onSaved?.();
+    } catch (err: any) {
+      console.error("Block booking error:", err);
+      toast.error(err?.message || "Failed to record block booking");
+    } finally {
+      setBlockSaving(false);
+    }
+  };
+
+
   /* ---- photo upload ---- */
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
