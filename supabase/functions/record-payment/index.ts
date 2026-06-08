@@ -79,50 +79,31 @@ Deno.serve(async (req) => {
     const signed = body.isRefund ? -positive : positive;
     const methodLabel = body.method === "card" ? "Square" : body.method === "cash" ? "Cash" : "Bank Transfer";
 
-    // ---- Card: create Square checkout link, record pending tx ----
+    // ---- Card: hand off to Square hosted checkout ----
     if (body.method === "card") {
-      const orderRef = `manual-${Date.now()}-${body.pupilId.slice(0, 6)}`;
-      const { data: ck, error: ckErr } = await admin.functions.invoke("square-checkout", {
-        body: {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const resp = await fetch(`${supabaseUrl}/functions/v1/square-checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+        },
+        body: JSON.stringify({
+          pupilId: body.pupilId,
+          instructorId,
           amount: positive,
-          orderReference: orderRef,
-          customerEmail: body.customerEmail || pupil.email || undefined,
-          customerName: body.customerName || pupil.name,
-          customerPhone: body.customerPhone || undefined,
-          description: body.note || `Payment from ${pupil.name}`,
+          customerEmail: body.customerEmail ?? pupil.email ?? undefined,
+          customerName: body.customerName ?? pupil.name ?? undefined,
+          customerPhone: body.customerPhone,
           returnUrl: body.returnUrl,
           cancelUrl: body.cancelUrl,
-          instructorId,
-          pupilId: body.pupilId,
-        },
+        }),
       });
-      if (ckErr) throw ckErr;
-      const checkoutUrl: string | undefined =
-        ck?.checkoutUrl || ck?.url || ck?.payment_link?.url;
-      if (!checkoutUrl) return json({ error: ck?.error || "Failed to create payment link" }, 502);
-
-      const { data: inserted, error: insErr } = await admin
-        .from("payment_history")
-        .insert({
-          pupil_id: body.pupilId,
-          instructor_id: instructorId,
-          amount: positive,
-          payment_method: "Square",
-          payment_type: "lesson_payment",
-          notes: `${body.note ? body.note + " · " : ""}Awaiting payment · ${orderRef} pending`,
-          payout_status: "pending",
-        })
-        .select("id")
-        .single();
-      if (insErr) throw insErr;
-
-      return json({
-        ok: true,
-        kind: "card",
-        paymentId: inserted?.id,
-        checkoutUrl,
-        message: "Payment link created. Share with pupil to complete.",
-      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        return json({ error: data?.error || "Failed to create Square checkout" }, resp.status);
+      }
+      return json({ ok: true, kind: "card", ...data });
     }
 
     // ---- Cash / Bank: atomic insert + balance increment ----
