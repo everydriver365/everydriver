@@ -241,8 +241,9 @@ export function AddCalendarEventDialog({
     const nextErrors: Record<string, string> = {};
     const pupilErr = validateRequired(selectedPupil, 'Pupil');
     if (pupilErr) nextErrors.selectedPupil = 'Please select a pupil';
-    const dateErr = validateNotInPast(lessonDate ?? null, { label: 'Date' });
-    if (dateErr) nextErrors.lessonDate = dateErr;
+    // Past dates are allowed for lessons — instructors often back-fill
+    // completed sessions. Only require a valid selected date.
+    if (!lessonDate) nextErrors.lessonDate = 'Date is required';
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       return;

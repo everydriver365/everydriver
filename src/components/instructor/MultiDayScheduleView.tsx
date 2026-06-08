@@ -547,9 +547,12 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     return () => clearInterval(id);
   }, []);
 
-  const startDate = useMemo(() => startOfDay(new Date()), []);
+  // Include a short lookback window so recently back-filled past lessons
+  // appear on the schedule alongside upcoming ones.
+  const LOOKBACK_DAYS = 30;
+  const startDate = useMemo(() => addDays(startOfDay(new Date()), -LOOKBACK_DAYS), []);
   const days = useMemo(
-    () => Array.from({ length: DAYS_TO_LOAD }, (_, i) => addDays(startDate, i)),
+    () => Array.from({ length: DAYS_TO_LOAD + LOOKBACK_DAYS }, (_, i) => addDays(startDate, i)),
     [startDate],
   );
 
