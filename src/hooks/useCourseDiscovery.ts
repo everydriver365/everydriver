@@ -588,8 +588,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         return !!searchedDistrict && instructor.placeholder_district === searchedDistrict;
       }
       if (!userLocation) return false;
-      const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-      const instructorLocation = geoCache[instructorPostcode];
+      const instructorLocation = resolveInstructorCoords(instructor, geoCache);
 
       if (!instructorLocation) return false;
 
