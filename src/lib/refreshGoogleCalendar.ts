@@ -15,3 +15,11 @@ interface Args {
 export async function refreshGoogleCalendar(_args: Args): Promise<void> {
   // intentional no-op
 }
+
+// Legacy alias kept for callers that imported a per-date helper.
+export async function refreshGoogleCalendarForDate(
+  _instructorId: string,
+  _dateStr: string,
+): Promise<void> {
+  // intentional no-op
+}
