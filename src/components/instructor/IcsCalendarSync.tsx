@@ -173,9 +173,6 @@ export function IcsCalendarSync({ instructorId }: Props) {
           <Button variant="outline" size="icon" onClick={() => copy(feedUrl, "Feed URL")} title="Copy">
             <Copy className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={rotateToken} title="Rotate URL">
-            <RotateCcw className="h-4 w-4" />
-          </Button>
         </div>
         <details className="text-xs text-muted-foreground">
           <summary className="cursor-pointer">How to add this in Google Calendar / Apple / Outlook</summary>
@@ -186,7 +183,22 @@ export function IcsCalendarSync({ instructorId }: Props) {
             <p>Your app polls on its own schedule (Google: a few hours; Apple: ~15 min).</p>
           </div>
         </details>
+        <details className="text-xs text-muted-foreground">
+          <summary className="cursor-pointer">Advanced</summary>
+          <div className="pt-2 space-y-2">
+            <p>
+              Only rotate your URL if it was shared with the wrong person. Your old link will stop
+              working immediately and you'll need to remove the DSM calendar from Google/Apple/Outlook
+              and paste the new URL in again.
+            </p>
+            <Button variant="outline" size="sm" onClick={rotateToken}>
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Rotate URL
+            </Button>
+          </div>
+        </details>
       </Card>
+
 
       {/* Inbound */}
       <Card className="p-4 space-y-3">
