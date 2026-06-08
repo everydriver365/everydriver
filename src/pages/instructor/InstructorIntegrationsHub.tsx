@@ -15,32 +15,16 @@ import { formatDistanceToNow } from "date-fns";
 
 const GOOGLE_STEPS = [
   {
-    title: "Open Google Calendar settings",
-    body: (
-      <>
-        Go to{" "}
-        <a className="text-primary underline" href="https://calendar.google.com/calendar/r/settings" target="_blank" rel="noreferrer">
-          calendar.google.com → Settings
-        </a>
-        , then pick the calendar you want to sync from the left sidebar.
-      </>
-    ),
+    title: "Copy your DSM calendar link",
+    body: <>In the panel below, copy the <b>private feed URL</b>. This is what publishes your lessons.</>,
   },
   {
-    title: "Share with our service email",
-    body: (
-      <>Under <b>Share with specific people</b>, add the email shown below with permission set to <b>Make changes to events</b>.</>
-    ),
+    title: "Subscribe in Google / Apple / Outlook",
+    body: <>Add a new calendar <b>from URL</b> and paste the link. New lessons appear automatically (apps refresh every few hours).</>,
   },
   {
-    title: "Copy your Calendar ID",
-    body: (
-      <>Scroll to <b>Integrate calendar</b> and copy the <b>Calendar ID</b> (usually your Gmail address). Paste it into the field below and click <b>Test Connection</b>.</>
-    ),
-  },
-  {
-    title: "Connect & sync",
-    body: <>Click <b>Connect Calendar</b>. Lessons will sync both ways automatically — use <b>Preview Sync</b> to see pending changes.</>,
+    title: "Add personal calendars back to DSM",
+    body: <>To stop bookings during personal events, paste each Google/Apple <b>secret iCal address</b> into the lower panel. DSM polls every 5 minutes.</>,
   },
 ];
 
