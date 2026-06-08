@@ -99,7 +99,16 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
   ];
 
   return (
-    <div className="pb-24" style={{ paddingTop: 4 }}>
+    <div
+      className="pb-24"
+      style={{
+        paddingTop: 4,
+        background: "#F4F7F6",
+        margin: "0 -14px",
+        padding: "8px 14px 96px",
+        minHeight: "calc(100vh - 56px)",
+      }}
+    >
       {/* Back chevron */}
       <button
         type="button"
@@ -112,13 +121,13 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
 
       {/* Page header */}
       <header
-        style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 18 }}
+        style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 22 }}
       >
         <span
           style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
+            width: 48,
+            height: 48,
+            borderRadius: 14,
             backgroundColor: "#DBEAFE",
             color: "#1E40AF",
             display: "inline-flex",
@@ -127,15 +136,16 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
             flexShrink: 0,
           }}
         >
-          <Calendar className="h-5 w-5" />
+          <Calendar className="h-6 w-6" />
         </span>
-        <div style={{ minWidth: 0 }}>
+        <div style={{ minWidth: 0, paddingTop: 2 }}>
           <h1
             style={{
-              fontSize: 20,
-              fontWeight: 600,
-              lineHeight: 1.15,
-              color: "var(--foreground, #1a1a1f)",
+              fontSize: 22,
+              fontWeight: 700,
+              lineHeight: 1.1,
+              letterSpacing: "-0.01em",
+              color: "#0F172A",
             }}
           >
             Schedule
@@ -143,8 +153,8 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
           <p
             style={{
               fontSize: 13,
-              marginTop: 2,
-              color: "hsl(var(--muted-foreground))",
+              marginTop: 3,
+              color: "#6B7280",
             }}
           >
             Working hours, bookings, calendar and reminders
@@ -162,29 +172,57 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
               <SectionLabel>{g.label}</SectionLabel>
               <Card>
                 <CardHeader
-                  icon={<Icon className="h-4 w-4" />}
+                  icon={<Icon className="h-[18px] w-[18px]" />}
                   iconBg={g.iconBg}
                   iconColor={g.iconColor}
                   title={g.title}
                   subtitle={g.subtitle}
                 />
                 {g.pointer ? (
-                  <div
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById("reminders");
+                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
                     style={{
-                      padding: "0 16px 16px",
-                      marginTop: -4,
-                      fontSize: 13,
-                      color: "hsl(var(--muted-foreground))",
+                      display: "flex",
+                      alignItems: "center",
+                      width: "100%",
+                      padding: "14px 16px",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      gap: 12,
                     }}
                   >
-                    Auto-chase, frequency and stop-after limits are configured in the
-                    <span style={{ fontWeight: 600, color: "var(--foreground, #1a1a1f)" }}>
-                      {" "}Reminders{" "}
+                    <span
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        fontSize: 14,
+                        color: "#0F172A",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Configured in Reminders
+                      <span
+                        style={{
+                          display: "block",
+                          fontSize: 12,
+                          color: "#6B7280",
+                          fontWeight: 400,
+                          marginTop: 2,
+                        }}
+                      >
+                        Auto-chase, frequency and stop-after limits
+                      </span>
                     </span>
-                    card above.
-                  </div>
+                    <ChevronRight className="h-4 w-4" style={{ color: "#9CA3AF" }} />
+                  </button>
                 ) : (
-                  <div style={{ padding: "0 16px 16px", marginTop: -4 }}>
+                  <div style={{ padding: "0 16px 16px" }} id={g.sectionId}>
                     {section.render()}
                   </div>
                 )}
@@ -202,12 +240,12 @@ function SectionLabel({ children }: { children: ReactNode }) {
     <div
       style={{
         padding: "0 4px",
-        marginBottom: 8,
+        marginBottom: 10,
         fontSize: 11,
-        letterSpacing: "0.08em",
+        letterSpacing: "0.1em",
         fontWeight: 700,
         textTransform: "uppercase",
-        color: "hsl(var(--muted-foreground))",
+        color: "#6B7280",
       }}
     >
       {children}
@@ -221,7 +259,8 @@ function Card({ children }: { children: ReactNode }) {
       style={{
         background: "#fff",
         borderRadius: 16,
-        border: "0.5px solid hsl(var(--border) / 0.7)",
+        border: "0.5px solid rgba(15,23,42,0.08)",
+        boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
         overflow: "hidden",
       }}
     >
