@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen, Search, User 
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { ScheduleMobileLayout } from "@/components/instructor/settings/mobile/ScheduleMobileLayout";
 
 const SIDEBAR_WIDTH_KEY = "instructor-settings-sidebar-width";
 const SIDEBAR_COLLAPSED_KEY = "instructor-settings-sidebar-collapsed";
