@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Copy, RefreshCw, Trash2, RotateCcw, ExternalLink, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { Copy, RefreshCw, Trash2, RotateCcw, ExternalLink, CheckCircle2, AlertCircle, Clock, ChevronDown, ChevronRight } from "lucide-react";
+
 
 interface Props {
   instructorId: string;
@@ -245,30 +246,185 @@ export function IcsCalendarSync({ instructorId }: Props) {
   );
 }
 
+interface PollRun {
+  id: string;
+  polled_at: string;
+  duration_ms: number | null;
+  http_status: number | null;
+  status: string;
+  error: string | null;
+  bytes_fetched: number | null;
+  events_parsed: number;
+  events_inserted: number;
+  events_updated: number;
+  events_deleted: number;
+  events_skipped: number;
+  inserted_uids: Array<{ uid: string; title: string | null; start: string; end: string }>;
+  skipped_uids: Array<{ uid: string; reason: string; title?: string | null }>;
+  parse_errors: Array<{ uid?: string; reason: string }>;
+}
+
 function SubRow({ sub, onRemove }: { sub: Subscription; onRemove: (id: string) => void }) {
+  const [open, setOpen] = useState(false);
   const status = sub.last_status;
   const Icon =
     status === "ok" ? CheckCircle2 : status === "error" ? AlertCircle : Clock;
   const colour =
     status === "ok" ? "text-green-600" : status === "error" ? "text-red-600" : "text-muted-foreground";
+
+  const runsQuery = useQuery({
+    queryKey: ["ics-poll-runs", sub.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("instructor_ics_poll_runs")
+        .select("*")
+        .eq("subscription_id", sub.id)
+        .order("polled_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return (data ?? []) as unknown as PollRun[];
+    },
+    enabled: open,
+  });
+
   return (
-    <div className="border rounded-xl p-3 flex items-start justify-between gap-3">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <Icon className={`h-4 w-4 shrink-0 ${colour}`} />
-          <span className="font-medium truncate">{sub.label || "Calendar"}</span>
+    <div className="border rounded-xl p-3 space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <Icon className={`h-4 w-4 shrink-0 ${colour}`} />
+            <span className="font-medium truncate">{sub.label || "Calendar"}</span>
+          </div>
+          <p className="text-xs text-muted-foreground truncate font-mono mt-1">{sub.url}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {sub.last_polled_at
+              ? `Last poll ${new Date(sub.last_polled_at).toLocaleString()} · ${sub.last_event_count ?? 0} events`
+              : "Not yet polled"}
+            {sub.last_error ? ` · ${sub.last_error}` : ""}
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground truncate font-mono mt-1">{sub.url}</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          {sub.last_polled_at
-            ? `Last poll ${new Date(sub.last_polled_at).toLocaleString()} · ${sub.last_event_count ?? 0} events`
-            : "Not yet polled"}
-          {sub.last_error ? ` · ${sub.last_error}` : ""}
-        </p>
+        <Button variant="ghost" size="icon" onClick={() => onRemove(sub.id)} title="Remove">
+          <Trash2 className="h-4 w-4 text-red-600" />
+        </Button>
       </div>
-      <Button variant="ghost" size="icon" onClick={() => onRemove(sub.id)} title="Remove">
-        <Trash2 className="h-4 w-4 text-red-600" />
-      </Button>
+
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+      >
+        {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+        Diagnostics
+      </button>
+
+      {open && (
+        <div className="space-y-2 pt-1">
+          {runsQuery.isLoading ? (
+            <p className="text-xs text-muted-foreground">Loading…</p>
+          ) : (runsQuery.data ?? []).length === 0 ? (
+            <p className="text-xs text-muted-foreground">No poll runs recorded yet.</p>
+          ) : (
+            (runsQuery.data ?? []).map((r) => <RunRow key={r.id} run={r} />)
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
+function RunRow({ run }: { run: PollRun }) {
+  const [open, setOpen] = useState(false);
+  const ok = run.status === "ok";
+  return (
+    <div className="rounded-lg border bg-muted/30 text-xs">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-2 px-2 py-1.5 text-left"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          {open ? <ChevronDown className="h-3 w-3 shrink-0" /> : <ChevronRight className="h-3 w-3 shrink-0" />}
+          <span className={ok ? "text-green-700" : "text-red-700"}>
+            {ok ? "OK" : "ERR"}
+          </span>
+          <span className="text-muted-foreground truncate">
+            {new Date(run.polled_at).toLocaleString()}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 text-muted-foreground">
+          <span>parsed {run.events_parsed}</span>
+          <span className="text-green-700">+{run.events_inserted}</span>
+          <span className="text-blue-700">~{run.events_updated}</span>
+          <span className="text-red-700">−{run.events_deleted}</span>
+          <span>skip {run.events_skipped}</span>
+        </div>
+      </button>
+
+      {open && (
+        <div className="px-3 pb-2 space-y-2 border-t pt-2">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+            <div><span className="text-muted-foreground">HTTP:</span> {run.http_status ?? "—"}</div>
+            <div><span className="text-muted-foreground">Duration:</span> {run.duration_ms ?? "—"} ms</div>
+            <div><span className="text-muted-foreground">Bytes:</span> {run.bytes_fetched ?? "—"}</div>
+            <div><span className="text-muted-foreground">Status:</span> {run.status}</div>
+          </div>
+
+          {run.error && (
+            <div className="p-2 rounded bg-red-50 text-red-700 border border-red-200">
+              <div className="font-semibold">Error</div>
+              <div className="font-mono break-all">{run.error}</div>
+            </div>
+          )}
+
+          {run.parse_errors?.length > 0 && (
+            <details>
+              <summary className="cursor-pointer text-red-700">
+                Parse errors ({run.parse_errors.length})
+              </summary>
+              <ul className="mt-1 space-y-0.5 font-mono">
+                {run.parse_errors.map((p, i) => (
+                  <li key={i}>{p.uid ? `${p.uid}: ` : ""}{p.reason}</li>
+                ))}
+              </ul>
+            </details>
+          )}
+
+          {run.inserted_uids?.length > 0 && (
+            <details>
+              <summary className="cursor-pointer">
+                Inserted / updated UIDs ({run.inserted_uids.length})
+              </summary>
+              <ul className="mt-1 space-y-0.5 max-h-48 overflow-auto">
+                {run.inserted_uids.map((e, i) => (
+                  <li key={i} className="font-mono break-all">
+                    <span className="text-foreground">{e.title || "(no title)"}</span>
+                    <span className="text-muted-foreground"> · {new Date(e.start).toLocaleString()} → {new Date(e.end).toLocaleString()}</span>
+                    <div className="text-muted-foreground">{e.uid}</div>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+
+          {run.skipped_uids?.length > 0 && (
+            <details>
+              <summary className="cursor-pointer">
+                Skipped UIDs ({run.skipped_uids.length})
+              </summary>
+              <ul className="mt-1 space-y-0.5 max-h-48 overflow-auto">
+                {run.skipped_uids.map((e, i) => (
+                  <li key={i} className="font-mono break-all">
+                    <span className="text-muted-foreground">[{e.reason}]</span>{" "}
+                    {e.title || "(no title)"}
+                    <div className="text-muted-foreground">{e.uid}</div>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+

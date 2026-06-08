@@ -8216,6 +8216,77 @@ export type Database = {
           },
         ]
       }
+      instructor_ics_poll_runs: {
+        Row: {
+          bytes_fetched: number | null
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          events_deleted: number
+          events_inserted: number
+          events_parsed: number
+          events_skipped: number
+          events_updated: number
+          http_status: number | null
+          id: string
+          inserted_uids: Json
+          instructor_id: string
+          parse_errors: Json
+          polled_at: string
+          skipped_uids: Json
+          status: string
+          subscription_id: string
+        }
+        Insert: {
+          bytes_fetched?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          events_deleted?: number
+          events_inserted?: number
+          events_parsed?: number
+          events_skipped?: number
+          events_updated?: number
+          http_status?: number | null
+          id?: string
+          inserted_uids?: Json
+          instructor_id: string
+          parse_errors?: Json
+          polled_at?: string
+          skipped_uids?: Json
+          status: string
+          subscription_id: string
+        }
+        Update: {
+          bytes_fetched?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          events_deleted?: number
+          events_inserted?: number
+          events_parsed?: number
+          events_skipped?: number
+          events_updated?: number
+          http_status?: number | null
+          id?: string
+          inserted_uids?: Json
+          instructor_id?: string
+          parse_errors?: Json
+          polled_at?: string
+          skipped_uids?: Json
+          status?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_ics_poll_runs_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_ics_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_ics_subscriptions: {
         Row: {
           created_at: string
