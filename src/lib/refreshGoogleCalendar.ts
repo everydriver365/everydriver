@@ -16,10 +16,10 @@ export async function refreshGoogleCalendar(_args: Args): Promise<void> {
   // intentional no-op
 }
 
-// Legacy alias kept for callers that imported a per-date helper.
+// Legacy alias kept for callers that imported a per-date helper. Accepts any
+// arg shape and returns a result object compatible with the previous API.
 export async function refreshGoogleCalendarForDate(
-  _instructorId: string,
-  _dateStr: string,
-): Promise<void> {
-  // intentional no-op
+  ..._args: unknown[]
+): Promise<{ ok: true }> {
+  return { ok: true };
 }
