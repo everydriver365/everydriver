@@ -559,9 +559,9 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
   const fetchData = useCallback(async () => {
     setLoading(true);
     const from = format(startDate, "yyyy-MM-dd");
-    const to = format(addDays(startDate, DAYS_TO_LOAD - 1), "yyyy-MM-dd");
+    const to = format(addDays(startDate, DAYS_TO_LOAD + LOOKBACK_DAYS - 1), "yyyy-MM-dd");
     const fromISO = startOfDay(startDate).toISOString();
-    const toISO = endOfDay(addDays(startDate, DAYS_TO_LOAD - 1)).toISOString();
+    const toISO = endOfDay(addDays(startDate, DAYS_TO_LOAD + LOOKBACK_DAYS - 1)).toISOString();
 
     try {
       const [lessonsRes, externalRes, blocksRes, historyRes] = await Promise.all([
