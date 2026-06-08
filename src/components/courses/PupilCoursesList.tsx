@@ -100,7 +100,7 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
       const instructorMap = new Map<string, string>(
         (instructorRows || []).map((i) => [i.id, i.name])
       );
-      const lessonStats = new Map<string, { count: number; next: string | null }>();
+      const lessonStats = new Map<string, { count: number; completed: number; next: string | null }>();
       const today = londonTodayStr();
       const nowLondon = toLondonParts(new Date());
       const nowMinutes = nowLondon.hour * 60 + nowLondon.minute;
@@ -109,15 +109,19 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
         if (
           inactiveLessonStatuses.has(status) ||
           l.cancelled_at ||
-          l.marked_no_show_at ||
-          !isUpcomingLesson(l.lesson_date, l.start_time, today, nowMinutes)
+          l.marked_no_show_at
         ) {
           return;
         }
-        const cur = lessonStats.get(l.pupil_id) || { count: 0, next: null };
-        cur.count += 1;
-        if (!cur.next || l.lesson_date < cur.next) {
-          cur.next = l.lesson_date;
+        const cur = lessonStats.get(l.pupil_id) || { count: 0, completed: 0, next: null };
+        if (isUpcomingLesson(l.lesson_date, l.start_time, today, nowMinutes)) {
+          cur.count += 1;
+          if (!cur.next || l.lesson_date < cur.next) {
+            cur.next = l.lesson_date;
+          }
+        }
+        if (status === "completed") {
+          cur.completed += 1;
         }
         lessonStats.set(l.pupil_id, cur);
       });
