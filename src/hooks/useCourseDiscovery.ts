@@ -428,10 +428,39 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         setSelectedDate(firstAvailable.date);
       }
 
+      // Only postcodes for instructors that don't already carry coords on
+      // their row need the bulk geocode round-trip.
       const allPostcodes = loadedInstructors
         .filter((i) => !i.is_network_placeholder)
+        .filter((i) => typeof i.lat !== "number" || typeof i.lng !== "number")
         .map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
-      await geocodePostcodes(allPostcodes);
+      const bulkResult = await geocodePostcodes(allPostcodes);
+
+      // Final safety net: any instructor still missing both row coords and a
+      // bulk-cache hit gets a per-postcode live lookup against postcodes.io
+      // so they're never silently excluded from the radius filter.
+      const stillMissing = loadedInstructors.filter((i) => {
+        if (i.is_network_placeholder) return false;
+        if (typeof i.lat === "number" && typeof i.lng === "number") return false;
+        const key = i.home_postcode.replace(/\s+/g, "").toUpperCase();
+        return !bulkResult.geoCache[key];
+      });
+      if (stillMissing.length > 0) {
+        const liveResults = await Promise.all(
+          stillMissing.map(async (i) => {
+            const key = i.home_postcode.replace(/\s+/g, "").toUpperCase();
+            const coords = await liveGeocodePostcode(key);
+            return [key, coords] as const;
+          }),
+        );
+        setGeoCache((prev) => {
+          const next = { ...prev };
+          for (const [key, coords] of liveResults) {
+            if (coords) next[key] = coords;
+          }
+          return next;
+        });
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({
