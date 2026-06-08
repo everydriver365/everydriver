@@ -20,6 +20,6 @@ export async function refreshGoogleCalendar(_args: Args): Promise<void> {
 // arg shape and returns a result object compatible with the previous API.
 export async function refreshGoogleCalendarForDate(
   ..._args: unknown[]
-): Promise<{ ok: true }> {
+): Promise<{ ok: boolean }> {
   return { ok: true };
 }
