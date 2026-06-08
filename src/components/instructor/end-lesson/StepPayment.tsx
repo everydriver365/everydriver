@@ -93,6 +93,23 @@ export function StepPayment({
   const [focused, setFocused] = useState(false);
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState("");
+  const [hasPrepaidHours, setHasPrepaidHours] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("pupils")
+        .select("intensive_hours_paid, prepaid_hours")
+        .eq("id", pupilId)
+        .single();
+      if (cancelled) return;
+      const intensive = Number(data?.intensive_hours_paid ?? 0);
+      const prepaid = Number(data?.prepaid_hours ?? 0);
+      setHasPrepaidHours(intensive > 0 || prepaid > 0);
+    })();
+    return () => { cancelled = true; };
+  }, [pupilId]);
 
   const { invalidatePaymentQueries } = usePaymentInvalidation();
   const paymentLimit = usePaymentLimit();
@@ -516,7 +533,7 @@ export function StepPayment({
             >
               {[
                 { kind: "no_payment_due" as const, label: "No payment due", sub: "Comp this lesson", Icon: Gift },
-                { kind: "included_in_package" as const, label: "Included in package", sub: "Already paid up front", Icon: Package },
+                ...(hasPrepaidHours ? [] : [{ kind: "included_in_package" as const, label: "Included in package", sub: "Already paid up front", Icon: Package }]),
               ].map((opt, i) => {
                 const Icon = opt.Icon;
                 return (
