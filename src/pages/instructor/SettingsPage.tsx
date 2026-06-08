@@ -25,9 +25,10 @@ export default function SettingsPage() {
   }, [categoryId, isMobile, navigate]);
 
   if (isMobile) {
+    const isSchedule = categoryId === "schedule";
     return (
       <InstructorPortalLayout>
-        <div className="max-w-5xl mx-auto px-4 pt-4">
+        <div className={isSchedule ? "w-full" : "max-w-5xl mx-auto px-4 pt-4"}>
           <SettingsLayout categories={categories} search="" onSearchChange={() => {}} />
         </div>
       </InstructorPortalLayout>
