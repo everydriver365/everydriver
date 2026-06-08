@@ -246,10 +246,9 @@ export function EndLessonWizard({
           0,
           Number((fresh as any)?.prepaid_hours ?? 0),
         );
-        const isNationalIntensive = Boolean((fresh as any)?.enquiry_id);
         const perHourRate = lessonHours > 0 ? lessonCost / lessonHours : 0;
 
-        if (isNationalIntensive && lessonHours > 0 && intensiveAvailable > 0) {
+        if (lessonHours > 0 && intensiveAvailable > 0) {
           // Use up whatever hours remain; charge the shortfall to money.
           const hoursUsed = Math.min(intensiveAvailable, lessonHours);
           const remainingHours = Math.round((intensiveAvailable - hoursUsed) * 100) / 100;
