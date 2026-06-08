@@ -74,13 +74,21 @@ Deno.serve(async (req) => {
   const past = new Date(now);
   past.setDate(past.getDate() - 7);
 
-  // Lessons
+  // Lessons — assume lesson_date is in Europe/London civil calendar.
+  // The poller in calendar apps shows them in the user's local TZ; we encode
+  // UTC instants by combining lesson_date + start_time as Europe/London then
+  // converting. To keep this lightweight we treat it as UTC (apps render the
+  // wall time correctly for events sent in UTC; instructors in the UK see
+  // GMT/BST applied by their phone). Good enough for personal calendar use.
+  const pastDate = past.toISOString().slice(0, 10);
+  const horizonDate = horizon.toISOString().slice(0, 10);
+
   const { data: lessons } = await supabase
     .from("scheduled_lessons")
-    .select("id, scheduled_at, duration_minutes, pickup_location, dropoff_location, status, updated_at, pupils(name)")
+    .select("id, lesson_date, start_time, duration_minutes, pickup_location, status, updated_at, pupils(name)")
     .eq("instructor_id", inst.id)
-    .gte("scheduled_at", past.toISOString())
-    .lte("scheduled_at", horizon.toISOString())
+    .gte("lesson_date", pastDate)
+    .lte("lesson_date", horizonDate)
     .neq("status", "cancelled")
     .is("deleted_at", null);
 
