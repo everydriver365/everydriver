@@ -547,18 +547,21 @@ export function MultiDayScheduleView({ instructorId }: MultiDayScheduleViewProps
     return () => clearInterval(id);
   }, []);
 
-  const startDate = useMemo(() => startOfDay(new Date()), []);
+  // Include a short lookback window so recently back-filled past lessons
+  // appear on the schedule alongside upcoming ones.
+  const LOOKBACK_DAYS = 30;
+  const startDate = useMemo(() => addDays(startOfDay(new Date()), -LOOKBACK_DAYS), []);
   const days = useMemo(
-    () => Array.from({ length: DAYS_TO_LOAD }, (_, i) => addDays(startDate, i)),
+    () => Array.from({ length: DAYS_TO_LOAD + LOOKBACK_DAYS }, (_, i) => addDays(startDate, i)),
     [startDate],
   );
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     const from = format(startDate, "yyyy-MM-dd");
-    const to = format(addDays(startDate, DAYS_TO_LOAD - 1), "yyyy-MM-dd");
+    const to = format(addDays(startDate, DAYS_TO_LOAD + LOOKBACK_DAYS - 1), "yyyy-MM-dd");
     const fromISO = startOfDay(startDate).toISOString();
-    const toISO = endOfDay(addDays(startDate, DAYS_TO_LOAD - 1)).toISOString();
+    const toISO = endOfDay(addDays(startDate, DAYS_TO_LOAD + LOOKBACK_DAYS - 1)).toISOString();
 
     try {
       const [lessonsRes, externalRes, blocksRes, historyRes] = await Promise.all([
