@@ -101,7 +101,7 @@ serve(async (req) => {
 
     const { data: row, error: rowErr } = await supabase
       .from("square_invoices")
-      .select("id, status, paid_at, klarna_status")
+      .select("id, status, paid_at, klarna_status, pupil_id, instructor_id, amount_due")
       .eq("klarna_order_id", orderId)
       .maybeSingle();
 
@@ -145,6 +145,38 @@ serve(async (req) => {
       .from("square_invoices")
       .update(update)
       .eq("id", row.id);
+
+    if (updErr) {
+      console.error("[klarna-invoice-webhook] update error", updErr);
+      await recordError(orderId, `DB update failed: ${updErr.message}`);
+      return new Response(JSON.stringify({ error: "update failed" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (buyerPaid && !row.paid_at && row.status !== "paid") {
+      const { error: phErr } = await supabase
+        .from("payment_history")
+        .insert({
+          pupil_id: row.pupil_id,
+          instructor_id: row.instructor_id,
+          amount: row.amount_due,
+          payment_method: "Klarna",
+          payment_type: "lesson_payment",
+          payout_status: "pending",
+          notes: `Klarna payment — order ${orderId}`,
+        });
+
+      if (phErr) {
+        console.error("[klarna-invoice-webhook] payment_history insert error", phErr);
+        await recordError(orderId, `Payment history insert failed: ${phErr.message}`);
+        return new Response(JSON.stringify({ error: "payment_history insert failed" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     if (updErr) {
       console.error("[klarna-invoice-webhook] update error", updErr);
