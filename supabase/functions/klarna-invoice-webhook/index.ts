@@ -179,14 +179,6 @@ serve(async (req) => {
       }
     }
 
-    if (updErr) {
-      console.error("[klarna-invoice-webhook] update error", updErr);
-      await recordError(orderId, `DB update failed: ${updErr.message}`);
-      return new Response(JSON.stringify({ error: "update failed" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     return new Response(JSON.stringify({ ok: true, klarna_status: klarnaStatus }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
