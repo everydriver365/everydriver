@@ -92,6 +92,11 @@ export interface AddPupilFormState {
   intensive_hours_paid?: string;
   intensive_course_payout?: string;
   intensive_pupil_payment?: string;
+  // Block booking (recorded as a payment + adds prepaid hours after insert).
+  block_amount?: string;
+  block_hours?: string;
+  block_method?: string;
+  block_notes?: string;
 }
 
 export const PUPIL_SOURCE_OPTIONS: { value: string; label: string }[] = [
