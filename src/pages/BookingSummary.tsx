@@ -2026,7 +2026,7 @@ export default function BookingSummary() {
           cashPaymentsEnabled={cashPaymentsEnabled}
           squareAvailable={gatewayHealth.square.available}
           clearpayAvailable={gatewayHealth.clearpay.available}
-          isElavonLoading={isElavonLoading}
+          
           isKlarnaLoading={isKlarnaLoading}
           isClearpayLoading={isClearpayLoading}
           isInstantBankPayLoading={isInstantBankPayLoading}

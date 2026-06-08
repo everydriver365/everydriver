@@ -46,7 +46,6 @@ interface Props {
   squareAvailable: boolean;
   clearpayAvailable: boolean;
   // loading
-  isElavonLoading: boolean;
   isKlarnaLoading: boolean;
   isClearpayLoading: boolean;
   isInstantBankPayLoading: boolean;
@@ -84,7 +83,6 @@ export function CoursePaymentBlock({
   cashPaymentsEnabled,
   squareAvailable,
   clearpayAvailable,
-  isElavonLoading,
   isKlarnaLoading,
   isClearpayLoading,
   isInstantBankPayLoading,
@@ -163,7 +161,6 @@ export function CoursePaymentBlock({
   ];
 
   const isLoadingFor = (id: PaymentMethodId) =>
-    (id === "card" && isElavonLoading) ||
     (id === "klarna" && isKlarnaLoading) ||
     (id === "clearpay" && isClearpayLoading) ||
     (id === "bank" && isInstantBankPayLoading) ||
