@@ -494,13 +494,36 @@ export default function InstructorPupils() {
 
       console.log("Pupil added successfully:", data);
       const createdPupil = data?.[0];
-      
+
+      // Record optional block booking against the new pupil.
+      const blockAmount = parseFloat(String(addForm.block_amount || ""));
+      const blockHours = parseFloat(String(addForm.block_hours || ""));
+      if (
+        createdPupil?.id &&
+        Number.isFinite(blockAmount) && blockAmount > 0 &&
+        Number.isFinite(blockHours) && blockHours > 0
+      ) {
+        try {
+          await recordBlockBooking({
+            pupilId: createdPupil.id,
+            instructorId,
+            amount: blockAmount,
+            hours: blockHours,
+            method: addForm.block_method || "Cash",
+            notes: addForm.block_notes,
+          });
+        } catch (err: any) {
+          console.error("Block booking error:", err);
+          toast.error(err?.message || "Pupil added, but block booking failed");
+        }
+      }
+
       // If payment method requires action, show post-add options
       if (addForm.payment_method === 'send_link' || addForm.payment_method === 'take_payment') {
         setNewPupilId(createdPupil?.id || null);
         setShowPostAddPayment(true);
       }
-      
+
       toast.success("Pupil added successfully");
       invalidateInstructorDashboard(queryClient, instructorId);
       setIsAddOpen(false);
