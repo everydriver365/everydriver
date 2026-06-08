@@ -55,13 +55,16 @@ type Lesson = {
   duration_minutes: number; status: string | null;
   payment_status: string | null; payment_method: string | null;
   amount_due: number | null; price_per_hour: number | null;
-  pickup_location: string | null;
+  pickup_location: string | null; notes: string | null;
 };
 
 type Payment = {
   id: string; amount: number; payment_method: string | null;
   recorded_at: string; notes: string | null; payment_type: string | null;
 };
+
+type LessonEditableField = keyof Pick<Lesson, "lesson_date" | "start_time" | "duration_minutes" | "status" | "payment_status" | "payment_method" | "amount_due" | "price_per_hour" | "pickup_location" | "notes">;
+type PaymentEditableField = keyof Pick<Payment, "amount" | "payment_method" | "recorded_at" | "notes" | "payment_type">;
 
 type Instructor = {
   id: string; name: string; email: string | null; phone: string | null;
@@ -81,6 +84,13 @@ const fmtDate = (d: string | null) =>
 const fmtTime = (t: string | null) => (t ? t.slice(0, 5) : "—");
 const fmtDateTime = (d: string) =>
   new Date(d).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+const dateTimeInputValue = (d: string | null) => (d ? new Date(d).toISOString().slice(0, 16) : "");
+const numericValue = (value: string, fieldLabel: string) => {
+  if (!value.trim()) return null;
+  const n = Number(value);
+  if (!Number.isFinite(n)) throw new Error(`Enter a valid ${fieldLabel}`);
+  return n;
+};
 
 function StatusBadge({ status }: { status: string | null }) {
   const s = (status || "").toLowerCase();
@@ -130,8 +140,18 @@ function describeActivity(row: ActivityRow): string {
       return `Sent reminder to pupil`;
     case "lesson_added":
       return `Added lesson on ${d.date ?? ""}`;
+    case "lesson_edited":
+      return `Updated lesson ${String(d.field ?? "field")}${d.from !== undefined ? ` (was "${d.from ?? "—"}")` : ""}`;
     case "lesson_cancelled":
       return `Cancelled lesson on ${d.date ?? ""}`;
+    case "payment_edited":
+      return `Updated payment ${String(d.field ?? "field")}${d.from !== undefined ? ` (was "${d.from ?? "—"}")` : ""}`;
+    case "course_deleted":
+      return "Deleted course";
+    case "lesson_deleted":
+      return `Deleted lesson on ${d.date ?? ""}`;
+    case "payment_deleted":
+      return `Deleted payment of ${fmt(Math.abs(Number(d.amount || 0)))}`;
     default:
       return row.action;
   }
@@ -182,7 +202,7 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
         .select("id,name,email,phone,profile_image_url,hourly_rate,school_skim_percentage")
         .eq("id", pupilRow.instructor_id).maybeSingle(),
       supabase.from("scheduled_lessons")
-        .select("id,lesson_date,start_time,duration_minutes,status,payment_status,payment_method,amount_due,price_per_hour,pickup_location,cancelled_at,marked_no_show_at")
+        .select("id,lesson_date,start_time,duration_minutes,status,payment_status,payment_method,amount_due,price_per_hour,pickup_location,notes,cancelled_at,marked_no_show_at")
         .eq("pupil_id", pupilId).is("deleted_at", null)
         .is("cancelled_at", null).is("marked_no_show_at", null)
         .not("status", "in", "(cancelled,no_show,no-show)")
@@ -247,6 +267,52 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
       details: { field, from: oldValue, to: newValue },
     });
     toast({ title: "Saved", description: `Updated ${field.replace(/_/g, " ")}` });
+    load();
+  }, [pupil, toast, load]);
+
+  const updateLessonField = useCallback(async (lesson: Lesson, field: LessonEditableField, newValue: string | number | null) => {
+    if (!pupil) return;
+    const oldValue = lesson[field];
+    const { error } = await supabase.from("scheduled_lessons").update({ [field]: newValue } as never).eq("id", lesson.id);
+    if (error) {
+      toast({ title: "Lesson update failed", description: error.message, variant: "destructive" });
+      throw error;
+    }
+    await logCourseActivity({
+      pupilId: pupil.id,
+      instructorId: pupil.instructor_id,
+      action: "lesson_edited",
+      details: { lesson_id: lesson.id, field, from: oldValue, to: newValue },
+    });
+    toast({ title: "Lesson saved" });
+    load();
+  }, [pupil, toast, load]);
+
+  const updatePaymentField = useCallback(async (payment: Payment, field: PaymentEditableField, newValue: string | number | null) => {
+    if (!pupil) return;
+    const oldValue = payment[field];
+    const { error } = await supabase.from("payment_history").update({ [field]: newValue } as never).eq("id", payment.id);
+    if (error) {
+      toast({ title: "Payment update failed", description: error.message, variant: "destructive" });
+      throw error;
+    }
+    if (field === "amount") {
+      const delta = Math.round((Number(newValue || 0) - Number(payment.amount || 0)) * 100) / 100;
+      if (delta !== 0) {
+        const { error: balErr } = await supabase.rpc("increment_pupil_balance", { p_pupil_id: pupil.id, p_amount: delta });
+        if (balErr) {
+          toast({ title: "Balance update failed", description: balErr.message, variant: "destructive" });
+          throw balErr;
+        }
+      }
+    }
+    await logCourseActivity({
+      pupilId: pupil.id,
+      instructorId: pupil.instructor_id,
+      action: "payment_edited",
+      details: { payment_id: payment.id, field, from: oldValue, to: newValue },
+    });
+    toast({ title: "Payment saved" });
     load();
   }, [pupil, toast, load]);
 
@@ -441,6 +507,13 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", payment.id);
       if (error) throw error;
+      if (Number(payment.amount || 0) !== 0) {
+        const { error: balErr } = await supabase.rpc("increment_pupil_balance", {
+          p_pupil_id: pupil.id,
+          p_amount: -Number(payment.amount),
+        });
+        if (balErr) throw balErr;
+      }
       await logCourseActivity({
         pupilId: pupil.id,
         instructorId: pupil.instructor_id,
@@ -578,15 +651,15 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <EditRow label="Course type" value={pupil.course_type ?? ""} placeholder={pupil.intensive_hours_paid && pupil.intensive_hours_paid > 0 ? "Intensive" : "—"} onSave={(v) => updatePupilField("course_type", v || null)} />
               <EditRow label="Transmission" value={pupil.transmission_type ?? ""} onSave={(v) => updatePupilField("transmission_type", v || null)} />
               <EditRow label="Course status" value={pupil.course_status ?? ""} onSave={(v) => updatePupilField("course_status", v || null)} />
-              <EditRow label="Hourly rate" value={pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : ""} placeholder={instructor?.hourly_rate ? String(instructor.hourly_rate) : "—"} onSave={(v) => updatePupilField("custom_hourly_rate", v ? String(Number(v)) : null)} />
+              <EditRow label="Hourly rate" type="number" value={pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : ""} placeholder={instructor?.hourly_rate ? String(instructor.hourly_rate) : "—"} onSave={(v) => updatePupilField("custom_hourly_rate", numericValue(v, "hourly rate"))} />
               <EditRow label="Test date" type="date" value={pupil.test_date ?? ""} onSave={(v) => updatePupilField("test_date", v || null)} />
               <EditRow label="Test time" value={pupil.test_time ?? ""} placeholder="HH:MM" onSave={(v) => updatePupilField("test_time", v || null)} />
               <EditRow label="Theory passed" value={pupil.theory_test_passed ? "yes" : ""} placeholder="yes / no" onSave={(v) => updatePupilField("theory_test_passed", v.toLowerCase() === "yes" || v.toLowerCase() === "true")} />
               <EditRow label="Theory date" type="date" value={pupil.theory_test_date ?? ""} onSave={(v) => updatePupilField("theory_test_date", v || null)} />
-              <EditRow label="Prepaid hours" value={String(pupil.prepaid_hours ?? 0)} onSave={(v) => updatePupilField("prepaid_hours", v ? String(Number(v)) : null)} />
-              <EditRow label="Intensive hours" value={pupil.intensive_hours_paid != null ? String(pupil.intensive_hours_paid) : ""} placeholder="0" onSave={(v) => updatePupilField("intensive_hours_paid", v ? String(Number(v)) : null)} />
+              <EditRow label="Prepaid hours" type="number" value={String(pupil.prepaid_hours ?? 0)} onSave={(v) => updatePupilField("prepaid_hours", numericValue(v, "prepaid hours"))} />
+              <EditRow label="Intensive hours" type="number" value={pupil.intensive_hours_paid != null ? String(pupil.intensive_hours_paid) : ""} placeholder="0" onSave={(v) => updatePupilField("intensive_hours_paid", numericValue(v, "intensive hours"))} />
               <EditRow label="Experience" value={pupil.previous_experience ?? ""} placeholder="Beginner / refresher…" onSave={(v) => updatePupilField("previous_experience", v || null)} />
-              <EditRow label="Preferred slot (min)" value={pupil.preferred_duration_minutes ? String(pupil.preferred_duration_minutes) : ""} placeholder="60" onSave={(v) => updatePupilField("preferred_duration_minutes", v ? String(Number(v)) : null)} />
+              <EditRow label="Preferred slot (min)" type="number" value={pupil.preferred_duration_minutes ? String(pupil.preferred_duration_minutes) : ""} placeholder="60" onSave={(v) => updatePupilField("preferred_duration_minutes", numericValue(v, "preferred slot"))} />
               <EditRow label="Special needs" value={pupil.special_needs ?? ""} placeholder="—" onSave={(v) => updatePupilField("special_needs", v || null)} />
               <EditRow label="Medical notes" value={pupil.medical_notes ?? ""} placeholder="—" onSave={(v) => updatePupilField("medical_notes", v || null)} />
             </CardContent>
@@ -644,25 +717,35 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <div className="divide-y max-h-[420px] overflow-y-auto -mx-2">
                 {lessons.length === 0 && <div className="text-sm text-muted-foreground px-2 py-3">No lessons scheduled yet.</div>}
                 {lessons.map((l) => (
-                  <div key={l.id} className="px-2 py-2 flex items-center gap-2">
-                    <AttendanceIcon status={l.status} />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold">{fmtDate(l.lesson_date)} · {fmtTime(l.start_time)}</div>
-                      <div className="text-[10px] text-muted-foreground truncate">
-                        {l.duration_minutes} min{l.pickup_location ? ` · ${l.pickup_location}` : ""}
+                  <div key={l.id} className="px-2 py-3 space-y-2">
+                    <div className="flex items-start gap-2">
+                      <AttendanceIcon status={l.status} />
+                      <div className="flex-1 min-w-0 grid grid-cols-2 gap-x-3 gap-y-1">
+                        <EditRow label="Date" type="date" value={l.lesson_date} onSave={(v) => updateLessonField(l, "lesson_date", v)} />
+                        <EditRow label="Time" type="time" value={fmtTime(l.start_time) === "—" ? "" : fmtTime(l.start_time)} onSave={(v) => updateLessonField(l, "start_time", v)} />
+                        <EditRow label="Minutes" type="number" value={String(l.duration_minutes)} onSave={(v) => updateLessonField(l, "duration_minutes", numericValue(v, "duration"))} />
+                        <EditRow label="Status" value={l.status ?? ""} placeholder="scheduled" onSave={(v) => updateLessonField(l, "status", v || null)} />
+                        <EditRow label="Payment" value={l.payment_status ?? ""} placeholder="unpaid" onSave={(v) => updateLessonField(l, "payment_status", v || null)} />
+                        <EditRow label="Method" value={l.payment_method ?? ""} placeholder="tbc" onSave={(v) => updateLessonField(l, "payment_method", v || null)} />
+                        <EditRow label="Due" type="number" value={l.amount_due != null ? String(l.amount_due) : ""} placeholder="—" onSave={(v) => updateLessonField(l, "amount_due", numericValue(v, "amount due"))} />
+                        <EditRow label="Rate" type="number" value={l.price_per_hour != null ? String(l.price_per_hour) : ""} placeholder="—" onSave={(v) => updateLessonField(l, "price_per_hour", numericValue(v, "rate"))} />
                       </div>
                     </div>
-                    <PaymentMethodPill method={l.payment_method} />
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={working === `delete-lesson-${l.id}`}
-                      onClick={() => handleDeleteLesson(l)}
-                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                      title="Soft-delete lesson"
-                    >
-                      {working === `delete-lesson-${l.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
-                    </Button>
+                    <EditRow label="Pickup" value={l.pickup_location ?? ""} placeholder="Add pickup" onSave={(v) => updateLessonField(l, "pickup_location", v || null)} />
+                    <EditRow label="Notes" value={l.notes ?? ""} placeholder="Add notes" onSave={(v) => updateLessonField(l, "notes", v || null)} />
+                    <div className="flex justify-end gap-2">
+                      <PaymentMethodPill method={l.payment_method} />
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={working === `delete-lesson-${l.id}`}
+                        onClick={() => handleDeleteLesson(l)}
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                        title="Soft-delete lesson"
+                      >
+                        {working === `delete-lesson-${l.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -748,11 +831,15 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
                     const isRefund = (p.amount || 0) < 0;
                     const canRefund = !isRefund && Number(p.amount) > 0;
                     return (
-                      <div key={p.id} className="py-2 flex items-center gap-3">
-                        <div className="text-[11px] text-muted-foreground" style={{ minWidth: 70 }}>{fmtDate(p.recorded_at)}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium truncate">{isRefund ? "↩ Refund" : p.payment_type || p.notes || "Payment"}</div>
-                          {p.notes && !isRefund && <div className="text-[10px] text-muted-foreground truncate">{p.notes}</div>}
+                      <div key={p.id} className="py-3 flex items-start gap-3">
+                        <div className="flex-1 min-w-0 grid grid-cols-2 gap-x-3 gap-y-1">
+                          <EditRow label="Date" type="datetime-local" value={dateTimeInputValue(p.recorded_at)} onSave={(v) => updatePaymentField(p, "recorded_at", v ? new Date(v).toISOString() : null)} />
+                          <EditRow label="Amount" type="number" value={String(Math.abs(Number(p.amount || 0)))} onSave={(v) => updatePaymentField(p, "amount", (isRefund ? -1 : 1) * Number(numericValue(v, "amount") ?? 0))} />
+                          <EditRow label="Type" value={p.payment_type ?? ""} placeholder={isRefund ? "refund" : "lesson_payment"} onSave={(v) => updatePaymentField(p, "payment_type", v || null)} />
+                          <EditRow label="Method" value={p.payment_method ?? ""} placeholder="cash" onSave={(v) => updatePaymentField(p, "payment_method", v || null)} />
+                          <div className="col-span-2">
+                            <EditRow label="Notes" value={p.notes ?? ""} placeholder="Add note" onSave={(v) => updatePaymentField(p, "notes", v || null)} />
+                          </div>
                         </div>
                         <PaymentMethodPill method={p.payment_method} />
                         <div className="text-xs font-bold tabular-nums" style={{ color: isRefund ? "#C0271F" : "#059669", minWidth: 70, textAlign: "right" }}>
@@ -863,7 +950,7 @@ function EditRow({
 }: {
   label: string; value: string;
   onSave: (v: string) => Promise<void> | void;
-  type?: "text" | "date" | "address";
+  type?: "text" | "date" | "time" | "number" | "datetime-local" | "address";
   placeholder?: string;
 }) {
   const stacked = type === "address";

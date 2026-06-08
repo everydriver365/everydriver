@@ -9,7 +9,7 @@ interface InlineEditFieldProps {
   value: string;
   onSave: (newValue: string) => Promise<void> | void;
   placeholder?: string;
-  type?: "text" | "email" | "tel" | "date" | "textarea" | "address";
+  type?: "text" | "email" | "tel" | "date" | "time" | "number" | "datetime-local" | "textarea" | "address";
   className?: string;
   textClassName?: string;
   icon?: React.ReactNode;
