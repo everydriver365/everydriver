@@ -17512,6 +17512,7 @@ export type Database = {
           source: string
           start_time: string
           status: string
+          stuck_payment_alerted_at: string | null
           surcharge_amount: number
           test_centre_id: string | null
           trip_auto_linked_at: string | null
@@ -17575,6 +17576,7 @@ export type Database = {
           source?: string
           start_time: string
           status?: string
+          stuck_payment_alerted_at?: string | null
           surcharge_amount?: number
           test_centre_id?: string | null
           trip_auto_linked_at?: string | null
@@ -17638,6 +17640,7 @@ export type Database = {
           source?: string
           start_time?: string
           status?: string
+          stuck_payment_alerted_at?: string | null
           surcharge_amount?: number
           test_centre_id?: string | null
           trip_auto_linked_at?: string | null
