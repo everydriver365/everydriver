@@ -565,6 +565,10 @@ export default function InstructorPupils() {
         intensive_hours_paid: "",
         intensive_course_payout: "",
         intensive_pupil_payment: "",
+        block_amount: "",
+        block_hours: "",
+        block_method: "Cash",
+        block_notes: "",
       });
       fetchPupils();
     } catch (error: any) {
