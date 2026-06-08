@@ -26,6 +26,26 @@ function toIcsUtc(d: Date): string {
   );
 }
 
+/** ICS "floating" local time — interpreted in the viewer's local TZ.
+ *  DSM is UK-only, so this renders correctly in BST/GMT automatically. */
+function toIcsFloating(date: string, time: string, addMinutes: number = 0): string {
+  const [y, m, d] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  // Add duration in minutes to wall clock.
+  const totalMin = hh * 60 + mm + addMinutes;
+  // Use a UTC Date purely as arithmetic helper — extract wall-clock fields.
+  const dt = new Date(Date.UTC(y, m - 1, d, 0, 0, 0) + totalMin * 60_000);
+  return (
+    dt.getUTCFullYear().toString() +
+    pad(dt.getUTCMonth() + 1) +
+    pad(dt.getUTCDate()) +
+    "T" +
+    pad(dt.getUTCHours()) +
+    pad(dt.getUTCMinutes()) +
+    "00"
+  );
+}
+
 function escIcs(s: string | null | undefined): string {
   if (!s) return "";
   return String(s)
