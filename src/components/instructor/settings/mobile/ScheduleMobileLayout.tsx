@@ -222,7 +222,7 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
                     <ChevronRight className="h-4 w-4" style={{ color: "#9CA3AF" }} />
                   </button>
                 ) : (
-                  <div style={{ padding: "0 16px 16px" }} id={g.sectionId}>
+                  <div style={{ padding: "14px 16px 16px" }} id={g.sectionId}>
                     {section.render()}
                   </div>
                 )}
