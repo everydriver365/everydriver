@@ -237,6 +237,33 @@ export default function BookingConfirmation() {
     }
   }, [paymentSuccessful, loading, pupil]);
 
+  useEffect(() => {
+    if (!clearpaySuccess) return;
+    const token = searchParams.get("orderToken") || searchParams.get("token");
+    const merchantReference = searchParams.get("orderReference") || searchParams.get("merchantReference");
+    const instructorIdParam = searchParams.get("instructorId");
+    const pupilIdParam = searchParams.get("pupilId") || pupilId;
+    const amount = parseFloat(searchParams.get("amount") || "0");
+
+    if (!token) {
+      console.error("Clearpay: no token in return URL — cannot capture");
+      return;
+    }
+
+    supabase.functions.invoke("clearpay-capture", {
+      body: {
+        token,
+        merchantReference: merchantReference || undefined,
+        instructorId: instructorIdParam || undefined,
+        pupilId: pupilIdParam || undefined,
+        amount: amount > 0 ? amount : undefined,
+      },
+    }).then(({ error }) => {
+      if (error) console.error("Clearpay capture failed:", error);
+      else console.log("Clearpay captured successfully");
+    });
+  }, [clearpaySuccess]);
+
   if (loading) {
     return (
       <MainLayout>
