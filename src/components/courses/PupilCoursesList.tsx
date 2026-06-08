@@ -23,6 +23,7 @@ type Row = {
   course_type: string | null;
   course_status: string | null;
   lesson_count: number;
+  completed_lesson_count: number;
   next_lesson_date: string | null;
   account_balance: number | null;
 };
