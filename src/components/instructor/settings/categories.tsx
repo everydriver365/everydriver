@@ -36,7 +36,7 @@ import { LessonPackageManager } from "@/components/instructor/LessonPackageManag
 import { IntakeQuestionsSettings } from "@/components/instructor/IntakeQuestionsSettings";
 import { PricingRulesSettings } from "@/components/instructor/PricingRulesSettings";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
-import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
+import { IcsCalendarSync } from "@/components/instructor/IcsCalendarSync";
 import { ReminderSettings } from "@/components/instructor/ReminderSettings";
 import { PupilBookingSettingsEditor } from "@/components/instructor/PupilBookingSettingsEditor";
 import { LessonLengthBufferEditor } from "@/components/instructor/settings/LessonLengthBufferEditor";
@@ -288,7 +288,7 @@ export function useSettingsCategories(): SettingsCategory[] {
           id: "calendar",
           title: "Google Calendar sync",
           description: "Two-way sync between lessons and your calendar",
-          render: () => <GoogleServiceAccountSetup instructorId={id} />,
+          render: () => <IcsCalendarSync instructorId={id} />,
         },
         {
           id: "reminders",

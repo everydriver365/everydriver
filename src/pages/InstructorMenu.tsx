@@ -49,7 +49,7 @@ import { PushNotificationSettings } from "@/components/instructor/PushNotificati
 import NotificationPreferencesPanel from "@/components/instructor/notifications/NotificationPreferencesPanel";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { PupilBookingSettingsEditor } from "@/components/instructor/PupilBookingSettingsEditor";
-import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
+import { IcsCalendarSync } from "@/components/instructor/IcsCalendarSync";
 import { DataExportManager } from "@/components/instructor/DataExportManager";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
 import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
@@ -596,7 +596,7 @@ export default function InstructorMenu() {
       case "working-hours":
         return <WorkingHoursEditor instructorId={instructorId} />;
       case "calendar":
-        return <GoogleServiceAccountSetup instructorId={instructorId} />;
+        return <IcsCalendarSync instructorId={instructorId} />;
       case "cancellation":
         return <CancellationPolicyEditor instructorId={instructorId} />;
       case "no-show-policy":

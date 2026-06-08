@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload, QrCode, Layout, Calendar as CalendarLucide, Satellite, Camera } from "lucide-react";
-import { GoogleServiceAccountSetup } from "@/components/instructor/GoogleServiceAccountSetup";
+import { IcsCalendarSync } from "@/components/instructor/IcsCalendarSync";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
 import { CourseImageEditor } from "./CourseImageEditor";
@@ -1442,7 +1442,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
             <h3 className="mb-4 text-lg font-semibold flex items-center gap-2">
               <CalendarLucide className="h-5 w-5" /> Google Calendar Sync
             </h3>
-            <GoogleServiceAccountSetup instructorId={initialData.id} />
+            <IcsCalendarSync instructorId={initialData.id} />
           </div>
         )}
 
