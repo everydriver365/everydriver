@@ -435,23 +435,23 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
                 </div>
 
                 {hour.is_active && (
-                  <div className="flex items-center gap-2 pl-8">
+                  <div className="flex items-center gap-2 sm:pl-8">
                     <Input
                       type="time"
                       value={hour.start_time}
                       onChange={(e) =>
                         handleWorkingHourChange(day.value, "start_time", e.target.value)
                       }
-                      className="flex-1 text-sm"
+                      className="flex-1 min-w-0 text-sm"
                     />
-                    <span className="text-muted-foreground text-xs">to</span>
+                    <span className="text-muted-foreground text-xs shrink-0">to</span>
                     <Input
                       type="time"
                       value={hour.end_time}
                       onChange={(e) =>
                         handleWorkingHourChange(day.value, "end_time", e.target.value)
                       }
-                      className="flex-1 text-sm"
+                      className="flex-1 min-w-0 text-sm"
                     />
                   </div>
                 )}
@@ -579,16 +579,16 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
                 onChange={(e) =>
                   setNewOverride((prev) => ({ ...prev, start_time: e.target.value }))
                 }
-                className="flex-1 text-sm"
+                className="flex-1 min-w-0 text-sm"
               />
-              <span className="text-muted-foreground text-xs">to</span>
+              <span className="text-muted-foreground text-xs shrink-0">to</span>
               <Input
                 type="time"
                 value={newOverride.end_time}
                 onChange={(e) =>
                   setNewOverride((prev) => ({ ...prev, end_time: e.target.value }))
                 }
-                className="flex-1 text-sm"
+                className="flex-1 min-w-0 text-sm"
               />
             </div>
           )}
