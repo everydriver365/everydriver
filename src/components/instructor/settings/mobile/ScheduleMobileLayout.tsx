@@ -107,7 +107,7 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
             <section key={`${g.label}-${idx}`}>
               <SectionLabel>{g.label}</SectionLabel>
               <Card>
-                <div style={{ padding: "14px 16px 16px" }} id={g.sectionId}>
+                <div style={{ padding: "12px 10px" }} id={g.sectionId}>
                   {section.render()}
                 </div>
               </Card>
