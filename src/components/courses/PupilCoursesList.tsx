@@ -204,11 +204,12 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
                     <div className="text-xs text-muted-foreground truncate">
                       {r.course_type || "Course"}
                       {r.instructor_name ? ` · with ${r.instructor_name}` : ""}
+                      {r.completed_lesson_count > 0 ? ` · ${r.completed_lesson_count} completed lesson${r.completed_lesson_count === 1 ? "" : "s"}` : ""}
                       {r.lesson_count > 0 ? ` · ${r.lesson_count} upcoming lesson${r.lesson_count === 1 ? "" : "s"}` : ""}
                       {r.next_lesson_date ? ` · next ${new Date(r.next_lesson_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}` : ""}
                     </div>
                   </div>
-                  {r.lesson_count === 0 && (
+                  {r.lesson_count === 0 && r.completed_lesson_count === 0 && (
                     <span
                       style={{
                         backgroundColor: "#F1F5F9",
