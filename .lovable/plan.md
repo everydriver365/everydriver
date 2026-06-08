@@ -1,14 +1,13 @@
-Update `PupilCoursesList.tsx` so every non-deleted pupil for the in-scope instructor(s) appears in Course Summaries, not just pupils with active scheduled lessons.
+Suzanna's "lesson on 27 June" is a `cancelled` row (`status='cancelled'`, `deleted_at` null). The current query in `PupilCoursesList.tsx` only filters by `deleted_at IS NULL`, so cancelled lessons still inflate `lesson_count` and feed `next_lesson_date`.
 
-### Changes
-1. Remove the `.filter((p) => lessonStats.has(p.id))` gate so zero-lesson pupils are included.
-2. Keep the `deleted_at IS NULL` filter on `scheduled_lessons` so cancelled/deleted lessons don't inflate counts.
-3. For pupils with zero active lessons: render `lesson_count = 0` and `next_lesson_date = null`.
-4. Sort: pupils with an upcoming `next_lesson_date` first (ascending), then pupils with zero lessons (alphabetically by name) — so active courses still surface at the top.
-5. Update card subtitle from "Pupils with scheduled lessons" to "All pupils".
-6. Add a subtle "No upcoming lessons" muted tag on rows with `lesson_count === 0`.
+### Change
+In `src/components/courses/PupilCoursesList.tsx`, narrow the `scheduled_lessons` query so cancelled/no-show rows are excluded:
+
+- Add `.not("status", "in", "(cancelled,no_show,no-show)")` alongside the existing `.is("deleted_at", null)` filter.
+- Also pull `status` into the select for safety and skip any row whose status indicates it's not an active lesson.
+
+Result: Susanna shows 0 active lessons → "No upcoming lessons" tag, no fake "next 27/06/26".
 
 ### Out of scope
-- No DB/schema changes.
-- No RLS changes.
-- No change to `PupilCourseSummary` detail page.
+- No DB changes, no schema changes.
+- No change to the detail page (`PupilCourseSummary`) — that's a separate review if you also see ghost rows there.
