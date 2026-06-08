@@ -21,9 +21,10 @@ import { useToast } from "@/hooks/use-toast";
 import { logCourseActivity } from "@/lib/courseActivityLog";
 import {
   Loader2, Mail, Phone, MapPin, CheckCircle2, Clock, XCircle,
-  AlertTriangle, Star, ArrowLeft, Copy, Undo2, History, MessageSquare, Send, FileText,
+  AlertTriangle, Star, ArrowLeft, Copy, Undo2, History, MessageSquare, Send, FileText, Trash2,
 } from "lucide-react";
 import { SendInvoiceDialog } from "@/components/invoices/SendInvoiceDialog";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   pupilId: string;
@@ -138,6 +139,7 @@ function describeActivity(row: ActivityRow): string {
 
 export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [pupil, setPupil] = useState<Pupil | null>(null);
   const [instructor, setInstructor] = useState<Instructor | null>(null);
@@ -228,7 +230,7 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
   }, [payments, lessons, instructor, pupil]);
 
   // ---------- Inline edit handler ----------
-  const updatePupilField = useCallback(async (field: keyof Pupil, newValue: string | null) => {
+  const updatePupilField = useCallback(async (field: keyof Pupil, newValue: string | number | boolean | null) => {
     if (!pupil) return;
     const oldValue = pupil[field];
     const payload: Record<string, unknown> = { [field]: newValue };
@@ -378,6 +380,83 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
     }
   }, [pupil, instructor, totals.outstanding, toast, load]);
 
+  // ---------- Soft delete handlers ----------
+  const handleDeleteCourse = useCallback(async () => {
+    if (!pupil) return;
+    if (!window.confirm(`Soft-delete ${pupil.name}'s course? They will be hidden from course summaries but data is retained.`)) return;
+    setWorking("delete-course");
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", pupil.id);
+      if (error) throw error;
+      await logCourseActivity({
+        pupilId: pupil.id,
+        instructorId: pupil.instructor_id,
+        action: "course_deleted",
+        details: { pupil_name: pupil.name },
+      });
+      toast({ title: "Course deleted", description: `${pupil.name} hidden from course summaries.` });
+      if (onBack) onBack(); else navigate(-1);
+    } catch (e) {
+      toast({ title: "Delete failed", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setWorking(null);
+    }
+  }, [pupil, toast, onBack, navigate]);
+
+  const handleDeleteLesson = useCallback(async (lesson: Lesson) => {
+    if (!pupil) return;
+    if (!window.confirm(`Soft-delete lesson on ${fmtDate(lesson.lesson_date)} at ${fmtTime(lesson.start_time)}?`)) return;
+    setWorking(`delete-lesson-${lesson.id}`);
+    try {
+      const { error } = await supabase
+        .from("scheduled_lessons")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", lesson.id);
+      if (error) throw error;
+      await logCourseActivity({
+        pupilId: pupil.id,
+        instructorId: pupil.instructor_id,
+        action: "lesson_deleted",
+        details: { lesson_id: lesson.id, date: lesson.lesson_date, time: lesson.start_time },
+      });
+      toast({ title: "Lesson removed" });
+      load();
+    } catch (e) {
+      toast({ title: "Delete failed", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setWorking(null);
+    }
+  }, [pupil, toast, load]);
+
+  const handleDeletePayment = useCallback(async (payment: Payment) => {
+    if (!pupil) return;
+    if (!window.confirm(`Soft-delete this payment of ${fmt(Math.abs(Number(payment.amount || 0)))}?`)) return;
+    setWorking(`delete-payment-${payment.id}`);
+    try {
+      const { error } = await supabase
+        .from("payment_history")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", payment.id);
+      if (error) throw error;
+      await logCourseActivity({
+        pupilId: pupil.id,
+        instructorId: pupil.instructor_id,
+        action: "payment_deleted",
+        details: { payment_id: payment.id, amount: payment.amount },
+      });
+      toast({ title: "Payment removed" });
+      load();
+    } catch (e) {
+      toast({ title: "Delete failed", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setWorking(null);
+    }
+  }, [pupil, toast, load]);
+
+
 
   if (loading) {
     return (
@@ -502,17 +581,14 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <EditRow label="Hourly rate" value={pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : ""} placeholder={instructor?.hourly_rate ? String(instructor.hourly_rate) : "—"} onSave={(v) => updatePupilField("custom_hourly_rate", v ? String(Number(v)) : null)} />
               <EditRow label="Test date" type="date" value={pupil.test_date ?? ""} onSave={(v) => updatePupilField("test_date", v || null)} />
               <EditRow label="Test time" value={pupil.test_time ?? ""} placeholder="HH:MM" onSave={(v) => updatePupilField("test_time", v || null)} />
-              <Row label="Theory test" value={pupil.theory_test_passed ? `Passed${pupil.theory_test_date ? ` · ${fmtDate(pupil.theory_test_date)}` : ""}` : "Not passed"} />
-              <Row label="Prepaid hours" value={String(pupil.prepaid_hours ?? 0)} />
-              {Number(pupil.intensive_hours_paid ?? 0) > 0 && (
-                <Row label="Intensive hours" value={Number(pupil.intensive_hours_paid).toFixed(1)} />
-              )}
-              {pupil.previous_experience && (
-                <Row label="Experience" value={pupil.previous_experience} />
-              )}
-              {pupil.preferred_duration_minutes && (
-                <Row label="Preferred slot" value={`${pupil.preferred_duration_minutes} min`} />
-              )}
+              <EditRow label="Theory passed" value={pupil.theory_test_passed ? "yes" : ""} placeholder="yes / no" onSave={(v) => updatePupilField("theory_test_passed", v.toLowerCase() === "yes" || v.toLowerCase() === "true")} />
+              <EditRow label="Theory date" type="date" value={pupil.theory_test_date ?? ""} onSave={(v) => updatePupilField("theory_test_date", v || null)} />
+              <EditRow label="Prepaid hours" value={String(pupil.prepaid_hours ?? 0)} onSave={(v) => updatePupilField("prepaid_hours", v ? String(Number(v)) : null)} />
+              <EditRow label="Intensive hours" value={pupil.intensive_hours_paid != null ? String(pupil.intensive_hours_paid) : ""} placeholder="0" onSave={(v) => updatePupilField("intensive_hours_paid", v ? String(Number(v)) : null)} />
+              <EditRow label="Experience" value={pupil.previous_experience ?? ""} placeholder="Beginner / refresher…" onSave={(v) => updatePupilField("previous_experience", v || null)} />
+              <EditRow label="Preferred slot (min)" value={pupil.preferred_duration_minutes ? String(pupil.preferred_duration_minutes) : ""} placeholder="60" onSave={(v) => updatePupilField("preferred_duration_minutes", v ? String(Number(v)) : null)} />
+              <EditRow label="Special needs" value={pupil.special_needs ?? ""} placeholder="—" onSave={(v) => updatePupilField("special_needs", v || null)} />
+              <EditRow label="Medical notes" value={pupil.medical_notes ?? ""} placeholder="—" onSave={(v) => updatePupilField("medical_notes", v || null)} />
             </CardContent>
           </Card>
 
@@ -577,6 +653,16 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
                       </div>
                     </div>
                     <PaymentMethodPill method={l.payment_method} />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={working === `delete-lesson-${l.id}`}
+                      onClick={() => handleDeleteLesson(l)}
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                      title="Soft-delete lesson"
+                    >
+                      {working === `delete-lesson-${l.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -682,6 +768,15 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
                             {working === `refund-${p.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : (<><Undo2 className="h-3 w-3 mr-1" /> Refund</>)}
                           </Button>
                         )}
+                        <Button
+                          size="sm" variant="ghost"
+                          disabled={working === `delete-payment-${p.id}`}
+                          onClick={() => handleDeletePayment(p)}
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                          title="Soft-delete payment"
+                        >
+                          {working === `delete-payment-${p.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                        </Button>
                       </div>
                     );
                   })}
@@ -709,8 +804,18 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <Link to={`/instructor/pupils/${pupil.id}`} className="block">
                 <Button variant="outline" size="sm" className="w-full justify-start">Open pupil profile</Button>
               </Link>
+              <Button
+                onClick={handleDeleteCourse}
+                disabled={working === "delete-course"}
+                variant="outline"
+                size="sm"
+                className="w-full justify-start text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+              >
+                {working === "delete-course" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Trash2 className="h-3.5 w-3.5 mr-2" />}
+                Delete course (soft)
+              </Button>
               <p className="text-[11px] text-muted-foreground pt-2">
-                Inline edit any field marked with a pencil. Refunds appear next to each payment.
+                Inline edit any field with a pencil. Soft-deletes can be restored from the database.
               </p>
             </CardContent>
           </Card>
