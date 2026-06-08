@@ -150,7 +150,7 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
 
       <Card>
         <CardHeader className="bg-transparent pb-3">
-          <CardTitle className="text-base">Pupils with scheduled lessons</CardTitle>
+          <CardTitle className="text-base">All pupils</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
