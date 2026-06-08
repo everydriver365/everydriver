@@ -76,9 +76,10 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
       const [{ data: lessonRows }, { data: instructorRows }] = await Promise.all([
         supabase
           .from("scheduled_lessons")
-          .select("pupil_id,lesson_date")
+          .select("pupil_id,lesson_date,status")
           .in("pupil_id", pupilIds)
-          .is("deleted_at", null),
+          .is("deleted_at", null)
+          .not("status", "in", "(cancelled,no_show,no-show)"),
         supabase.from("instructors").select("id,name").in("id", scope),
       ]);
 
