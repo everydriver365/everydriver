@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,7 +19,7 @@ serve(async (req) => {
   }
 
   try {
-    const { postcodes } = await req.json();
+    const { postcodes, instructor_id } = await req.json();
 
     if (!postcodes || !Array.isArray(postcodes) || postcodes.length === 0) {
       return new Response(
