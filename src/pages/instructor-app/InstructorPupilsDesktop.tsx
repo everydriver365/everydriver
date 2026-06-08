@@ -430,6 +430,26 @@ export default function InstructorPupilsDesktop() {
     if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
     toast.success(`Added ${composedName || "pupil"}`);
 
+    // Record optional block booking against the new pupil.
+    const newId = (insertedRows as { id: string } | null)?.id;
+    const blkAmt = parseFloat(String(addForm.block_amount || ""));
+    const blkHrs = parseFloat(String(addForm.block_hours || ""));
+    if (newId && Number.isFinite(blkAmt) && blkAmt > 0 && Number.isFinite(blkHrs) && blkHrs > 0) {
+      try {
+        await recordBlockBooking({
+          pupilId: newId,
+          instructorId,
+          amount: blkAmt,
+          hours: blkHrs,
+          method: addForm.block_method || "Cash",
+          notes: addForm.block_notes,
+        });
+      } catch (err: any) {
+        console.error("Block booking error:", err);
+        toast.error(err?.message || "Pupil added, but block booking failed");
+      }
+    }
+
     // Suggest Test Swap if a future driving test was booked at creation
     const newPupilId = (insertedRows as { id: string } | null)?.id;
     if (newPupilId && addForm.test_booked && addForm.test_date) {
