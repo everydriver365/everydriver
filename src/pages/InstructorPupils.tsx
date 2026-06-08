@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { invalidateInstructorDashboard } from "@/lib/dashboardInvalidate";
+import { recordBlockBooking } from "@/lib/recordBlockBooking";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IOSLargeTitle } from "@/components/ui/IOSLargeTitle";
