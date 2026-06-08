@@ -8152,6 +8152,127 @@ export type Database = {
         }
         Relationships: []
       }
+      instructor_ics_events: {
+        Row: {
+          created_at: string
+          end_at: string
+          id: string
+          instructor_id: string
+          is_all_day: boolean
+          last_seen_at: string
+          recurrence_id: string | null
+          start_at: string
+          subscription_id: string
+          title: string | null
+          uid: string
+        }
+        Insert: {
+          created_at?: string
+          end_at: string
+          id?: string
+          instructor_id: string
+          is_all_day?: boolean
+          last_seen_at?: string
+          recurrence_id?: string | null
+          start_at: string
+          subscription_id: string
+          title?: string | null
+          uid: string
+        }
+        Update: {
+          created_at?: string
+          end_at?: string
+          id?: string
+          instructor_id?: string
+          is_all_day?: boolean
+          last_seen_at?: string
+          recurrence_id?: string | null
+          start_at?: string
+          subscription_id?: string
+          title?: string | null
+          uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_ics_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_ics_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_ics_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_ics_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_ics_subscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          label: string | null
+          last_error: string | null
+          last_event_count: number | null
+          last_polled_at: string | null
+          last_status: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          label?: string | null
+          last_error?: string | null
+          last_event_count?: number | null
+          last_polled_at?: string | null
+          last_status?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          label?: string | null
+          last_error?: string | null
+          last_event_count?: number | null
+          last_polled_at?: string | null
+          last_status?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_ics_subscriptions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_ics_subscriptions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_manual_blocks: {
         Row: {
           block_type: string
@@ -10149,6 +10270,7 @@ export type Database = {
           buffer_minutes: number
           business_name: string | null
           calendar_colors: Json | null
+          calendar_feed_token: string | null
           cancellation_analytics_enabled: boolean | null
           cancellation_charge_percent: number | null
           cancellation_policy_hours: number | null
@@ -10373,6 +10495,7 @@ export type Database = {
           buffer_minutes?: number
           business_name?: string | null
           calendar_colors?: Json | null
+          calendar_feed_token?: string | null
           cancellation_analytics_enabled?: boolean | null
           cancellation_charge_percent?: number | null
           cancellation_policy_hours?: number | null
@@ -10597,6 +10720,7 @@ export type Database = {
           buffer_minutes?: number
           business_name?: string | null
           calendar_colors?: Json | null
+          calendar_feed_token?: string | null
           cancellation_analytics_enabled?: boolean | null
           cancellation_charge_percent?: number | null
           cancellation_policy_hours?: number | null

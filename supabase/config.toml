@@ -283,3 +283,9 @@ verify_jwt = false
 
 [functions.google-place-photo]
 verify_jwt = false
+
+[functions.instructor-calendar-feed]
+verify_jwt = false
+
+[functions.poll-ics-subscriptions]
+verify_jwt = false
