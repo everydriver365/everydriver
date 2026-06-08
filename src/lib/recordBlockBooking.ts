@@ -71,6 +71,4 @@ export async function recordBlockBooking({
     .update({ prepaid_hours: next })
     .eq("id", pupilId);
   if (updErr) throw updErr;
-
-  invalidatePaymentQueries({ pupilId, instructorId });
 }
