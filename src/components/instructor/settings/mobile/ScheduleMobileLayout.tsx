@@ -37,7 +37,7 @@ export function ScheduleMobileLayout({ category }: { category: SettingsCategory 
 
   return (
     <div
-      className="px-3 pb-24"
+      className="px-1.5 pb-24"
       style={{
         background: "#F4F7F6",
         paddingTop: 8,
