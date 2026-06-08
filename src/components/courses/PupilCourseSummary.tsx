@@ -380,6 +380,83 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
     }
   }, [pupil, instructor, totals.outstanding, toast, load]);
 
+  // ---------- Soft delete handlers ----------
+  const handleDeleteCourse = useCallback(async () => {
+    if (!pupil) return;
+    if (!window.confirm(`Soft-delete ${pupil.name}'s course? They will be hidden from course summaries but data is retained.`)) return;
+    setWorking("delete-course");
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", pupil.id);
+      if (error) throw error;
+      await logCourseActivity({
+        pupilId: pupil.id,
+        instructorId: pupil.instructor_id,
+        action: "course_deleted",
+        details: { pupil_name: pupil.name },
+      });
+      toast({ title: "Course deleted", description: `${pupil.name} hidden from course summaries.` });
+      if (onBack) onBack(); else navigate(-1);
+    } catch (e) {
+      toast({ title: "Delete failed", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setWorking(null);
+    }
+  }, [pupil, toast, onBack, navigate]);
+
+  const handleDeleteLesson = useCallback(async (lesson: Lesson) => {
+    if (!pupil) return;
+    if (!window.confirm(`Soft-delete lesson on ${fmtDate(lesson.lesson_date)} at ${fmtTime(lesson.start_time)}?`)) return;
+    setWorking(`delete-lesson-${lesson.id}`);
+    try {
+      const { error } = await supabase
+        .from("scheduled_lessons")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", lesson.id);
+      if (error) throw error;
+      await logCourseActivity({
+        pupilId: pupil.id,
+        instructorId: pupil.instructor_id,
+        action: "lesson_deleted",
+        details: { lesson_id: lesson.id, date: lesson.lesson_date, time: lesson.start_time },
+      });
+      toast({ title: "Lesson removed" });
+      load();
+    } catch (e) {
+      toast({ title: "Delete failed", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setWorking(null);
+    }
+  }, [pupil, toast, load]);
+
+  const handleDeletePayment = useCallback(async (payment: Payment) => {
+    if (!pupil) return;
+    if (!window.confirm(`Soft-delete this payment of ${fmt(Math.abs(Number(payment.amount || 0)))}?`)) return;
+    setWorking(`delete-payment-${payment.id}`);
+    try {
+      const { error } = await supabase
+        .from("payment_history")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", payment.id);
+      if (error) throw error;
+      await logCourseActivity({
+        pupilId: pupil.id,
+        instructorId: pupil.instructor_id,
+        action: "payment_deleted",
+        details: { payment_id: payment.id, amount: payment.amount },
+      });
+      toast({ title: "Payment removed" });
+      load();
+    } catch (e) {
+      toast({ title: "Delete failed", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setWorking(null);
+    }
+  }, [pupil, toast, load]);
+
+
 
   if (loading) {
     return (
