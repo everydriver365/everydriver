@@ -112,8 +112,14 @@ Deno.serve(async (req) => {
   ];
 
   for (const l of lessons ?? []) {
-    if (!l.scheduled_at || !l.duration_minutes) continue;
-    const start = new Date(l.scheduled_at as string);
+    if (!l.lesson_date || !l.start_time || !l.duration_minutes) continue;
+    // Build Europe/London wall-clock as a UTC ISO. Calendar apps render UTC
+    // events in the viewer's local time — for UK instructors this gives the
+    // correct wall time year-round including BST.
+    // We send DTSTART/DTEND as UTC with the London wall-clock instant.
+    const [hh, mm] = String(l.start_time).split(":");
+    const startUtcStr = `${l.lesson_date}T${pad(Number(hh))}:${pad(Number(mm))}:00Z`;
+    const start = new Date(startUtcStr);
     const end = new Date(start.getTime() + (l.duration_minutes as number) * 60_000);
     const pupilName =
       (l.pupils && typeof l.pupils === "object" && "name" in (l.pupils as any))
@@ -121,7 +127,7 @@ Deno.serve(async (req) => {
         : null;
     const summary = pupilName ? `Lesson — ${pupilName}` : "Lesson";
     const loc = (l.pickup_location as string) || "";
-    const dtstamp = toIcsUtc(new Date((l.updated_at as string) ?? l.scheduled_at as string));
+    const dtstamp = toIcsUtc(new Date((l.updated_at as string) ?? startUtcStr));
 
     lines.push("BEGIN:VEVENT");
     lines.push(fold(`UID:dsm-lesson-${l.id}@dsm`));
