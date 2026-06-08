@@ -4,7 +4,6 @@ import { ChevronRight, Search, ArrowLeft } from "lucide-react";
 import { SettingsDirtyProvider } from "@/components/instructor/settings/SettingsDirtyContext";
 import { SettingsSaveBar } from "@/components/instructor/settings/SettingsSaveBar";
 import { AREA_GROUPS, useAreaSections, LEGACY_ID_MAP, ALL_ITEM_IDS, type AreaItem, type AreaGroup } from "./areas";
-import { ScheduleAreaLayout } from "./ScheduleAreaLayout";
 
 interface Props {
   instructorId: string;
