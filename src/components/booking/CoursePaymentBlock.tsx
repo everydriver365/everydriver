@@ -46,7 +46,6 @@ interface Props {
   squareAvailable: boolean;
   clearpayAvailable: boolean;
   // loading
-  isElavonLoading: boolean;
   isKlarnaLoading: boolean;
   isClearpayLoading: boolean;
   isInstantBankPayLoading: boolean;
