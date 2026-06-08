@@ -49,7 +49,7 @@ export default function InstructorQuickAvailability() {
   const instructorId = instructor?.id;
   
   const [currentWeekStart, setCurrentWeekStart] = useState(() => 
-    startOfWeek(new Date(), { weekStartsOn: 0 })
+    startOfWeek(new Date(), { weekStartsOn: 1 })
   );
   const [overrides, setOverrides] = useState<DateOverride[]>([]);
   const [workingHours, setWorkingHours] = useState<WorkingHours[]>([]);
