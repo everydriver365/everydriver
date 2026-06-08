@@ -7,8 +7,10 @@ export type CourseActivityAction =
   | "course_deleted"
   | "reminder_sent"
   | "lesson_added"
+  | "lesson_edited"
   | "lesson_cancelled"
   | "lesson_deleted"
+  | "payment_edited"
   | "payment_deleted";
 
 export async function logCourseActivity(params: {
