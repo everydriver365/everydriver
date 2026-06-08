@@ -259,6 +259,7 @@ export default function InstructorOnboarding() {
     
     setSaving(true);
     try {
+      const formattedPostcode = formatUKPostcode(data.home_postcode) || data.home_postcode;
       const { error } = await supabase
         .from("instructors")
         .update({
@@ -266,7 +267,7 @@ export default function InstructorOnboarding() {
           phone: data.phone,
           bio: data.bio,
           profile_image_url: data.profile_image_url,
-          home_postcode: formatUKPostcode(data.home_postcode) || data.home_postcode,
+          home_postcode: formattedPostcode,
           radius_miles: data.radius_miles,
           car_type: data.car_type,
           car_make: data.car_make,
@@ -277,6 +278,14 @@ export default function InstructorOnboarding() {
         .eq("id", instructorId);
 
       if (error) throw error;
+
+      // Fire-and-forget: geocode the postcode and persist lat/lng on the
+      // instructor row so distance-based discovery doesn't need to live-fetch.
+      if (formattedPostcode && formattedPostcode.trim().length >= 5) {
+        void supabase.functions.invoke("geocode-postcode", {
+          body: { postcodes: [formattedPostcode], instructor_id: instructorId },
+        }).catch((e) => console.error("geocode-postcode (non-fatal):", e));
+      }
     } catch (err) {
       console.error("Failed to save progress:", err);
     } finally {
@@ -357,6 +366,7 @@ export default function InstructorOnboarding() {
       const drive365Subdomain = hasOwnSite ? null : `${slug}.drive365.co.uk`;
 
       // Final save with onboarding complete timestamp + auto-generated subdomain (skipped if they have their own site)
+      const formattedPostcode = formatUKPostcode(data.home_postcode) || data.home_postcode;
       const { error } = await supabase
         .from("instructors")
         .update({
@@ -364,7 +374,7 @@ export default function InstructorOnboarding() {
           phone: data.phone,
           bio: data.bio,
           profile_image_url: data.profile_image_url,
-          home_postcode: formatUKPostcode(data.home_postcode) || data.home_postcode,
+          home_postcode: formattedPostcode,
           radius_miles: data.radius_miles,
           car_type: data.car_type,
           car_make: data.car_make,
@@ -379,6 +389,14 @@ export default function InstructorOnboarding() {
         .eq("id", instructorId);
 
       if (error) throw error;
+
+      // Geocode & persist lat/lng so the instructor is immediately
+      // discoverable by postcode-radius search.
+      if (formattedPostcode && formattedPostcode.trim().length >= 5) {
+        void supabase.functions.invoke("geocode-postcode", {
+          body: { postcodes: [formattedPostcode], instructor_id: instructorId },
+        }).catch((e) => console.error("geocode-postcode (non-fatal):", e));
+      }
 
       // Ensure an instructor_subscriptions row exists (especially for free plans)
       // For PDI trainees, auto-assign the free plan with pdi_programme flag

@@ -22,6 +22,8 @@ export interface Instructor {
   car_model: string | null;
   home_postcode: string;
   home_address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   hourly_rate: number | null;
   bio: string | null;
   brand_colour: string | null;
@@ -31,6 +33,42 @@ export interface Instructor {
   is_network_placeholder?: boolean | null;
   placeholder_district?: string | null;
   booking_mode?: string | null;
+}
+
+// Resolve an instructor's coordinates: prefer the lat/lng stored on the
+// instructor row, fall back to the bulk-geocoded postcode cache. Callers
+// should kick off `liveGeocodePostcode` for any instructor that returns null
+// here so they aren't silently excluded from radius search.
+function resolveInstructorCoords(
+  instructor: Pick<Instructor, "lat" | "lng" | "home_postcode">,
+  geoCache: Record<string, { lat: number; lng: number } | null>,
+): { lat: number; lng: number } | null {
+  if (typeof instructor.lat === "number" && typeof instructor.lng === "number") {
+    return { lat: instructor.lat, lng: instructor.lng };
+  }
+  const key = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+  const cached = geoCache[key];
+  return cached || null;
+}
+
+// On-the-fly fallback when neither the row nor the bulk geocode cache has
+// coords. Hits postcodes.io directly so the instructor is still considered.
+async function liveGeocodePostcode(
+  postcode: string,
+): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const r = await fetch(
+      `https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`,
+    );
+    if (!r.ok) return null;
+    const j = await r.json();
+    const lat = j?.result?.latitude;
+    const lng = j?.result?.longitude;
+    if (typeof lat === "number" && typeof lng === "number") return { lat, lng };
+  } catch {
+    /* ignore */
+  }
+  return null;
 }
 
 // Extract the UK postcode district (outcode) from any postcode string.
@@ -390,10 +428,39 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         setSelectedDate(firstAvailable.date);
       }
 
+      // Only postcodes for instructors that don't already carry coords on
+      // their row need the bulk geocode round-trip.
       const allPostcodes = loadedInstructors
         .filter((i) => !i.is_network_placeholder)
+        .filter((i) => typeof i.lat !== "number" || typeof i.lng !== "number")
         .map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
-      await geocodePostcodes(allPostcodes);
+      const bulkResult = await geocodePostcodes(allPostcodes);
+
+      // Final safety net: any instructor still missing both row coords and a
+      // bulk-cache hit gets a per-postcode live lookup against postcodes.io
+      // so they're never silently excluded from the radius filter.
+      const stillMissing = loadedInstructors.filter((i) => {
+        if (i.is_network_placeholder) return false;
+        if (typeof i.lat === "number" && typeof i.lng === "number") return false;
+        const key = i.home_postcode.replace(/\s+/g, "").toUpperCase();
+        return !bulkResult.geoCache[key];
+      });
+      if (stillMissing.length > 0) {
+        const liveResults = await Promise.all(
+          stillMissing.map(async (i) => {
+            const key = i.home_postcode.replace(/\s+/g, "").toUpperCase();
+            const coords = await liveGeocodePostcode(key);
+            return [key, coords] as const;
+          }),
+        );
+        setGeoCache((prev) => {
+          const next = { ...prev };
+          for (const [key, coords] of liveResults) {
+            if (coords) next[key] = coords;
+          }
+          return next;
+        });
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({
@@ -454,8 +521,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
               if (instructor.is_network_placeholder) {
                 return instructor.placeholder_district === district;
               }
-              const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-              const instructorLocation = fullGeoCache[instructorPostcode];
+              const instructorLocation = resolveInstructorCoords(instructor, fullGeoCache);
               if (!instructorLocation) return false;
               const distance = calculateDistance(
                 location.lat,
@@ -551,8 +617,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         return !!searchedDistrict && instructor.placeholder_district === searchedDistrict;
       }
       if (!userLocation) return false;
-      const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-      const instructorLocation = geoCache[instructorPostcode];
+      const instructorLocation = resolveInstructorCoords(instructor, geoCache);
 
       if (!instructorLocation) return false;
 
@@ -708,8 +773,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     if (!userLocation) return coursesForSelectedDate;
 
     return coursesForSelectedDate.map((course) => {
-      const instructorPostcode = course.instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-      const instructorLocation = geoCache[instructorPostcode];
+      const instructorLocation = resolveInstructorCoords(course.instructor, geoCache);
 
       if (instructorLocation) {
         const distance = calculateDistance(
