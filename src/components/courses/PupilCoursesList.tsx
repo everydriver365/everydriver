@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { londonTodayStr, toLondonParts } from "@/lib/availabilityEngine";
 
 type Props = {
   /** Restrict to these instructors (school view passes its instructor ids). Omit for single-instructor view. */
@@ -28,6 +29,17 @@ type Row = {
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n);
+
+const inactiveLessonStatuses = new Set(["cancelled", "no_show", "no-show"]);
+
+const isUpcomingLesson = (lessonDate: string, startTime: string, today: string, nowMinutes: number) => {
+  if (lessonDate > today) return true;
+  if (lessonDate < today) return false;
+  const parts = startTime.split(":");
+  if (parts.length < 2) return false;
+  const lessonMinutes = Number(parts[0]) * 60 + Number(parts[1]);
+  return Number.isFinite(lessonMinutes) && lessonMinutes >= nowMinutes;
+};
 
 export function PupilCoursesList({ instructorIds, onSelect }: Props) {
   const [loading, setLoading] = useState(true);
@@ -76,7 +88,7 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
       const [{ data: lessonRows }, { data: instructorRows }] = await Promise.all([
         supabase
           .from("scheduled_lessons")
-          .select("pupil_id,lesson_date,status")
+          .select("pupil_id,lesson_date,start_time,status,cancelled_at,marked_no_show_at")
           .in("pupil_id", pupilIds)
           .is("deleted_at", null)
           .not("status", "in", "(cancelled,no_show,no-show)"),
@@ -88,11 +100,22 @@ export function PupilCoursesList({ instructorIds, onSelect }: Props) {
         (instructorRows || []).map((i) => [i.id, i.name])
       );
       const lessonStats = new Map<string, { count: number; next: string | null }>();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = londonTodayStr();
+      const nowLondon = toLondonParts(new Date());
+      const nowMinutes = nowLondon.hour * 60 + nowLondon.minute;
       (lessonRows || []).forEach((l) => {
+        const status = typeof l.status === "string" ? l.status.toLowerCase() : "";
+        if (
+          inactiveLessonStatuses.has(status) ||
+          l.cancelled_at ||
+          l.marked_no_show_at ||
+          !isUpcomingLesson(l.lesson_date, l.start_time, today, nowMinutes)
+        ) {
+          return;
+        }
         const cur = lessonStats.get(l.pupil_id) || { count: 0, next: null };
         cur.count += 1;
-        if (l.lesson_date >= today && (!cur.next || l.lesson_date < cur.next)) {
+        if (!cur.next || l.lesson_date < cur.next) {
           cur.next = l.lesson_date;
         }
         lessonStats.set(l.pupil_id, cur);
