@@ -744,8 +744,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     if (!userLocation) return coursesForSelectedDate;
 
     return coursesForSelectedDate.map((course) => {
-      const instructorPostcode = course.instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-      const instructorLocation = geoCache[instructorPostcode];
+      const instructorLocation = resolveInstructorCoords(course.instructor, geoCache);
 
       if (instructorLocation) {
         const distance = calculateDistance(
