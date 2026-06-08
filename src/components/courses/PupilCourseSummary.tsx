@@ -581,17 +581,14 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
               <EditRow label="Hourly rate" value={pupil.custom_hourly_rate ? String(pupil.custom_hourly_rate) : ""} placeholder={instructor?.hourly_rate ? String(instructor.hourly_rate) : "—"} onSave={(v) => updatePupilField("custom_hourly_rate", v ? String(Number(v)) : null)} />
               <EditRow label="Test date" type="date" value={pupil.test_date ?? ""} onSave={(v) => updatePupilField("test_date", v || null)} />
               <EditRow label="Test time" value={pupil.test_time ?? ""} placeholder="HH:MM" onSave={(v) => updatePupilField("test_time", v || null)} />
-              <Row label="Theory test" value={pupil.theory_test_passed ? `Passed${pupil.theory_test_date ? ` · ${fmtDate(pupil.theory_test_date)}` : ""}` : "Not passed"} />
-              <Row label="Prepaid hours" value={String(pupil.prepaid_hours ?? 0)} />
-              {Number(pupil.intensive_hours_paid ?? 0) > 0 && (
-                <Row label="Intensive hours" value={Number(pupil.intensive_hours_paid).toFixed(1)} />
-              )}
-              {pupil.previous_experience && (
-                <Row label="Experience" value={pupil.previous_experience} />
-              )}
-              {pupil.preferred_duration_minutes && (
-                <Row label="Preferred slot" value={`${pupil.preferred_duration_minutes} min`} />
-              )}
+              <EditRow label="Theory passed" value={pupil.theory_test_passed ? "yes" : ""} placeholder="yes / no" onSave={(v) => updatePupilField("theory_test_passed", (v.toLowerCase() === "yes" || v.toLowerCase() === "true") ? ("true" as never) : ("false" as never))} />
+              <EditRow label="Theory date" type="date" value={pupil.theory_test_date ?? ""} onSave={(v) => updatePupilField("theory_test_date", v || null)} />
+              <EditRow label="Prepaid hours" value={String(pupil.prepaid_hours ?? 0)} onSave={(v) => updatePupilField("prepaid_hours", v ? String(Number(v)) : null)} />
+              <EditRow label="Intensive hours" value={pupil.intensive_hours_paid != null ? String(pupil.intensive_hours_paid) : ""} placeholder="0" onSave={(v) => updatePupilField("intensive_hours_paid", v ? String(Number(v)) : null)} />
+              <EditRow label="Experience" value={pupil.previous_experience ?? ""} placeholder="Beginner / refresher…" onSave={(v) => updatePupilField("previous_experience", v || null)} />
+              <EditRow label="Preferred slot (min)" value={pupil.preferred_duration_minutes ? String(pupil.preferred_duration_minutes) : ""} placeholder="60" onSave={(v) => updatePupilField("preferred_duration_minutes", v ? String(Number(v)) : null)} />
+              <EditRow label="Special needs" value={pupil.special_needs ?? ""} placeholder="—" onSave={(v) => updatePupilField("special_needs", v || null)} />
+              <EditRow label="Medical notes" value={pupil.medical_notes ?? ""} placeholder="—" onSave={(v) => updatePupilField("medical_notes", v || null)} />
             </CardContent>
           </Card>
 
