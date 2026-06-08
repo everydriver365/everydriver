@@ -408,8 +408,8 @@ serve(async (req) => {
       }).then(({ error }) => { if (error) console.error("Free payment record (non-fatal):", error); });
     }
 
-    // ── 7. Notifications (free / skipNotifications=false) ─────────────────
-    if (!skipNotifications) {
+    // ── 7. Notifications (free / cash / bank / skipNotifications=false) ─────
+    if (!skipNotifications && (booking.totalPrice === 0 || booking.paymentType === "cash" || booking.paymentType === "bank")) {
       const url   = Deno.env.get("SUPABASE_URL")!;
       const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       fetch(`${url}/functions/v1/confirm-booking`, {
