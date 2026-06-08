@@ -21,9 +21,10 @@ import { useToast } from "@/hooks/use-toast";
 import { logCourseActivity } from "@/lib/courseActivityLog";
 import {
   Loader2, Mail, Phone, MapPin, CheckCircle2, Clock, XCircle,
-  AlertTriangle, Star, ArrowLeft, Copy, Undo2, History, MessageSquare, Send, FileText,
+  AlertTriangle, Star, ArrowLeft, Copy, Undo2, History, MessageSquare, Send, FileText, Trash2,
 } from "lucide-react";
 import { SendInvoiceDialog } from "@/components/invoices/SendInvoiceDialog";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   pupilId: string;
