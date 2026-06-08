@@ -230,7 +230,7 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
   }, [payments, lessons, instructor, pupil]);
 
   // ---------- Inline edit handler ----------
-  const updatePupilField = useCallback(async (field: keyof Pupil, newValue: string | null) => {
+  const updatePupilField = useCallback(async (field: keyof Pupil, newValue: string | number | boolean | null) => {
     if (!pupil) return;
     const oldValue = pupil[field];
     const payload: Record<string, unknown> = { [field]: newValue };
