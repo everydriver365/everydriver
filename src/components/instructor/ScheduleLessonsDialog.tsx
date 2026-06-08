@@ -284,7 +284,7 @@ export function ScheduleLessonsDialog({
                       mode="single"
                       selected={slot.date}
                       onSelect={(date) => date && updateSlot(slot.id, 'date', date)}
-                      disabled={(date) => date < new Date()}
+                      
                       initialFocus
                     />
                   </PopoverContent>
