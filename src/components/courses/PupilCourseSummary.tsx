@@ -653,6 +653,16 @@ export function PupilCourseSummary({ pupilId, onBack, backHref }: Props) {
                       </div>
                     </div>
                     <PaymentMethodPill method={l.payment_method} />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={working === `delete-lesson-${l.id}`}
+                      onClick={() => handleDeleteLesson(l)}
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                      title="Soft-delete lesson"
+                    >
+                      {working === `delete-lesson-${l.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                    </Button>
                   </div>
                 ))}
               </div>
