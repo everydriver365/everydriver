@@ -15,7 +15,7 @@ import { CalendarEventSheet } from "@/components/instructor/CalendarEventSheet";
 import { ScheduleFAB } from "@/components/instructor/ScheduleFAB";
 import { WeeklySummaryWidget } from "@/components/instructor/WeeklySummaryWidget";
 import { ActiveGapOffersList } from "@/components/instructor/ActiveGapOffersList";
-import { VehicleHealthGeotabTile } from "@/components/instructor/VehicleHealthGeotabTile";
+
 import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorCalendar, type CalendarEvent } from "@/hooks/useInstructorCalendar";
@@ -258,11 +258,6 @@ export default function InstructorSchedule() {
           <div className={cn("px-1", isMobile && viewMode === 'list' ? "px-4 pt-3" : "pb-2")}>
             <ActiveGapOffersList instructorId={instructorId} />
           </div>
-          {isMobile && viewMode === 'list' && (
-            <div className="px-4 pb-3">
-              <VehicleHealthGeotabTile instructorId={instructorId} />
-            </div>
-          )}
           {viewMode === 'list' ? (
             <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
           ) : viewMode === 'week' ? (
