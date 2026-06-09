@@ -1,6 +1,9 @@
 // Transcribe an audio blob via ElevenLabs Scribe.
 // Used by the instructor app's Dictate buttons (e.g. End-of-Lesson notes).
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
