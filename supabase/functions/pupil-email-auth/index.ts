@@ -35,7 +35,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, email, password, name, code, instructorId } = await req.json();
+    const { action, email, password, name, code, instructorId, phone } = await req.json();
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const admin = createClient(supabaseUrl, supabaseServiceKey, {
@@ -44,6 +44,23 @@ serve(async (req) => {
 
     if (!email) return jsonResponse({ error: "Email is required" });
     const cleanEmail = email.trim().toLowerCase();
+
+    // Rate limit: max 5 attempts per identifier per 15 minutes
+    const rateLimitKey = `${action}:${(email || phone || "").toString().toLowerCase()}`;
+    const windowStart = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const { count: rlCount } = await admin
+      .from("auth_rate_limits")
+      .select("id", { count: "exact", head: true })
+      .eq("key", rateLimitKey)
+      .gte("created_at", windowStart);
+    if ((rlCount ?? 0) >= 5) {
+      return new Response(
+        JSON.stringify({ error: "Too many attempts. Please wait 15 minutes before trying again." }),
+        { status: 429, headers: jsonHeaders }
+      );
+    }
+    await admin.from("auth_rate_limits").insert({ key: rateLimitKey });
+
 
     if (action === "login") {
       if (!password) return jsonResponse({ error: "Password is required" });
