@@ -1024,6 +1024,24 @@ export type Database = {
           },
         ]
       }
+      auth_rate_limits: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+        }
+        Relationships: []
+      }
       automation_workflows: {
         Row: {
           created_at: string
@@ -15433,6 +15451,7 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
+          identifier: string | null
           phone: string
           verified: boolean
         }
@@ -15441,6 +15460,7 @@ export type Database = {
           created_at?: string
           expires_at: string
           id?: string
+          identifier?: string | null
           phone: string
           verified?: boolean
         }
@@ -15449,6 +15469,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          identifier?: string | null
           phone?: string
           verified?: boolean
         }
