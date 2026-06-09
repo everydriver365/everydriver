@@ -152,8 +152,13 @@ Deno.serve(async (req) => {
               if (convErr || !newConv) {
                 failed++;
                 return;
-              }
-              convId = newConv.id;
+            }
+            convId = newConv.id;
+            }
+
+            if (!convId) {
+              failed++;
+              return;
             }
 
             const { error: msgErr } = await admin.from("messages").insert({
