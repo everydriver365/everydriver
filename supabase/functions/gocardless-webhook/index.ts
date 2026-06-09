@@ -122,138 +122,52 @@ async function handleBillingRequest(supabase: any, event: any) {
   const action = event.action;
 
   if (action === "fulfilled") {
-    const mandateId = event.links?.mandate;
-    const customerId = event.links?.customer;
     const paymentId = event.links?.payment;
+    const mandateId = event.links?.mandate;
 
-    // Check if this is an instructor subscription billing request
-    const { data: instructorSub } = await supabase
-      .from("instructor_subscriptions")
+    // Look up the payment intent by billing request ID
+    const { data: intent } = await supabase
+      .from("payment_intents")
       .select("*")
       .eq("gocardless_billing_request_id", billingRequestId)
       .maybeSingle();
 
-    if (instructorSub && mandateId) {
-      await supabase
-        .from("instructor_subscriptions")
-        .update({
-          gocardless_mandate_id: mandateId,
-          gocardless_customer_id: customerId,
-          status: "active",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("gocardless_billing_request_id", billingRequestId);
-
-      console.log("Instructor subscription activated:", instructorSub.instructor_id);
-      await createGoCardlessSubscription(supabase, { ...instructorSub, gocardless_mandate_id: mandateId });
+    if (!intent) {
+      console.warn("No payment intent found for billing request:", billingRequestId);
       return;
     }
 
-    // Check if this is a pupil mandate billing request
-    const { data: pupilSub } = await supabase
-      .from("pupil_subscriptions")
-      .select("*")
-      .eq("gocardless_customer_id", billingRequestId)
-      .maybeSingle();
+    // Update intent to confirmed
+    await supabase
+      .from("payment_intents")
+      .update({ status: "confirmed", gocardless_payment_id: paymentId })
+      .eq("id", intent.id);
 
-    if (pupilSub && mandateId) {
-      await supabase
-        .from("pupil_subscriptions")
-        .update({
-          gocardless_mandate_id: mandateId,
-          gocardless_customer_id: customerId,
-        } as any)
-        .eq("id", pupilSub.id);
-
-      console.log("Pupil DD mandate activated for subscription:", pupilSub.id);
-      return;
+    // Record in payment_history
+    const amountPounds = Number(intent.amount ?? 0) / 100;
+    if (intent.instructor_id && intent.pupil_id) {
+      await supabase.from("payment_history").insert({
+        pupil_id: intent.pupil_id,
+        instructor_id: intent.instructor_id,
+        amount: amountPounds,
+        payment_method: "GoCardless",
+        payment_type: "lesson_payment",
+        payout_status: "pending",
+        notes: `GoCardless Instant Bank Pay — ${paymentId}`,
+      });
     }
 
-    // Handle standalone payments (Instant Bank Pay)
-    if (paymentId) {
-      const { data: paymentIntent } = await supabase
-        .from("payment_intents")
-        .select("*")
-        .eq("gocardless_payment_id", billingRequestId)
-        .eq("payment_method", "gocardless_instant_bank_pay")
-        .maybeSingle();
-
-      if (paymentIntent) {
-        // Idempotency: prefer external_payment_ref, fall back to legacy notes match
-        const externalRef = `gocardless:${billingRequestId}`;
-        const { data: existingByRef } = await supabase
-          .from("payment_history")
-          .select("id")
-          .eq("external_payment_ref", externalRef)
-          .maybeSingle();
-
-        const { data: existingPh } = existingByRef ? { data: null } : await supabase
-          .from("payment_history")
-          .select("id")
-          .eq("pupil_id", paymentIntent.pupil_id)
-          .ilike("notes", `%billing_request_id:${billingRequestId}%`)
-          .limit(1)
-          .maybeSingle();
-
-        if (existingByRef || existingPh) {
-          console.log("IBP already recorded in payment_history, skipping:", billingRequestId);
-        } else {
-          await supabase
-            .from("payment_intents")
-            .update({
-              status: "completed",
-              gocardless_payment_id: paymentId,
-            })
-            .eq("id", paymentIntent.id);
-
-          // Resolve instructor_id from pupil
-          let instructorId: string | null = null;
-          if (paymentIntent.pupil_id) {
-            const { data: pupilRow } = await supabase
-              .from("pupils")
-              .select("instructor_id")
-              .eq("id", paymentIntent.pupil_id)
-              .maybeSingle();
-            instructorId = pupilRow?.instructor_id ?? null;
-          }
-
-          if (paymentIntent.pupil_id && paymentIntent.amount) {
-            await supabase.rpc("increment_pupil_balance", {
-              p_pupil_id: paymentIntent.pupil_id,
-              p_amount: paymentIntent.amount,
-            });
-          }
-
-          await supabase.from("payment_history").insert({
-            pupil_id: paymentIntent.pupil_id,
-            instructor_id: instructorId,
-            amount: paymentIntent.amount,
-            payment_method: "GoCardless Bank Pay",
-            payment_type: "lesson_payment",
-            external_payment_ref: externalRef,
-            notes: `Instant Bank Pay · billing_request_id:${billingRequestId} · payment_id:${paymentId}`,
-          });
-
-          console.log("Instant Bank Pay recorded:", paymentId, "instructor:", instructorId);
-        }
-
-        const metadata = paymentIntent.metadata as any;
-        if (metadata?.booking_ref && paymentIntent.pupil_id) {
-          try {
-            const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-            await fetch(`${supabaseUrl}/functions/v1/confirm-booking`, {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ pupilId: paymentIntent.pupil_id }),
-            });
-          } catch (err) {
-            console.error("confirm-booking trigger error:", err);
-          }
-        }
-      }
+    // Notify instructor
+    if (intent.instructor_id) {
+      await pushToInstructor(intent.instructor_id, {
+        title: "💰 Payment Received",
+        body: `£${amountPounds.toFixed(2)} received via GoCardless`,
+        tag: `ibp-confirmed-${paymentId}`,
+        dataType: PushDataType.PAYMENT_RECEIVED,
+        extra: { paymentId, pupilId: intent.pupil_id, amount: amountPounds, source: "gocardless_ibp" },
+        category: NotifyCategory.PAYMENT,
+        importance: NotifyImportance.NORMAL,
+      });
     }
   }
 }
