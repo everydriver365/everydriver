@@ -196,8 +196,10 @@ export default function PupilLogin() {
       // visit can use biometrics. Remember me only controls session persistence
       // (handled by persistRememberMe above), not whether Face ID is enabled.
       try {
-        await saveBiometricCredentials("pupil", loginEmail, loginPassword);
-        setFaceIdAvailable(true);
+        if (Capacitor.isNativePlatform()) {
+          await saveBiometricCredentials("pupil", loginEmail, loginPassword);
+          setFaceIdAvailable(true);
+        }
       } catch {
         // Best-effort — biometric save failure shouldn't block the login.
       }
