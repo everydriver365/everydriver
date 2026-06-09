@@ -288,6 +288,7 @@ export default function InstructorOnboarding() {
       }
     } catch (err) {
       console.error("Failed to save progress:", err);
+      toast.error("Failed to save your progress. Please try again.");
     } finally {
       setSaving(false);
     }
