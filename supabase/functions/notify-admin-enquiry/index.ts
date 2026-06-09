@@ -8,8 +8,8 @@ const corsHeaders = {
 };
 
 const ADMIN_EMAIL = Deno.env.get("ADMIN_ENQUIRY_EMAIL") || "enquiries@drive365.co.uk";
-const ADMIN_BASE = "https://everydriver.lovable.app";
-const DRIVE365_LOGO_URL = "https://everydriver.lovable.app/drive365-logo.png";
+const ADMIN_BASE = "https://everydriver.co.uk";
+const DRIVE365_LOGO_URL = "https://everydriver.co.uk/drive365-logo.png";
 
 const D365_PRIMARY = "#142040";
 const D365_ACCENT = "#2B7BC8";

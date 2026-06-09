@@ -40,7 +40,7 @@ serve(async (req) => {
     const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const siteUrl = Deno.env.get("SITE_URL") || "https://everydriver.lovable.app";
+    const siteUrl = Deno.env.get("SITE_URL") || "https://everydriver.co.uk";
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const data: SendSigningLinkRequest = await req.json();

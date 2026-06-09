@@ -42,7 +42,7 @@ serve(async (req: Request) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
-  const siteBaseUrl = callerOrigin ? decodeURIComponent(callerOrigin) : (Deno.env.get("SITE_URL") || "https://everydriver.lovable.app");
+  const siteBaseUrl = callerOrigin ? decodeURIComponent(callerOrigin) : (Deno.env.get("SITE_URL") || "https://everydriver.co.uk");
 
   // Helper: atomically update pupil balance using RPC
   async function creditPupilBalance(pPupilId: string, amount: number) {

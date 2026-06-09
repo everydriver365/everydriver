@@ -97,7 +97,7 @@ serve(async (req) => {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  from: "noreply@everydriver.lovable.app",
+                  from: "noreply@everydriver.co.uk",
                   to: context.pupil_email,
                   subject: config.subject || `Update from your instructor`,
                   html: `<p>${message.replace(/\n/g, "<br>")}</p>`,

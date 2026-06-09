@@ -9,7 +9,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const BASE_URL = "https://everydriver.lovable.app";
+const BASE_URL = "https://everydriver.co.uk";
 
 interface NotifyEnquiryBody {
   enquiryId: string;

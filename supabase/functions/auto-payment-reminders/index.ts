@@ -225,7 +225,7 @@ serve(async (req) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              from: "EveryDriver <noreply@everydriver.lovable.app>",
+              from: "EveryDriver <noreply@everydriver.co.uk>",
               to: [pupil.email],
               subject: emailSubject(tier, formattedAmount),
               html: emailHtml(tier, pupil.name, formattedAmount, instructorName),

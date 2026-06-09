@@ -109,7 +109,7 @@ serve(async (req: Request) => {
     const baseUrl =
       instructor?.custom_domain && instructor?.custom_domain_verified
         ? `https://${instructor.custom_domain.replace(/^https?:\/\//, "").replace(/\/$/, "")}`
-        : "https://everydriver.lovable.app";
+        : "https://everydriver.co.uk";
     const portalUrl = `${baseUrl}/parent`;
 
     const parentSalutation = pupil.parent_name?.trim() ? pupil.parent_name.trim() : "there";

@@ -89,7 +89,7 @@ serve(async (req) => {
             method: "POST",
             headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
-              from: `${data.instructorName} <payments@everydriver.lovable.app>`,
+              from: `${data.instructorName} <payments@everydriver.co.uk>`,
               to: [data.manualEmail],
               subject: `Payment Link from ${data.instructorName}`,
               html: `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;"><h2 style="color: #1a1a1a;">Payment Link</h2><p>Hi ${recipientName},</p><p>${data.instructorName} has sent you a payment link.</p><p style="margin: 24px 0;"><a href="${paymentLink}" style="background: #2563eb; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Pay Now</a></p><p style="color: #666; font-size: 14px;">Thank you!<br/>${data.instructorName}</p></div>`,
@@ -197,7 +197,7 @@ serve(async (req) => {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                from: `${data.instructorName} <payments@everydriver.lovable.app>`,
+                from: `${data.instructorName} <payments@everydriver.co.uk>`,
                 to: [emailToUse],
                 subject: `Payment Reminder — ${formattedAmount} outstanding`,
                 html: `

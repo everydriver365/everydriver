@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        url: `https://everydriver.lovable.app/data-deletion?code=${confirmationCode}`,
+        url: `https://everydriver.co.uk/data-deletion?code=${confirmationCode}`,
         confirmation_code: confirmationCode,
       }),
       {
