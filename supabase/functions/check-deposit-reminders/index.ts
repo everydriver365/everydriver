@@ -14,7 +14,7 @@ async function sendEmail(resendApiKey: string, to: string, subject: string, html
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Driving School <noreply@resend.dev>",
+      from: "EveryDriver <noreply@everydriver.co.uk>",
       to: [to],
       subject,
       html,
@@ -93,6 +93,17 @@ serve(async (req) => {
       else if (daysUntilDue < 0) reminderType = "overdue";
 
       if (!reminderType) continue;
+
+      // Skip if already sent today
+      const todayStr = today.toISOString().split("T")[0];
+      const { data: alreadySent } = await supabase
+        .from("deposit_reminder_log")
+        .select("id")
+        .eq("pupil_id", pupil.id)
+        .eq("reminder_type", reminderType)
+        .gte("sent_at", todayStr)
+        .maybeSingle();
+      if (alreadySent) continue;
 
       console.log(`Processing ${reminderType} reminder for ${pupil.name} (${pupil.id})`);
 
@@ -218,6 +229,15 @@ serve(async (req) => {
       if (reminderType === "14_days") results.reminders_14_days++;
       else if (reminderType === "7_days") results.reminders_7_days++;
       else if (reminderType === "1_day") results.reminders_1_day++;
+
+      // Log that reminder was sent (idempotency)
+      await supabase.from("deposit_reminder_log").insert({
+        pupil_id: pupil.id,
+        instructor_id: instructor.id,
+        reminder_type: reminderType,
+        amount_owed: amountOwed,
+        sent_at: new Date().toISOString(),
+      });
     }
 
     console.log("Reminder results:", results);
