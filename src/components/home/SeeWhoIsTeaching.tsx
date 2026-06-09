@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import everydriverLogo from "@/assets/everydriver-logo-jun7-v3.png.asset.json";
+import everydriverLogo from "@/../public/everydriver-logo-v4.png";
 
 interface InstructorRow {
   id: string;
@@ -115,7 +115,7 @@ export default function SeeWhoIsTeaching() {
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ display: "inline-block", background: "#FFFFFF", padding: "10px 18px", borderRadius: 10, marginBottom: 18 }}>
             <img
-              src={everydriverLogo.url}
+              src={everydriverLogo}
               alt="EveryDriver.co.uk"
               style={{ height: 36, width: "auto", display: "block" }}
             />
