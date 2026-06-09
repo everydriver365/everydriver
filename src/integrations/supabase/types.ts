@@ -3392,6 +3392,33 @@ export type Database = {
         }
         Relationships: []
       }
+      deposit_reminder_log: {
+        Row: {
+          amount_owed: number | null
+          id: string
+          instructor_id: string
+          pupil_id: string
+          reminder_type: string
+          sent_at: string
+        }
+        Insert: {
+          amount_owed?: number | null
+          id?: string
+          instructor_id: string
+          pupil_id: string
+          reminder_type: string
+          sent_at?: string
+        }
+        Update: {
+          amount_owed?: number | null
+          id?: string
+          instructor_id?: string
+          pupil_id?: string
+          reminder_type?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
       digital_waivers: {
         Row: {
           content_html: string
