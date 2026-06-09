@@ -47,7 +47,7 @@ const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
 const GoogleApiDisclosure = lazy(() => import("@/pages/GoogleApiDisclosure"));
 const DataDeletion = lazy(() => import("@/pages/DataDeletion"));
-const PupilPortal = lazy(() => import("@/pages/PupilPortal"));
+
 const PupilLogin = lazy(() => import("@/pages/PupilLogin"));
 const Drive365Login = lazy(() => import("@/pages/Drive365Login"));
 const BrandedPupilPortal = lazy(() => import("@/pages/BrandedPupilPortal"));
@@ -98,7 +98,7 @@ export const everydriverRoutes = (
 
     {/* Shared (uncloned) */}
     <Route path="/sitemap.xml" element={<SitemapRedirect />} />
-    <Route path="/pupil" element={<PupilPortal />} />
+    <Route path="/pupil" element={<Navigate to="/login" replace />} />
     <Route path="/pupil/login" element={<Navigate to="/login" replace />} />
     <Route path="/pupil/login/:instructorSlug" element={<PupilLogin />} />
     <Route path="/drive365/login" element={<Navigate to="/login" replace />} />

@@ -17,7 +17,7 @@ const WhitelabelCourses = lazy(() => import("@/pages/WhitelabelCourses"));
 const WhitelabelAreaPage = lazy(() => import("@/pages/WhitelabelAreaPage"));
 const BookingSummary = lazy(() => import("@/pages/BookingSummary"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
-const PupilPortal = lazy(() => import("@/pages/PupilPortal"));
+
 const PupilLogin = lazy(() => import("@/pages/PupilLogin"));
 const Drive365Login = lazy(() => import("@/pages/Drive365Login"));
 const BrandedPupilPortal = lazy(() => import("@/pages/BrandedPupilPortal"));
@@ -134,7 +134,7 @@ export const publicRoutes = (
     <Route path="/areas/:slug" element={<WhitelabelAreaPage />} />
     <Route path="/book/:instructorId" element={<BookingSummary />} />
     <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-    <Route path="/pupil" element={<PupilPortal />} />
+    <Route path="/pupil" element={<Navigate to="/login" replace />} />
     <Route path="/pupil/login" element={<Navigate to="/login" replace />} />
     <Route path="/pupil/login/:instructorSlug" element={<PupilLogin />} />
     <Route path="/drive365/login" element={<Navigate to="/login" replace />} />
