@@ -96,6 +96,16 @@ export function useInstructorAdminChat(instructorId: string | undefined) {
       });
 
       if (error) throw error;
+
+      // M7 — Notify admin via email (fire-and-forget)
+      supabase.functions.invoke("notify-admin-message", {
+        body: {
+          instructor_id: instructorId,
+          conversation_id: conversation.id,
+          content: content.trim().slice(0, 500),
+        },
+      }).catch((e) => console.error("notify-admin-message failed (non-fatal):", e));
+
       return true;
     } catch (error) {
       console.error("Error sending message:", error);

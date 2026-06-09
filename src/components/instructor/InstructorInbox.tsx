@@ -94,7 +94,10 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
 
   // Fetch admin unread count
   useEffect(() => {
-    const fetchAdminUnread = async () => {
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const init = async () => {
       try {
         // Get the admin conversation for this instructor
         const { data: conv } = await supabase
@@ -103,41 +106,47 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
           .eq("instructor_id", instructorId)
           .maybeSingle();
 
-        if (conv) {
+        if (!conv || cancelled) return;
+        const adminConversationId = conv.id;
+
+        const fetchAdminUnread = async () => {
           const { count } = await supabase
             .from("admin_messages")
             .select("*", { count: "exact", head: true })
-            .eq("conversation_id", conv.id)
+            .eq("conversation_id", adminConversationId)
             .eq("sender_type", "admin")
             .is("read_at", null);
+          if (!cancelled) setAdminUnreadCount(count || 0);
+        };
 
-          setAdminUnreadCount(count || 0);
-        }
+        await fetchAdminUnread();
+
+        // C3 — Subscribe filtered to this instructor's admin conversation only
+        channel = supabase
+          .channel(`admin-messages-badge-${adminConversationId}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "admin_messages",
+              filter: `conversation_id=eq.${adminConversationId}`,
+            },
+            () => {
+              fetchAdminUnread();
+            }
+          )
+          .subscribe();
       } catch (error) {
         console.error("Error fetching admin unread:", error);
       }
     };
 
-    fetchAdminUnread();
-
-    // Subscribe to admin messages
-    const channel = supabase
-      .channel("admin-messages-badge")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "admin_messages",
-        },
-        () => {
-          fetchAdminUnread();
-        }
-      )
-      .subscribe();
+    init();
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
     };
   }, [instructorId]);
 

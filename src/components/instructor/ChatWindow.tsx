@@ -320,7 +320,7 @@ export function ChatWindow({
     if (!messageToDelete) return;
     setDeletingMessage(true);
     try {
-      const success = await softDeleteMessage(messageToDelete);
+      const success = await softDeleteMessage(messageToDelete, instructorId);
       if (!success) throw new Error("Failed");
       toast({ title: "Message deleted" });
       setMessageToDelete(null);
@@ -882,6 +882,7 @@ export function ChatWindow({
                 onFocus={() => setKeyboardOpen(true)}
                 onBlur={() => setKeyboardOpen(false)}
                 disabled={sending}
+                maxLength={2000}
                 style={{
                   flex: 1,
                   minWidth: 0,
@@ -893,6 +894,18 @@ export function ChatWindow({
                   fontFamily: FONT_STACK,
                 }}
               />
+              {newMessage.length > 1800 && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: newMessage.length >= 2000 ? "#D92E3A" : MUTED,
+                    flexShrink: 0,
+                    fontFamily: FONT_STACK,
+                  }}
+                >
+                  {newMessage.length}/2000
+                </span>
+              )}
               <button
                 type="button"
                 onClick={handleVoiceNote}
