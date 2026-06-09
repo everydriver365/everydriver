@@ -274,6 +274,11 @@ export default function InstructorOnboarding() {
           car_model: data.car_model,
           hourly_rate: data.hourly_rate,
           logo_url: data.logo_url,
+          is_cpd_certified: data.is_cpd_certified,
+          follows_code_of_practice: data.follows_code_of_practice,
+          primary_color: data.primary_color,
+          wants_featured: data.wantsFeatured,
+          lesson_durations: data.lesson_durations,
         } as any)
         .eq("id", instructorId);
 
