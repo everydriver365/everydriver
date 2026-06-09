@@ -1,0 +1,1 @@
+DELETE FROM messages WHERE content = 'TEST MESSAGE - instructor to pupil';
