@@ -1,0 +1,1 @@
+UPDATE messages SET deleted_at = now() WHERE id = '13c1a399-7704-43df-82f1-b9ed45a4af37';
