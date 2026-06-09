@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import dsmLogo from "@/assets/dsm-logo.png";
 // New EveryDriver logo uploaded June 9
-123: const everyDriverLogo = "/logo.png";
+const everyDriverLogo = "/logo.png";
 // Drive365 is parked — learner-facing routes now render EveryDriver branding.
 const learnerLogo = everyDriverLogo;
 
