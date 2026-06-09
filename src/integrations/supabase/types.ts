@@ -21684,6 +21684,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_drive_coins: {
+        Args: { p_amount: number; p_pupil_id: string }
+        Returns: undefined
+      }
       increment_pupil_balance: {
         Args: { p_amount: number; p_pupil_id: string }
         Returns: number
