@@ -34,6 +34,7 @@ import pupilHero from "@/assets/drive365-hero-learner.webp";
 import mobileLoginHero from "@/assets/mobile-login-hero.png";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
+import { Capacitor } from "@capacitor/core";
 import {
   isBiometricAvailable,
   getBiometricCredentials,
@@ -195,8 +196,10 @@ export default function PupilLogin() {
       // visit can use biometrics. Remember me only controls session persistence
       // (handled by persistRememberMe above), not whether Face ID is enabled.
       try {
-        await saveBiometricCredentials("pupil", loginEmail, loginPassword);
-        setFaceIdAvailable(true);
+        if (Capacitor.isNativePlatform()) {
+          await saveBiometricCredentials("pupil", loginEmail, loginPassword);
+          setFaceIdAvailable(true);
+        }
       } catch {
         // Best-effort — biometric save failure shouldn't block the login.
       }
