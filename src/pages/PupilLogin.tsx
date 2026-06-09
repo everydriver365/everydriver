@@ -34,6 +34,7 @@ import pupilHero from "@/assets/drive365-hero-learner.webp";
 import mobileLoginHero from "@/assets/mobile-login-hero.png";
 import { MobileLoginHero } from "@/components/auth/MobileLoginHero";
 import { UnifiedMobileLoginCard } from "@/components/auth/UnifiedMobileLoginCard";
+import { Capacitor } from "@capacitor/core";
 import {
   isBiometricAvailable,
   getBiometricCredentials,
