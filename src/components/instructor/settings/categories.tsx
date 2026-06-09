@@ -68,15 +68,14 @@ export function useSettingsCategories(): SettingsCategory[] {
     {
       id: "account",
       title: "Account",
-      description: "Profile, vehicle, photos and compliance",
+      description: "Your profile, credentials and account security",
       icon: User,
       iconBg: "#DBEAFE",
       iconColor: "#1E40AF",
       sections: [
         {
           id: "profile",
-          title: "Profile & contact details",
-          description: "Photo, name, email, phone and bio",
+          title: "Profile & contact",
           render: () => (
             <div className="space-y-6">
               <ProfileBasicsEditor instructorId={id} />
@@ -86,102 +85,78 @@ export function useSettingsCategories(): SettingsCategory[] {
             </div>
           ),
         },
-        {
-          id: "media",
-          title: "Profile media",
-          description: "Banner image, car photo and welcome video",
-          render: () => <ProfileMediaEditor instructorId={id} />,
-        },
-        {
-          id: "qualifications",
-          title: "Qualifications & credentials",
-          description: "ADI badge, DBS, licence and insurance documents",
-          render: () => <QualificationsEditor instructorId={id} />,
-        },
-        {
-          id: "standards-check",
-          title: "DVSA Standards Check",
-          description: "Date, result, trigger points and driving test link",
-          render: () => <CompactStandardsCheck instructorId={id} />,
-        },
-        {
-          id: "compliance",
-          title: "Vehicle docs & CPD",
-          description: "MOT, road tax and CPD logging",
-          render: () => <ComplianceTracker instructorId={id} />,
-        },
-        {
-          id: "security",
-          title: "Login & security",
-          description: "Change email, password and sign out everywhere",
-          render: () => <AccountSecurityPanel />,
-        },
-        {
-          id: "danger",
-          title: "Plan, data & danger zone",
-          description: "Plan & billing, data export, delete account",
-          render: () => <AccountDangerZone instructorId={id} />,
-        },
+        { id: "media", title: "Profile media", render: () => <ProfileMediaEditor instructorId={id} /> },
+        { id: "qualifications", title: "Qualifications & credentials", render: () => <QualificationsEditor instructorId={id} /> },
+        { id: "standards-check", title: "DVSA Standards Check", render: () => <CompactStandardsCheck instructorId={id} /> },
+        { id: "compliance", title: "Vehicle docs & CPD", render: () => <ComplianceTracker instructorId={id} /> },
+        { id: "security", title: "Login & security", render: () => <AccountSecurityPanel /> },
       ],
     },
     {
       id: "business",
       title: "Business",
-      description: "Terms, policies and pupil-facing branding",
+      description: "Rates, coverage, courses, policies and branding",
       icon: Briefcase,
-      iconBg: "#F4F4F5",
-      iconColor: "#52525B",
+      iconBg: "#FEF3C7",
+      iconColor: "#D97706",
       sections: [
         {
+          id: "hourly-rate",
+          title: "Hourly rate & surcharges",
+          render: () => (
+            <div className="space-y-6">
+              <HourlyRateSection instructorId={id} />
+              <div className="border-t pt-6">
+                <RateModifiersSection instructorId={id} />
+              </div>
+            </div>
+          ),
+        },
+        { id: "coverage", title: "Coverage area", render: () => <CoverageSection instructorId={id} /> },
+        { id: "postcode-rates", title: "Postcode rates", render: () => <PostcodeRatesSection instructorId={id} /> },
+        {
+          id: "courses",
+          title: "Courses & packages",
+          render: () => (
+            <div className="space-y-6">
+              <InstructorCoursesManager instructorId={id} />
+              <div className="border-t pt-6">
+                <LessonPackageManager instructorId={id} />
+              </div>
+            </div>
+          ),
+        },
+        { id: "discounts", title: "Discount codes", render: () => <InstructorDiscountCodesManager instructorId={id} /> },
+        {
           id: "terms",
-          title: "Terms & Conditions",
-          description: "Create the agreement pupils sign before lessons",
-          render: () => <TermsConditionsEditor instructorId={id} />,
+          title: "Terms & cancellation policy",
+          render: () => (
+            <div className="space-y-6">
+              <TermsConditionsEditor instructorId={id} />
+              <div className="border-t pt-6">
+                <CancellationPolicyEditor instructorId={id} />
+              </div>
+              <div className="border-t pt-6">
+                <NoShowPolicySettings instructorId={id} />
+              </div>
+            </div>
+          ),
         },
-        {
-          id: "cancellation",
-          title: "Cancellation policy",
-          description: "Notice periods and charges",
-          render: () => <CancellationPolicyEditor instructorId={id} />,
-        },
-        {
-          id: "no-show",
-          title: "No-show policy",
-          description: "Fees for missed and late-cancelled lessons",
-          render: () => <NoShowPolicySettings instructorId={id} />,
-        },
-        {
-          id: "branding",
-          title: "Pupil app branding",
-          description: "Colours, logo and look in the pupil portal",
-          render: () => <PupilAppBrandingEditor instructorId={id} />,
-        },
-        {
-          id: "gdpr",
-          title: "GDPR data retention",
-          description: "Auto-flag stale pupil records",
-          render: () => <GDPRRetentionWidget instructorId={id} />,
-        },
+        { id: "test-centres", title: "Test centres & examiners", render: () => <TestCentresAndExaminersManager instructorId={id} /> },
+        { id: "referrals", title: "Referrals", render: () => <ReferralSettingsCard instructorId={id} /> },
       ],
     },
     {
       id: "bookings",
-      title: "Bookings & Payments",
-      description: "Courses, pricing and how pupils pay",
+      title: "Booking & payments",
+      description: "How pupils book, pay and what options they see",
       icon: CreditCard,
-      iconBg: "#ECFDF5",
-      iconColor: "#059669",
+      iconBg: "#DCFCE7",
+      iconColor: "#16A34A",
       sections: [
-        {
-          id: "courses",
-          title: "Courses you offer",
-          description: "Toggle, price and order your lesson types",
-          render: () => <InstructorCoursesManager instructorId={id} />,
-        },
         {
           id: "booking-mode",
           title: "Booking mode",
-          description: "How pupils pick a lesson time",
           render: () => (
             <BookingModeSelector
               instructorId={id}
@@ -189,16 +164,15 @@ export function useSettingsCategories(): SettingsCategory[] {
             />
           ),
         },
-        {
-          id: "deposits",
-          title: "Deposit payments",
-          description: "Take a deposit at booking",
-          render: () => <DepositSettingsEditor instructorId={id} />,
-        },
+        { id: "lesson-length", title: "Lesson length & buffer", render: () => <LessonLengthBufferEditor instructorId={id} /> },
+        { id: "self-service", title: "Pupil self-service", render: () => <PupilBookingSettingsEditor instructorId={id} /> },
+        { id: "intake", title: "Intake questions", render: () => <IntakeQuestionsSettings instructorId={id} /> },
+        { id: "pricing-rules", title: "Pricing rules", render: () => <PricingRulesSettings instructorId={id} /> },
+        { id: "deposits", title: "Deposit settings", render: () => <DepositSettingsEditor instructorId={id} /> },
+        { id: "payment-options", title: "Payment options", render: () => <PaymentOptionsSettings instructorId={id} /> },
         {
           id: "commission",
-          title: "Card service fee & QR codes",
-          description: "Who pays the platform fee",
+          title: "Commission payer",
           render: () => (
             <CommissionPayerSettings
               instructorId={id}
@@ -209,8 +183,7 @@ export function useSettingsCategories(): SettingsCategory[] {
         },
         {
           id: "square",
-          title: "Square account",
-          description: "Connect Square for automatic card payouts",
+          title: "Square",
           render: () => (
             <SquareConnectSettings
               instructorId={id}
@@ -220,298 +193,101 @@ export function useSettingsCategories(): SettingsCategory[] {
             />
           ),
         },
-        {
-          id: "bnpl",
-          title: "Buy now, pay later",
-          description: "Klarna and Clearpay on your mini-website",
-          render: () => <PaymentOptionsSettings instructorId={id} compact />,
-        },
-        {
-          id: "discounts",
-          title: "Discount codes",
-          description: "Promo codes pupils can redeem",
-          render: () => <InstructorDiscountCodesManager instructorId={id} />,
-        },
-        {
-          id: "packages",
-          title: "Lesson packages",
-          description: "Pre-paid block bookings",
-          render: () => <LessonPackageManager instructorId={id} />,
-        },
-        {
-          id: "intake",
-          title: "Intake questions",
-          description: "Custom questions on the booking form",
-          render: () => <IntakeQuestionsSettings instructorId={id} />,
-        },
-        {
-          id: "pricing-rules",
-          title: "Price adjustment rules",
-          description: "Dynamic pricing by time, day or zone",
-          render: () => <PricingRulesSettings instructorId={id} />,
-        },
-        {
-          id: "referrals",
-          title: "Referral programme",
-          description: "Reward pupils for introducing friends",
-          render: () => <ReferralSettingsCard instructorId={id} />,
-        },
       ],
     },
     {
       id: "schedule",
       title: "Schedule",
-      description: "Working hours, calendar and reminders",
+      description: "Working hours, calendar sync and reminders",
       icon: Calendar,
-      iconBg: "#DBEAFE",
-      iconColor: "#1E40AF",
+      iconBg: "#EDE9FE",
+      iconColor: "#7C3AED",
       sections: [
-        {
-          id: "hours",
-          title: "Working hours",
-          description: "Set the days and times you teach",
-          render: () => <WorkingHoursEditor instructorId={id} />,
-        },
-        {
-          id: "lesson-length",
-          title: "Lesson length, buffer & bank holidays",
-          description: "Default duration, gap between lessons and bank-holiday auto-block",
-          render: () => <LessonLengthBufferEditor instructorId={id} />,
-        },
-        {
-          id: "self-service",
-          title: "Pupil self-service booking",
-          description: "Let pupils book, cancel and reschedule themselves",
-          render: () => <PupilBookingSettingsEditor instructorId={id} />,
-        },
-        {
-          id: "calendar",
-          title: "Google Calendar sync",
-          description: "Two-way sync between lessons and your calendar",
-          render: () => <IcsCalendarSync instructorId={id} />,
-        },
-        {
-          id: "reminders",
-          title: "Lesson reminders",
-          description: "Automatic SMS, email and WhatsApp reminders",
-          render: () => <ReminderSettings instructorId={id} />,
-        },
+        { id: "hours", title: "Working hours", render: () => <WorkingHoursEditor instructorId={id} /> },
+        { id: "calendar", title: "Calendar sync", render: () => <IcsCalendarSync instructorId={id} /> },
+        { id: "reminders", title: "Lesson reminders", render: () => <ReminderSettings instructorId={id} /> },
       ],
     },
     {
-      id: "vehicle",
-      title: "Vehicle & Tracking",
-      description: "GPS, routes, dashcam and mileage",
+      id: "pupil-portal",
+      title: "Pupil portal & branding",
+      description: "How your pupil-facing portal looks and works",
       icon: Car,
-      iconBg: "#EDF2FE",
-      iconColor: "#1A52A0",
+      iconBg: "#FEE2E2",
+      iconColor: "#DC2626",
       sections: [
+        { id: "branding", title: "Pupil app branding", render: () => <PupilAppBrandingEditor instructorId={id} /> },
         {
-          id: "gps",
-          title: "GPS tracking",
-          description: "Configure live location and route recording",
-          render: () => (
-            <ExternalSection to="/instructor/settings/gps" label="Open GPS setup" />
-          ),
-        },
-        {
-          id: "routes",
-          title: "Saved routes",
-          description: "Browse the routes you've recorded",
-          render: () => (
-            <ExternalSection to="/instructor/routes" label="Open saved routes" />
-          ),
-        },
-        {
-          id: "fuel",
-          title: "Fuel & MPG",
-          description: "Track fuel costs and efficiency",
-          render: () => (
-            <ExternalSection to="/instructor/fuel" label="Open fuel tracking" />
-          ),
-        },
-        {
-          id: "mileage",
-          title: "Mileage log",
-          description: "HMRC-ready mileage for tax",
-          render: () => (
-            <ExternalSection to="/instructor/mileage" label="Open mileage log" />
-          ),
+          id: "mini-website",
+          title: "Mini website",
+          render: () => {
+            const slug = (instructor as { app_slug?: string })?.app_slug;
+            return (
+              <div className="space-y-6">
+                <MiniWebsiteShare instructorId={id} />
+                <div className="border-t pt-6">
+                  {slug
+                    ? <MiniWebsiteCMS instructorId={id} instructorSlug={slug} />
+                    : <p className="text-sm text-muted-foreground">Your website URL is being set up.</p>}
+                </div>
+                <div className="border-t pt-6">
+                  <MiniWebsiteThemeEditor
+                    instructorId={id}
+                    currentSettings={{
+                      website_theme: (instructor as { website_theme?: string })?.website_theme,
+                      website_font: (instructor as { website_font?: string })?.website_font,
+                      website_header_style: (instructor as { website_header_style?: string })?.website_header_style,
+                      brand_colour: (instructor as { brand_colour?: string })?.brand_colour,
+                    }}
+                    onUpdate={refreshInstructor}
+                  />
+                </div>
+              </div>
+            );
+          },
         },
       ],
     },
     {
       id: "comms",
-      title: "Communication",
-      description: "Notifications, calls and messaging",
+      title: "Notifications & communications",
+      description: "Push, SMS, WhatsApp and AI call answering",
       icon: MessageCircle,
-      iconBg: "#FEF3C7",
-      iconColor: "#92400E",
+      iconBg: "#E0F2FE",
+      iconColor: "#0284C7",
       sections: [
+        { id: "notification-prefs", title: "Notification preferences", render: () => <NotificationPreferencesPanel instructorId={id} /> },
+        { id: "push", title: "Push notifications", render: () => <PushNotificationSettings instructorId={id} /> },
         {
-          id: "notification-prefs",
-          title: "Notification preferences",
-          description: "What you get notified about",
-          render: () => <NotificationPreferencesPanel instructorId={id} />,
-        },
-        {
-          id: "push",
-          title: "Push notifications",
-          description: "Enable push on this device",
-          render: () => <PushNotificationSettings instructorId={id} />,
-        },
-        {
-          id: "call-answering",
-          title: "Call answering",
-          description: "Choose how incoming pupil calls are answered",
-          render: () => <CallAnsweringSettings instructorId={id} />,
-        },
-        {
-          id: "famulor",
-          title: "AI phone assistant",
-          description: "Famulor calls, campaigns, agents and analytics",
-          render: () => <FamulorHub scope="instructor" instructorId={id} />,
-        },
-        {
-          id: "whatsapp",
-          title: "WhatsApp Business",
-          description: "Connect your WhatsApp account and templates",
+          id: "ai-call",
+          title: "AI call answering",
           render: () => (
-            <ExternalSection to="/instructor/settings/whatsapp" label="Open WhatsApp settings" />
+            <div className="space-y-6">
+              <CallAnsweringSettings instructorId={id} />
+              <div className="border-t pt-6">
+                <FamulorHub scope="instructor" instructorId={id} />
+              </div>
+            </div>
           ),
         },
       ],
     },
     {
-      id: "website",
-      title: "Website & Mini-site",
-      description: "Your share link, pages and theme",
+      id: "integrations",
+      title: "Integrations & data",
+      description: "Accounting, features, appearance and data",
       icon: Plug,
-      iconBg: "#FFE4E6",
-      iconColor: "#BE123C",
-      sections: [
-        {
-          id: "share",
-          title: "Share link",
-          description: "Send pupils to your booking page",
-          render: () => <MiniWebsiteShare instructorId={id} />,
-        },
-        {
-          id: "pages",
-          title: "Website pages",
-          description: "Edit your 5-page mini-website",
-          render: () => {
-            const slug = (instructor as { app_slug?: string })?.app_slug;
-            return slug
-              ? <MiniWebsiteCMS instructorId={id} instructorSlug={slug} />
-              : <p className="text-sm text-muted-foreground">Your website URL is being set up.</p>;
-          },
-        },
-        {
-          id: "theme",
-          title: "Website theme",
-          description: "Colours, fonts and style presets",
-          render: () => (
-            <MiniWebsiteThemeEditor
-              instructorId={id}
-              currentSettings={{
-                website_theme: (instructor as { website_theme?: string })?.website_theme,
-                website_font: (instructor as { website_font?: string })?.website_font,
-                website_header_style: (instructor as { website_header_style?: string })?.website_header_style,
-                brand_colour: (instructor as { brand_colour?: string })?.brand_colour,
-              }}
-              onUpdate={refreshInstructor}
-            />
-          ),
-        },
-        {
-          id: "test-centres",
-          title: "Test centres & examiners",
-          description: "Used on your mini-website and pupil app",
-          render: () => <TestCentresAndExaminersManager instructorId={id} />,
-        },
-      ],
-    },
-    {
-      id: "advanced",
-      title: "Advanced & Account",
-      description: "Layout, data, plan and danger zone",
-      icon: SettingsIcon,
       iconBg: "#F4F4F5",
       iconColor: "#52525B",
       sections: [
-        {
-          id: "feature-toggles",
-          title: "Optional features",
-          description: "Turn portal modules on or off",
-          render: () => <FeatureTogglesSettings instructorId={id} />,
-        },
-        {
-          id: "layout",
-          title: "Dashboard layout",
-          description: "Customise your home tiles",
-          render: () => <DashboardLayoutManager instructorId={id} />,
-        },
-        {
-          id: "appearance",
-          title: "Appearance",
-          description: "Wallpaper and visual options",
-          render: () => <AppearanceSettings instructorId={id} />,
-        },
-        {
-          id: "export",
-          title: "Data export & backup",
-          description: "Download your data as CSV",
-          render: () => <DataExportManager instructorId={id} />,
-        },
-        {
-          id: "plan",
-          title: "Plan & billing",
-          description: "Subscription, invoices and add-ons",
-          render: () => (
-            <ExternalSection to="/instructor/billing" label="Open Plan & Billing" />
-          ),
-        },
-        {
-          id: "reset",
-          title: "Reset statistics",
-          description: "Clear lesson history, payments or progress",
-          render: () => <ResetStatsDialog instructorId={id} />,
-        },
-      ],
-    },
-    {
-      id: "rates",
-      title: "Rates & coverage",
-      description: "Hourly rate, service area and postcode pricing",
-      icon: MapPin,
-      iconBg: "#ECFDF5",
-      iconColor: "#059669",
-      sections: [
-        {
-          id: "hourly",
-          title: "Hourly rate",
-          description: "Your default hourly rate for new bookings",
-          render: () => <HourlyRateSection instructorId={id} />,
-        },
-        {
-          id: "coverage",
-          title: "Coverage area",
-          description: "Where you'll travel for lessons",
-          render: () => <CoverageSection instructorId={id} />,
-        },
-        {
-          id: "postcode-rates",
-          title: "Postcode rates",
-          description: "Charge a different hourly rate for specific postcode areas",
-          render: () => <PostcodeRatesSection instructorId={id} />,
-        },
-        {
-          id: "rate-modifiers",
-          title: "Surcharges (weekend, bank holiday, off-peak)",
-          description: "Charge more on weekends, UK bank holidays, or outside normal hours",
-          render: () => <RateModifiersSection instructorId={id} />,
-        },
+        { id: "layout", title: "Dashboard layout", render: () => <DashboardLayoutManager instructorId={id} /> },
+        { id: "appearance", title: "Appearance", render: () => <AppearanceSettings instructorId={id} /> },
+        { id: "feature-toggles", title: "Feature toggles", render: () => <FeatureTogglesSettings instructorId={id} /> },
+        { id: "export", title: "Data export", render: () => <DataExportManager instructorId={id} /> },
+        { id: "gdpr", title: "GDPR & data retention", render: () => <GDPRRetentionWidget instructorId={id} /> },
+        { id: "plan", title: "Plan & billing", render: () => <ExternalSection to="/instructor/billing" label="Open Plan & Billing" /> },
+        { id: "reset", title: "Reset statistics", render: () => <ResetStatsDialog instructorId={id} /> },
+        { id: "delete", title: "Delete account", render: () => <AccountDangerZone instructorId={id} /> },
       ],
     },
   ];
