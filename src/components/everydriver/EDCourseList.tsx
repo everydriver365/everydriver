@@ -20,6 +20,7 @@ interface EDCourse {
     hourly_rate?: number | null;
     profile_image_url?: string | null;
     home_postcode?: string | null;
+    is_network_placeholder?: boolean | null;
   };
   hours: number;
   bookableDate: Date;
@@ -184,8 +185,13 @@ export function EDCourseList({ courses }: EDCourseListProps) {
               {/* C — details */}
               <div className="flex-1 min-w-0 px-3.5 py-3 flex flex-col justify-between gap-2">
                 <div className="min-w-0">
-                  <div className="text-[13px] font-bold text-[#0A0E27] truncate">
-                    {courseTypeLabel(c)} · {transmissionLabel(c.instructor.car_type)}
+                  <div className="text-[13px] font-bold text-[#0A0E27] truncate flex items-center gap-1.5">
+                    <span className="truncate">{courseTypeLabel(c)} · {transmissionLabel(c.instructor.car_type)}</span>
+                    {c.instructor.is_network_placeholder && (
+                      <span className="shrink-0 inline-flex items-center rounded border border-[#E5E7EB] bg-[#F9FAFB] px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-wide text-[#6B7280]">
+                        Enquire only
+                      </span>
+                    )}
                   </div>
                   <div className="mt-0.5 text-[11px] text-[#9CA3AF] truncate">
                     Starts {format(c.bookableDate, "EEE d MMM")}
@@ -329,8 +335,13 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div style={{ fontSize: 15, fontWeight: 700, color: NAVY }}>
-                    {courseTypeLabel(c)} · {transmissionLabel(c.instructor.car_type)}
+                  <div style={{ fontSize: 15, fontWeight: 700, color: NAVY }} className="flex items-center gap-1.5 flex-wrap">
+                    <span>{courseTypeLabel(c)} · {transmissionLabel(c.instructor.car_type)}</span>
+                    {c.instructor.is_network_placeholder && (
+                      <span className="inline-flex items-center rounded border border-[#E5E7EB] bg-[#F9FAFB] px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-wide text-[#6B7280]">
+                        Enquire only
+                      </span>
+                    )}
                   </div>
                   <div
                     className="flex items-center"

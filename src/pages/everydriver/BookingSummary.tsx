@@ -639,6 +639,34 @@ export default function BookingSummary() {
     lastBookingAttemptRef.current = { paymentType, amountPaid };
 
     try {
+      // M5: Belt-and-braces client-side slot freshness check before payment redirect.
+      // The create-booking edge function also validates, but checking here lets us
+      // surface a friendlier message before any payment provider is invoked.
+      if (selectedSlots.length > 0) {
+        const slotDates = Array.from(new Set(
+          selectedSlots.map((s) => s.date.toISOString().slice(0, 10))
+        ));
+        const { data: existing } = await supabase
+          .from("scheduled_lessons")
+          .select("lesson_date, start_time")
+          .eq("instructor_id", instructor.id)
+          .in("lesson_date", slotDates)
+          .neq("status", "cancelled")
+          .is("deleted_at", null);
+        if (existing && existing.length > 0) {
+          const taken = new Set(existing.map((r: any) => `${r.lesson_date}__${(r.start_time || "").slice(0, 5)}`));
+          const clash = selectedSlots.find((s) => {
+            const dateStr = s.date.toISOString().slice(0, 10);
+            return taken.has(`${dateStr}__${s.startTime.slice(0, 5)}`);
+          });
+          if (clash) {
+            toast.error("Sorry, one of your selected slots has just been booked by someone else. Please choose another time.");
+            bookingInProgressRef.current = false;
+            return null;
+          }
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke("create-booking", {
         body: {
           instructorId: instructor.id,
@@ -1199,14 +1227,17 @@ export default function BookingSummary() {
   // Enquiry-only mode: short-circuit the entire payment/scheduling flow
   if (bookingMode === "enquiry_only") {
     return (
-      <EnquiryFlow
-        instructor={instructor}
-        courseName={courseName}
-        hours={hours}
-        totalPrice={totalPrice}
-        courseImageUrl={courseImageUrl}
-        locationName={locationName}
-      />
+      <MainLayout>
+        <SEOHead title="Enquire About Lessons | EveryDriver" />
+        <EnquiryFlow
+          instructor={instructor}
+          courseName={courseName}
+          hours={hours}
+          totalPrice={totalPrice}
+          courseImageUrl={courseImageUrl}
+          locationName={locationName}
+        />
+      </MainLayout>
     );
   }
 
