@@ -24,7 +24,7 @@ import SeeWhoIsTeaching from "@/components/home/SeeWhoIsTeaching";
 import PupilReviewsSection from "@/components/home/PupilReviewsSection";
 
 const NAV_LINKS = [
-  { label: "Find an instructor", href: "/instructors" },
+  { label: "Find an instructor", href: "/courses" },
   { label: "Courses", href: "/courses" },
   { label: "Test swap", href: "/test-swap" },
   { label: "Theory test", href: "/theory" },
@@ -85,7 +85,7 @@ const COURSES = [
     priceFrom: "£30",
     priceUnit: "/hour",
     ctaLabel: "View lessons",
-    ctaHref: "/courses?type=weekly",
+    ctaHref: "/courses",
     ctaBg: "#0A1628",
     ctaHoverBg: "#1A2332",
     featured: false,
@@ -369,7 +369,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
           .d365-why-right p { font-size: 16px; line-height: 1.6; color: #4B5563; margin: 0; }
           .d365-why-right p b { color: #0A0A0A; font-weight: 700; }
         }
-        @media (max-width: 767px) { .d365-hero-wrap, .d365-why-wrap { display: none; } }
+        
       `}</style>
 
       {/* New Drive 365 hero (desktop only) */}
@@ -393,6 +393,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
             <img
               src={heroPlaceholderImg}
               alt="Smiling young learner driver holding a steering wheel, ready to start lessons with EveryDriver"
+              fetchPriority="high"
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
           </div>
@@ -461,7 +462,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                 <div className="d365-feat-body">
                   <h3>Weekly Lessons</h3>
                   <p>Take your time with regular lessons at a time to suit you and your schedule.</p>
-                  <Link to="/courses?type=weekly">
+                  <Link to="/courses">
                     <button type="button" className="d365-feat-btn d365-feat-btn--dark">Read more</button>
                   </Link>
               </div>

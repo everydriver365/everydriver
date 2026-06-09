@@ -15,6 +15,7 @@ import { shareContent } from "@/lib/share-utils";
 import { toast } from "sonner";
 import { describeBookingConflictResponse } from "@/lib/lessonClashCheck";
 import confetti from "canvas-confetti";
+import { SEOHead } from "@/components/SEOHead";
 
 interface ScheduledLesson {
   id: string;
@@ -322,6 +323,7 @@ export default function BookingConfirmation() {
 
   return (
     <MainLayout>
+      <SEOHead noindex title="Booking Confirmation | EveryDriver" />
       {/* Success Hero */}
       <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
         <div className="container py-10 md:py-12 text-center">
