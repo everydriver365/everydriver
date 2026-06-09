@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
   const canonicalUrl = pageMeta?.canonical_url || `https://${domain}${pagePath}`;
 
   // Redirect URL to the actual SPA
-  const spaUrl = `https://everydriver.lovable.app/i/${slug}${pagePath}`;
+  const spaUrl = `https://everydriver.co.uk/i/${slug}${pagePath}`;
 
   // JSON-LD: prefer per-page override, else default LocalBusiness
   const jsonLd = pageMeta?.schema_jsonld || {

@@ -193,7 +193,7 @@ Deno.serve(async (req) => {
         ? instructorHours.filter((h: number) => DISPLAY_HOURS.includes(h))
         : DISPLAY_HOURS;
 
-    const bookingBaseUrl = `https://everydriver.lovable.app/i/${instructor.app_slug}/courses`;
+    const bookingBaseUrl = `https://everydriver.co.uk/i/${instructor.app_slug}/courses`;
 
     const courses = hoursToShow.map((hours: number) => {
       const ic = instructorCourses.find((c: any) => c.course_hours === hours);

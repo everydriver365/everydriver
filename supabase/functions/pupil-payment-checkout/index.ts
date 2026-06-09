@@ -226,7 +226,7 @@ serve(async (req: Request) => {
             total_tax_amount: 0,
           }],
           merchant_urls: {
-            terms: `${Deno.env.get("SITE_URL") || "https://everydriver.lovable.app"}/terms`,
+            terms: `${Deno.env.get("SITE_URL") || "https://everydriver.co.uk"}/terms`,
             checkout: returnUrl,
             confirmation: callbackUrl,
             push: callbackUrl,

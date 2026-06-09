@@ -392,7 +392,7 @@ serve(async (req) => {
           } else {
             const isSandbox = Deno.env.get("KLARNA_SANDBOX") === "true";
             const klarnaBase = isSandbox ? "https://api.playground.klarna.com" : "https://api.klarna.com";
-            const siteUrl = Deno.env.get("SITE_URL") || "https://everydriver.lovable.app";
+            const siteUrl = Deno.env.get("SITE_URL") || "https://everydriver.co.uk";
             const merchantRef = publishedInvoice.invoice_number || publishedInvoice.id;
             const amountMinor = Math.max(50, Math.round(totalCents)); // already in pence
             const klarnaAuth = "Basic " + btoa(`${klarnaUser}:${klarnaPass}`);

@@ -118,7 +118,7 @@ async function dispatchSideEffects(args: RaiseAlertArgs, alertId: string | null)
             ${args.instructorId ? `<p><strong>Instructor:</strong> ${args.instructorId}</p>` : ""}
             ${args.lessonId ? `<p><strong>Lesson:</strong> ${args.lessonId}</p>` : ""}
             ${alertId ? `<p><strong>Alert ID:</strong> ${alertId}</p>` : ""}
-            <p><a href="https://everydriver.lovable.app/admin?section=google-sync-alerts">Open admin panel →</a></p>
+            <p><a href="https://everydriver.co.uk/admin?section=google-sync-alerts">Open admin panel →</a></p>
           `,
           purpose: "transactional",
           template_name: "google-sync-alert",

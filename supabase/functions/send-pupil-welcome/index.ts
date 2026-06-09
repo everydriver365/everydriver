@@ -8,7 +8,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const BASE_URL = "https://everydriver.lovable.app";
+const BASE_URL = "https://everydriver.co.uk";
 
 function getActivePaymentQrUrl(instructor: {
   commission_payer?: string | null;
@@ -206,7 +206,7 @@ function buildEmailHtml(params: {
         <tr><td style="background:#f8fafc;padding:20px 32px;text-align:center;">
           <p style="margin:0;color:#94a3b8;font-size:12px;">Sent by EveryDriver on behalf of ${instructorName}</p>
           <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">
-            <a href="${BASE_URL}" style="color:#94a3b8;">everydriver.lovable.app</a>
+            <a href="${BASE_URL}" style="color:#94a3b8;">everydriver.co.uk</a>
           </p>
         </td></tr>
       </table>

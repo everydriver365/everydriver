@@ -98,7 +98,7 @@ serve(async (req) => {
     const billingRequestId = brData.billing_requests.id;
 
     // Step 2: Create billing request flow
-    const origin = redirectUrl || "https://everydriver.lovable.app";
+    const origin = redirectUrl || "https://everydriver.co.uk";
     const flowResponse = await fetch(`${baseUrl}/billing_request_flows`, {
       method: "POST",
       headers: {
