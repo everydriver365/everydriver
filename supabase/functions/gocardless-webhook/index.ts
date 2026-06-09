@@ -557,6 +557,19 @@ async function handlePayment(supabase: any, event: any) {
         .update({ status: "completed" })
         .eq("id", intent.id);
 
+      if (intent.instructor_id && intent.pupil_id) {
+        const amountPounds = Number(intent.amount ?? 0) / 100;
+        await supabase.from("payment_history").insert({
+          pupil_id: intent.pupil_id,
+          instructor_id: intent.instructor_id,
+          amount: amountPounds,
+          payment_method: "GoCardless",
+          payment_type: "lesson_payment",
+          payout_status: "pending",
+          notes: `GoCardless payment — ${paymentId}`,
+        });
+      }
+
       console.log(`Standalone payment ${paymentId} confirmed`);
 
       // Resolve instructor from the intent and push.
