@@ -122,7 +122,7 @@ export function StepDomainHosting({
   return (
     <OnboardingLayout
       step={8}
-      totalSteps={9}
+      totalSteps={10}
       title="Custom Domain & Hosting"
       description="Get your own professional web address (optional)"
     >

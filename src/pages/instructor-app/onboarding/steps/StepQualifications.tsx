@@ -32,7 +32,7 @@ export function StepQualifications({
   return (
     <OnboardingLayout
       step={4}
-      totalSteps={9}
+      totalSteps={10}
       title="Your Qualifications"
       description="Help build trust with your ADI credentials"
     >

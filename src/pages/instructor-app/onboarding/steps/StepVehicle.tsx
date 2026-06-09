@@ -32,7 +32,7 @@ export function StepVehicle({
   return (
     <OnboardingLayout
       step={3}
-      totalSteps={9}
+      totalSteps={10}
       title="Your Vehicle"
       description="Tell pupils about your teaching car"
     >
