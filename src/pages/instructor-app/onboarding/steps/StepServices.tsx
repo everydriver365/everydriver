@@ -65,7 +65,7 @@ export function StepServices({
   return (
     <OnboardingLayout
       step={5}
-      totalSteps={9}
+      totalSteps={10}
       title="Your Services"
       description="Set your rates and what you offer"
     >

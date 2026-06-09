@@ -115,7 +115,7 @@ export function StepPlanSelection({
 
   if (loading) {
     return (
-      <OnboardingLayout step={6} totalSteps={9} title="Loading plans...">
+      <OnboardingLayout step={6} totalSteps={10} title="Loading plans...">
         <div className="flex items-center justify-center min-h-[300px]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -126,7 +126,7 @@ export function StepPlanSelection({
   return (
     <OnboardingLayout
       step={6}
-      totalSteps={9}
+      totalSteps={10}
       title="Choose Your Plan"
       description="Select the plan that best fits your needs. Start free or unlock more features."
     >

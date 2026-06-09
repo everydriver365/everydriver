@@ -105,7 +105,7 @@ export function StepWebsite({
   return (
     <OnboardingLayout
       step={7}
-      totalSteps={9}
+      totalSteps={10}
       title="Your Website"
       description="Choose how you want your online presence to work"
     >
