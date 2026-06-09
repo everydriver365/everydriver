@@ -242,7 +242,7 @@ serve(async (req) => {
 
       await admin
         .from("pupil_otp_codes")
-        .upsert({ phone: cleanEmail, otp_code: resetCode, expires_at: expiresAt, verified: false }, { onConflict: "phone" });
+        .upsert({ phone: cleanEmail, code: resetCode, expires_at: expiresAt, verified: false }, { onConflict: "phone" });
 
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
       if (resendApiKey) {
@@ -277,7 +277,7 @@ serve(async (req) => {
         .from("pupil_otp_codes")
         .select("*")
         .eq("phone", cleanEmail)
-        .eq("otp_code", code)
+        .eq("code", code)
         .eq("verified", false)
         .single();
 
