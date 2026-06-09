@@ -274,6 +274,11 @@ export default function InstructorOnboarding() {
           car_model: data.car_model,
           hourly_rate: data.hourly_rate,
           logo_url: data.logo_url,
+          is_cpd_certified: data.is_cpd_certified,
+          follows_code_of_practice: data.follows_code_of_practice,
+          primary_color: data.primary_color,
+          wants_featured: data.wantsFeatured,
+          lesson_durations: data.lesson_durations,
         } as any)
         .eq("id", instructorId);
 
@@ -400,10 +405,15 @@ export default function InstructorOnboarding() {
           custom_domain_verified: false,
           personal_website_url: normalizedExternal,
           logo_url: data.logo_url,
-          // C3 (partial): only columns that exist on the instructors table
+          // C3: all onboarding fields now persisted
           adi_grade: data.adi_grade,
           website_theme: data.website_theme,
           welcome_video_url: data.welcome_video_url,
+          is_cpd_certified: data.is_cpd_certified,
+          follows_code_of_practice: data.follows_code_of_practice,
+          primary_color: data.primary_color,
+          wants_featured: data.wantsFeatured,
+          lesson_durations: data.lesson_durations,
         } as any)
         .eq("id", instructorId);
 
@@ -422,6 +432,50 @@ export default function InstructorOnboarding() {
         .from("instructor_working_hours")
         .upsert(defaultHours, { onConflict: "instructor_id,day_of_week" });
       if (hoursError) console.error("Failed to seed working hours:", hoursError);
+
+      // C2: Seed default courses from the offers picked during onboarding so
+      // the instructor appears in search results immediately.
+      const courseRows: any[] = [];
+      if (data.offers_weekly || (!data.offers_intensive && !data.offers_refresher)) {
+        courseRows.push({
+          instructor_id: instructorId,
+          course_name: "Driving Lessons",
+          course_hours: 10,
+          is_intensive: false,
+          price_mode: "hourly",
+          hourly_rate_override: data.hourly_rate,
+          available_weekdays: true,
+          is_active: true,
+        });
+      }
+      if (data.offers_intensive) {
+        courseRows.push({
+          instructor_id: instructorId,
+          course_name: "Intensive Course",
+          course_hours: 30,
+          is_intensive: true,
+          price_mode: "hourly",
+          hourly_rate_override: data.hourly_rate,
+          available_weekdays: true,
+          is_active: true,
+        });
+      }
+      if (data.offers_refresher) {
+        courseRows.push({
+          instructor_id: instructorId,
+          course_name: "Refresher Lessons",
+          course_hours: 5,
+          is_intensive: false,
+          price_mode: "hourly",
+          hourly_rate_override: data.hourly_rate,
+          available_weekdays: true,
+          is_active: true,
+        });
+      }
+      if (courseRows.length > 0) {
+        const { error: coursesError } = await supabase.from("instructor_courses").insert(courseRows);
+        if (coursesError) console.error("Failed to seed default courses:", coursesError);
+      }
 
       // Geocode & persist lat/lng so the instructor is immediately
       // discoverable by postcode-radius search.

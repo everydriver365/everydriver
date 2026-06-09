@@ -10425,6 +10425,7 @@ export type Database = {
           email: string | null
           extra_info: string | null
           facebook_url: string | null
+          follows_code_of_practice: boolean | null
           fuel_cost_per_litre: number | null
           fuel_type: string
           gender: string | null
@@ -10456,6 +10457,7 @@ export type Database = {
           intake_questions_enabled: boolean | null
           intensive_only: boolean
           is_active: boolean
+          is_cpd_certified: boolean | null
           is_founding_instructor: boolean
           is_network_placeholder: boolean
           is_online: boolean | null
@@ -10465,6 +10467,7 @@ export type Database = {
           last_compliance_reminder_sent: string | null
           last_seen_at: string | null
           lat: number | null
+          lesson_durations: number[] | null
           lesson_feedback_enabled: boolean | null
           linkedin_url: string | null
           lng: number | null
@@ -10493,6 +10496,7 @@ export type Database = {
           preferred_lesson_length: number
           preferred_tracking_provider: string | null
           pricing_rules_enabled: boolean | null
+          primary_color: string | null
           profile_image_url: string | null
           pupil_app_dark_mode: boolean | null
           pupil_app_enabled: boolean | null
@@ -10529,6 +10533,7 @@ export type Database = {
           updated_at: string
           vehicle_mpg: number | null
           verified_pro_badge_enabled: boolean
+          wants_featured: boolean | null
           website_button_color: string | null
           website_font: string | null
           website_footer_bg: string | null
@@ -10650,6 +10655,7 @@ export type Database = {
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
+          follows_code_of_practice?: boolean | null
           fuel_cost_per_litre?: number | null
           fuel_type?: string
           gender?: string | null
@@ -10681,6 +10687,7 @@ export type Database = {
           intake_questions_enabled?: boolean | null
           intensive_only?: boolean
           is_active?: boolean
+          is_cpd_certified?: boolean | null
           is_founding_instructor?: boolean
           is_network_placeholder?: boolean
           is_online?: boolean | null
@@ -10690,6 +10697,7 @@ export type Database = {
           last_compliance_reminder_sent?: string | null
           last_seen_at?: string | null
           lat?: number | null
+          lesson_durations?: number[] | null
           lesson_feedback_enabled?: boolean | null
           linkedin_url?: string | null
           lng?: number | null
@@ -10718,6 +10726,7 @@ export type Database = {
           preferred_lesson_length?: number
           preferred_tracking_provider?: string | null
           pricing_rules_enabled?: boolean | null
+          primary_color?: string | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
           pupil_app_enabled?: boolean | null
@@ -10754,6 +10763,7 @@ export type Database = {
           updated_at?: string
           vehicle_mpg?: number | null
           verified_pro_badge_enabled?: boolean
+          wants_featured?: boolean | null
           website_button_color?: string | null
           website_font?: string | null
           website_footer_bg?: string | null
@@ -10875,6 +10885,7 @@ export type Database = {
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
+          follows_code_of_practice?: boolean | null
           fuel_cost_per_litre?: number | null
           fuel_type?: string
           gender?: string | null
@@ -10906,6 +10917,7 @@ export type Database = {
           intake_questions_enabled?: boolean | null
           intensive_only?: boolean
           is_active?: boolean
+          is_cpd_certified?: boolean | null
           is_founding_instructor?: boolean
           is_network_placeholder?: boolean
           is_online?: boolean | null
@@ -10915,6 +10927,7 @@ export type Database = {
           last_compliance_reminder_sent?: string | null
           last_seen_at?: string | null
           lat?: number | null
+          lesson_durations?: number[] | null
           lesson_feedback_enabled?: boolean | null
           linkedin_url?: string | null
           lng?: number | null
@@ -10943,6 +10956,7 @@ export type Database = {
           preferred_lesson_length?: number
           preferred_tracking_provider?: string | null
           pricing_rules_enabled?: boolean | null
+          primary_color?: string | null
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
           pupil_app_enabled?: boolean | null
@@ -10979,6 +10993,7 @@ export type Database = {
           updated_at?: string
           vehicle_mpg?: number | null
           verified_pro_badge_enabled?: boolean
+          wants_featured?: boolean | null
           website_button_color?: string | null
           website_font?: string | null
           website_footer_bg?: string | null
