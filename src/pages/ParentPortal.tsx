@@ -135,15 +135,10 @@ export default function ParentPortal() {
       if (!session) return;
       const emailFromSession = session.user.email || undefined;
       const phoneFromSession = (session.user.user_metadata as any)?.parent_phone as string | undefined;
-      if (emailFromSession) {
-        setParentEmail(emailFromSession);
-        setAuthStep('verified');
-        fetchChildrenData({ email: emailFromSession, phone: phoneFromSession });
-      } else if (phoneFromSession) {
-        setParentPhone(phoneFromSession);
-        setAuthStep('verified');
-        fetchChildrenData({ phone: phoneFromSession });
-      }
+      if (emailFromSession) setParentEmail(emailFromSession);
+      if (phoneFromSession) setParentPhone(phoneFromSession);
+      setAuthStep('verified');
+      fetchChildrenData();
     })();
   }, []);
 
@@ -152,7 +147,7 @@ export default function ParentPortal() {
     if (error) return { error: error.message };
     setParentEmail(email);
     setAuthStep('verified');
-    await fetchChildrenData({ email });
+    await fetchChildrenData();
     if (data.user) toast.success("Welcome to the Parent Portal!");
   };
 
@@ -164,26 +159,26 @@ export default function ParentPortal() {
   };
 
 
-  const fetchChildrenData = async (opts: { email?: string; phone?: string }) => {
+  const fetchChildrenData = async () => {
     try {
-      const cleanPhone = opts.phone?.replace(/\s+/g, "");
-      const filters: string[] = [];
-      if (opts.email) filters.push(`parent_email.eq.${opts.email.toLowerCase()}`);
-      if (cleanPhone) filters.push(`parent_phone.ilike.%${cleanPhone.slice(-9)}`);
-      if (filters.length === 0) { setChildren([]); return; }
-      const { data: pupils, error: pupilsError } = await supabase
-        .from("pupils")
-        .select("id, name, lessons_completed, progress, account_balance, prepaid_hours, test_date, test_passed, theory_test_date, theory_test_passed, instructor_id")
-        .or(filters.join(","));
+      // C3 fix: use parent_pupil_links join table, scoped to auth.uid() via RLS.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setChildren([]); return; }
 
-      if (pupilsError) throw pupilsError;
-      if (!pupils || pupils.length === 0) { setChildren([]); return; }
+      const { data: links, error: linksError } = await supabase
+        .from("parent_pupil_links")
+        .select("pupil_id, pupils(id, name, lessons_completed, progress, account_balance, prepaid_hours, test_date, test_passed, theory_test_date, theory_test_passed, instructor_id)")
+        .eq("parent_auth_user_id", user.id);
 
-      const instructorIds = [...new Set(pupils.map(p => p.instructor_id))];
+      if (linksError) throw linksError;
+      const pupils = (links || []).map((l: any) => l.pupils).filter(Boolean);
+      if (pupils.length === 0) { setChildren([]); return; }
+
+      const instructorIds = [...new Set(pupils.map((p: any) => p.instructor_id))];
       const { data: instructors } = await supabase.from("instructors").select("id, name, phone").in("id", instructorIds);
       const instructorMap = new Map(instructors?.map(i => [i.id, i]) || []);
 
-      const pupilIds = pupils.map(p => p.id);
+      const pupilIds = pupils.map((p: any) => p.id);
       const today = format(new Date(), 'yyyy-MM-dd');
       const { data: nextLessons } = await supabase
         .from("scheduled_lessons")
@@ -201,7 +196,7 @@ export default function ParentPortal() {
         }
       });
 
-      const childrenData: Child[] = pupils.map(p => {
+      const childrenData: Child[] = pupils.map((p: any) => {
         const instructor = instructorMap.get(p.instructor_id);
         return {
           id: p.id, name: p.name, instructor_id: p.instructor_id,
@@ -226,6 +221,7 @@ export default function ParentPortal() {
       toast.error("Failed to load data");
     }
   };
+
 
   const fetchRecentActivities = async (pupilIds: string[]) => {
     try {
