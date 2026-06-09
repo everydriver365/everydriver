@@ -266,7 +266,7 @@ export default function ParentPortal() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "scheduled_lessons", filter: `pupil_id=in.(${pupilIds.join(',')})` },
-        () => { if (parentEmail || parentPhone) void fetchChildrenData({ email: parentEmail || undefined, phone: parentPhone || undefined }); }
+        () => { void fetchChildrenData(); }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
