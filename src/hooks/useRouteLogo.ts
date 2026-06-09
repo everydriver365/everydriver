@@ -1,12 +1,12 @@
 import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import dsmLogo from "@/assets/dsm-logo.png";
-import everyDriverLogo from "@/../public/everydriver-logo-v4.png";
+import everyDriverLogoAsset from "@/assets/everydriver-logo-jun7-v3.png.asset.json";
 import { getWhitelabelConfig, isEveryDriverHost } from "@/lib/whitelabel";
 
-const everyDriverLogoUrl = everyDriverLogo;
+const everyDriverLogo = everyDriverLogoAsset.url;
 // Drive365 is parked — learner-facing routes now render EveryDriver branding.
-const learnerLogo = everyDriverLogoUrl;
+const learnerLogo = everyDriverLogo;
 
 const DRIVE365_ROUTE_PREFIXES = [
   "/drive365",
@@ -62,7 +62,7 @@ export function useRouteLogo() {
 
     if (isEveryDriverHost()) {
       return {
-        logo: everyDriverLogoUrl,
+        logo: everyDriverLogo,
         logoAlt: "EveryDriver",
         logoText: null,
         homeLink: "/",

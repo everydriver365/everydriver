@@ -18,7 +18,7 @@ import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 
 import bookNowPayLaterBadge from "@/assets/book-now-pay-later-badge.png";
-import heroLogo from "@/../public/everydriver-logo-v4.png";
+import heroLogoAsset from "@/assets/everydriver-logo-jun7-v3.png.asset.json";
 import { PostcodeSearch } from "@/components/home/PostcodeSearch";
 import SeeWhoIsTeaching from "@/components/home/SeeWhoIsTeaching";
 import PupilReviewsSection from "@/components/home/PupilReviewsSection";
@@ -399,7 +399,7 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
           </div>
           <div className="d365-hero-right">
             <div className="d365-welcome text-center">
-              <img src={heroLogo} alt={logoAlt} className="h-10 mx-auto mb-5" />
+              <img src={heroLogoAsset.url} alt={logoAlt} className="h-10 mx-auto mb-5" />
               <div className="d365-welcome-eyebrow font-bold">Find your instructor</div>
               <h1>See who's teaching you before you book.</h1>
               <p className="mx-0 py-0" style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.65, maxWidth: 440, margin: "0 auto" }}>
