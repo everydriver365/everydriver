@@ -149,9 +149,21 @@ serve(async (req) => {
         .ilike("email", cleanEmail)
         .limit(1);
 
+      // M4: also check by phone to prevent duplicate pupil rows
+      let phoneMatch: any = null;
+      if (phone && (!pupils || pupils.length === 0)) {
+        const { data: byPhone } = await admin
+          .from("pupils")
+          .select("id, name, auth_user_id")
+          .eq("phone", phone)
+          .maybeSingle();
+        phoneMatch = byPhone;
+      }
+
       let pupilId: string;
 
       if (pupils && pupils.length > 0) {
+
         const pupil = pupils[0] as any;
         if (pupil.auth_user_id) {
           return jsonResponse({ error: "Account already registered. Please sign in instead." });
