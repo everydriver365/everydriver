@@ -163,13 +163,18 @@ serve(async (req) => {
       let pupilId: string;
 
       if (pupils && pupils.length > 0) {
-
         const pupil = pupils[0] as any;
         if (pupil.auth_user_id) {
           return jsonResponse({ error: "Account already registered. Please sign in instead." });
         }
         pupilId = pupil.id;
+      } else if (phoneMatch) {
+        if (phoneMatch.auth_user_id) {
+          return jsonResponse({ error: "Account already registered. Please sign in instead." });
+        }
+        pupilId = phoneMatch.id;
       } else if (instructorId) {
+
         if (!name?.trim()) return jsonResponse({ error: "Name is required for new registrations" });
 
         const { data: instructor } = await admin
