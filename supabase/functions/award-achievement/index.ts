@@ -68,18 +68,12 @@ serve(async (req) => {
 
         if (!error && data) {
           awardedAchievements.push(data);
-          
-          // Award coins to pupil - get current coins and increment
-          const { data: pupilData } = await supabase
-            .from('pupils')
-            .select('drive_coins')
-            .eq('id', pupilId)
-            .single();
-          
-          await supabase
-            .from('pupils')
-            .update({ drive_coins: (pupilData?.drive_coins || 0) + achievement.coins })
-            .eq('id', pupilId);
+
+          // Atomically increment coins to avoid lost updates
+          await supabase.rpc('increment_drive_coins', {
+            p_pupil_id: pupilId,
+            p_amount: achievement.coins,
+          });
         }
       }
     }
@@ -118,11 +112,11 @@ serve(async (req) => {
 
           if (!error && data) {
             awardedAchievements.push(data);
-            // Update coins
-            await supabase
-              .from('pupils')
-              .update({ drive_coins: (pupil?.drive_coins || 0) + achievement.coins })
-              .eq('id', pupilId);
+            // Atomically increment coins to avoid lost updates across multiple awards
+            await supabase.rpc('increment_drive_coins', {
+              p_pupil_id: pupilId,
+              p_amount: achievement.coins,
+            });
           }
         }
       };
