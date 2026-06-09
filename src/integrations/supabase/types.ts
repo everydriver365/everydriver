@@ -13689,6 +13689,35 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_pupil_links: {
+        Row: {
+          created_at: string
+          id: string
+          parent_auth_user_id: string
+          pupil_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parent_auth_user_id: string
+          pupil_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parent_auth_user_id?: string
+          pupil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_pupil_links_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parent_push_subscriptions: {
         Row: {
           auth: string
@@ -21719,6 +21748,7 @@ export type Database = {
           name: string
         }[]
       }
+      has_parent_access: { Args: { p_pupil_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
