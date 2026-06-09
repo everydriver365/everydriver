@@ -221,7 +221,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         // Send email with attachments
         const emailResponse = await resend.emails.send({
-          from: "EveryDriver <onboarding@resend.dev>",
+          from: "EveryDriver <noreply@everydriver.co.uk>",
           to: [instructor.email],
           subject: `📊 Your Weekly Data Backup - ${backupDate}`,
           html: generateEmailHTML(instructor.name, backupData.stats, backupDate),
