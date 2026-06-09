@@ -29,13 +29,9 @@ export default function InstructorSettingsHub() {
     );
   }
 
-  const isSchedule = typeof window !== "undefined" && window.location.pathname.endsWith("/settings/schedule");
   return (
     <InstructorPortalLayout>
-      <div
-        className={isMobile && isSchedule ? "w-full" : "max-w-5xl mx-auto pt-4 md:px-4"}
-        style={isMobile && !isSchedule ? { paddingLeft: 14, paddingRight: 14 } : undefined}
-      >
+      <div className="w-full" style={{ paddingLeft: 14, paddingRight: 14 }}>
         <SettingsLayout
           categories={categories}
           search={search}
