@@ -84,21 +84,33 @@ export function useMessaging(instructorId: string | undefined) {
     fetchConversations();
   }, [fetchConversations]);
 
-  // Subscribe to new messages for real-time updates
+  // Subscribe to new messages for real-time updates (C3 — filtered to this instructor's conversations)
   useEffect(() => {
     if (!instructorId) return;
 
     const channel = supabase
-      .channel("messages-updates")
+      .channel(`messages-updates-${instructorId}`)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
-          table: "messages",
+          table: "conversations",
+          filter: `instructor_id=eq.${instructorId}`,
         },
-        (payload) => {
-          // Refresh conversations when new message arrives
+        () => {
+          fetchConversations();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "conversations",
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        () => {
           fetchConversations();
         }
       )
@@ -109,34 +121,24 @@ export function useMessaging(instructorId: string | undefined) {
     };
   }, [instructorId, fetchConversations]);
 
+  // M1 — Upsert to avoid race; relies on UNIQUE(instructor_id, pupil_id)
   const getOrCreateConversation = async (pupilId: string): Promise<string | null> => {
     if (!instructorId) return null;
 
     try {
-      // Check if conversation exists
-      const { data: existing } = await supabase
+      const { data, error } = await supabase
         .from("conversations")
-        .select("id")
-        .eq("instructor_id", instructorId)
-        .eq("pupil_id", pupilId)
-        .single();
-
-      if (existing) return existing.id;
-
-      // Create new conversation
-      const { data: newConv, error } = await supabase
-        .from("conversations")
-        .insert({
-          instructor_id: instructorId,
-          pupil_id: pupilId,
-        })
+        .upsert(
+          { instructor_id: instructorId, pupil_id: pupilId },
+          { onConflict: "instructor_id,pupil_id", ignoreDuplicates: false }
+        )
         .select("id")
         .single();
 
       if (error) throw error;
-      
+
       fetchConversations();
-      return newConv?.id || null;
+      return data?.id || null;
     } catch (error) {
       console.error("Error creating conversation:", error);
       return null;
@@ -346,16 +348,19 @@ export function useConversationMessages(conversationId: string | null, userType:
         }
       }
 
-      // If instructor sends an urgent message, notify pupil via push
-      if (userType === "instructor" && options?.isUrgent && options?.pupilId) {
+      // M3 — Always notify pupil when instructor sends a message (regardless of urgency)
+      if (userType === "instructor" && options?.pupilId) {
+        const title = options?.isUrgent
+          ? "⚠️ Urgent Message from Instructor"
+          : "New message from your instructor";
         supabase.functions.invoke("notify-pupil", {
           body: {
             pupilId: options.pupilId,
-            type: "lesson_reminder",
-            title: "⚠️ Urgent Message from Instructor",
-            body: content.trim().slice(0, 80),
+            type: options?.isUrgent ? "lesson_reminder" : "new_message",
+            title,
+            body: content.trim().slice(0, 100),
           },
-        }).catch(console.error);
+        }).catch((e) => console.error("notify-pupil failed (non-fatal):", e));
       }
 
       return true;
@@ -398,12 +403,16 @@ export function useConversationMessages(conversationId: string | null, userType:
     }
   };
 
-  const softDeleteMessage = async (messageId: string) => {
+  // M6 — Scope soft-delete to the caller's own sent messages only
+  const softDeleteMessage = async (messageId: string, senderId?: string) => {
     try {
-      const { error } = await supabase
+      let query = supabase
         .from("messages")
         .update({ deleted_at: new Date().toISOString() })
-        .eq("id", messageId);
+        .eq("id", messageId)
+        .eq("sender_type", userType);
+      if (senderId) query = query.eq("sender_id", senderId);
+      const { error } = await query;
 
       if (error) throw error;
       setMessages((prev) => prev.filter((m) => m.id !== messageId));

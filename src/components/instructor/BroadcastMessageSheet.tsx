@@ -106,9 +106,11 @@ export function BroadcastMessageSheet({ open, onOpenChange, instructorId }: Broa
 
   const fetchTemplates = async () => {
     try {
+      // L2 — Scope to own templates + system-wide templates only
       const { data } = await supabase
         .from("broadcast_templates" as any)
         .select("id, title, body, category, is_system")
+        .or(`instructor_id.eq.${instructorId},is_system.eq.true`)
         .order("is_system", { ascending: false })
         .order("title");
       setTemplates((data as unknown as Template[]) || []);
