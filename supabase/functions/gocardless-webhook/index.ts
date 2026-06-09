@@ -598,7 +598,7 @@ async function handlePayment(supabase: any, event: any) {
   }
 
   // Handle standalone payment failures (Instant Bank Pay failures).
-  if (action === "failed" && !subscriptionId) {
+  if (action === "failed") {
     const { data: intent } = await supabase
       .from("payment_intents")
       .select("*")
