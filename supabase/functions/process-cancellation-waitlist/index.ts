@@ -125,24 +125,23 @@ serve(async (req: Request) => {
       .eq("id", instructorId)
       .single();
 
-    // Optionally notify instructor about pending offers via push notification
-    const { data: pushSubs } = await supabase
-      .from("push_subscriptions")
-      .select("*")
-      .eq("instructor_id", instructorId);
-
-    if (pushSubs?.length) {
-      // Send push notification about pending approvals
-      const notificationPayload = JSON.stringify({
-        title: "Waitlist Matches Found",
-        body: `${matchingEntries.length} pupil(s) match the cancelled slot. Review and approve offers.`,
-        icon: "/favicon.png",
-        data: { url: "/instructor/gaps" },
-      });
-
-      // Note: Actual push notification sending would use web-push library
-      console.log("Would send push notification:", notificationPayload);
-    }
+    // Notify instructor about pending offers via push notification
+    fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({
+        instructorId,
+        notification: {
+          title: "Waitlist Matches Found 👥",
+          body: `${matchingEntries.length} pupil${matchingEntries.length > 1 ? "s" : ""} match the cancelled slot. Review and approve offers.`,
+          tag: "waitlist-match",
+          data: { url: "/instructor/gaps" },
+        },
+      }),
+    }).catch((e) => console.error("Push notification failed (non-fatal):", e));
 
     return new Response(
       JSON.stringify({
