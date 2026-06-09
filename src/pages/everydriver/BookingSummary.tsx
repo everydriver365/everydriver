@@ -199,14 +199,15 @@ export default function BookingSummary() {
   const saveSwapOptInIfNeeded = useCallback(async (pupilId: string) => {
     if (swapSavedRef.current) return;
     if (!swapOptIn || !swapConsent || !swapConsentTimestamp) return;
-    if (!courseDetails || !instructor?.id) {
+    const instructorId = courseDetails?.instructor?.id;
+    if (!instructorId) {
       console.warn("Skipping swap opt-in save: instructor not loaded yet");
       return;
     }
     try {
       const { error } = await supabase.from("booking_test_swap_optins").insert({
         pupil_id: pupilId,
-        instructor_id: instructor.id,
+        instructor_id: instructorId,
         test_date: swapTestDate.trim() || null,
         test_time: swapTestTime.trim() || null,
         test_centre: swapTestCentre.trim() || null,
