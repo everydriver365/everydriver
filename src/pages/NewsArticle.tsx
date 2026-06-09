@@ -72,7 +72,7 @@ export default function NewsArticle() {
             publisher: {
               "@type": "Organization",
               name: "Drive365",
-              logo: { "@type": "ImageObject", url: "https://everydriver.lovable.app/drive365-logo.png" },
+              logo: { "@type": "ImageObject", url: "https://everydriver.co.uk/drive365-logo.png" },
             },
           },
         }}

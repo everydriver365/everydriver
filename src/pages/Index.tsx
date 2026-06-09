@@ -132,10 +132,10 @@ export default function Index() {
         "@context": "https://schema.org",
         "@type": "WebSite",
         name: "EveryDriver",
-        url: "https://everydriver.lovable.app/",
+        url: "https://everydriver.co.uk/",
         potentialAction: {
           "@type": "SearchAction",
-          target: "https://everydriver.lovable.app/courses?postcode={search_term_string}",
+          target: "https://everydriver.co.uk/courses?postcode={search_term_string}",
           "query-input": "required name=search_term_string",
         },
       },
@@ -146,7 +146,7 @@ export default function Index() {
         "@context": "https://schema.org",
         "@type": "Organization",
         name: "EveryDriver",
-        url: "https://everydriver.lovable.app/",
+        url: "https://everydriver.co.uk/",
         logo: "https://everydriver.co.uk/everydriver-logo-full.png",
       },
     },
@@ -419,7 +419,7 @@ export default function Index() {
                     >
                       ▶ Play video
                     </button>
-                    <Link to="/instructors" style={{ background: "#FFFFFF", color: "#0070C0", border: "1.5px solid #0070C0", borderRadius: 7, padding: "9px 16px", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>Find an instructor →</Link>
+                    <Link to="/courses" style={{ background: "#FFFFFF", color: "#0070C0", border: "1.5px solid #0070C0", borderRadius: 7, padding: "9px 16px", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>Find an instructor →</Link>
                   </div>
                 </div>
               </div>
@@ -917,7 +917,7 @@ export default function Index() {
                 <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, margin: "0 0 12px" }}>
                   Find vetted, reviewed instructors near you by postcode. Compare pass rates, prices, and availability — 24/7.
                 </p>
-                <Link to="/instructors" style={{ fontSize: 13, fontWeight: 500, color: "#0070C0", textDecoration: "none", marginTop: "auto" }}>
+                <Link to="/courses" style={{ fontSize: 13, fontWeight: 500, color: "#0070C0", textDecoration: "none", marginTop: "auto" }}>
                   Find an instructor →
                 </Link>
               </div>

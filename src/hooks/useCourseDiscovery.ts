@@ -478,7 +478,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     // If instructorId is null, the caller wants to filter by instructor but it hasn't loaded yet — skip
     if (instructorId === null) return;
     fetchData();
-  }, [instructorId]);
+  }, [instructorId, fetchData]);
 
   const handleSearch = async () => {
     if (!postcode.trim()) {
@@ -578,7 +578,11 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
           }
         }
 
-        toast({ title: "Location found!", description: `Showing courses near ${areaName || district}` });
+        if (instructorsNearby.length > 0) {
+          toast({ title: "Location found!", description: `Showing courses near ${areaName || district}` });
+        } else {
+          toast({ title: "No instructors nearby", description: `We couldn't find instructors near ${areaName || district}. Try a wider radius.`, variant: "destructive" });
+        }
       } else {
         toast({ title: "Postcode not found", description: "Please check your postcode", variant: "destructive" });
       }

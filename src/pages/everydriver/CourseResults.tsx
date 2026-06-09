@@ -148,7 +148,14 @@ export default function CourseResults({
 
   return (
     <EmbedProvider embed={embed}>
-      {embed && <SEOHead title="Find Driving Courses" description="Embeddable course search" noindex />}
+      {embed ? (
+        <SEOHead title="Find Driving Courses" description="Embeddable course search" noindex />
+      ) : (
+        <SEOHead
+          title="Find Driving Instructors Near You | EveryDriver"
+          description="Search local DVSA-approved driving instructors. Compare prices, read reviews and book lessons online."
+        />
+      )}
       <Shell {...(embed ? { className: "min-h-screen bg-transparent" } : {})}>
       <Drive365SearchHeader
         title={title}
