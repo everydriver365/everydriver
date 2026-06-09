@@ -359,7 +359,21 @@ export default function InstructorOnboarding() {
     setSaving(true);
     try {
       // Generate the drive365 subdomain from the slug — only when we're publishing a mini-site
-      const slug = data.slug || data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const baseSlug = data.slug || data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+      // M1: ensure slug uniqueness — append a random suffix if it collides
+      let slug = baseSlug;
+      if (slug) {
+        const { count } = await supabase
+          .from("instructors")
+          .select("id", { count: "exact", head: true })
+          .eq("app_slug", slug)
+          .neq("id", instructorId);
+        if (count && count > 0) {
+          slug = `${baseSlug}-${Math.floor(Math.random() * 900) + 100}`;
+        }
+      }
+
       const hasOwnSite = data.website_choice === "booknow";
       const normalizedExternal = hasOwnSite && data.personal_website_url
         ? (data.personal_website_url.startsWith("http") ? data.personal_website_url : `https://${data.personal_website_url}`)
@@ -386,10 +400,28 @@ export default function InstructorOnboarding() {
           custom_domain_verified: false,
           personal_website_url: normalizedExternal,
           logo_url: data.logo_url,
+          // C3 (partial): only columns that exist on the instructors table
+          adi_grade: data.adi_grade,
+          website_theme: data.website_theme,
+          welcome_video_url: data.welcome_video_url,
         } as any)
         .eq("id", instructorId);
 
       if (error) throw error;
+
+      // C1: Seed default working hours (Mon–Fri 9am–5pm) so the availability
+      // engine returns something and the instructor can receive bookings.
+      const defaultHours = [1, 2, 3, 4, 5].map((day) => ({
+        instructor_id: instructorId,
+        day_of_week: day,
+        start_time: "09:00",
+        end_time: "17:00",
+        is_active: true,
+      }));
+      const { error: hoursError } = await supabase
+        .from("instructor_working_hours")
+        .upsert(defaultHours, { onConflict: "instructor_id,day_of_week" });
+      if (hoursError) console.error("Failed to seed working hours:", hoursError);
 
       // Geocode & persist lat/lng so the instructor is immediately
       // discoverable by postcode-radius search.
