@@ -103,7 +103,7 @@ serve(async (req) => {
               Authorization: `Bearer ${resendApiKey}`,
             },
             body: JSON.stringify({
-              from: "EveryDriver <notifications@resend.dev>",
+              from: "EveryDriver <noreply@everydriver.co.uk>",
               to: adminEmails,
               subject: `⚠️ Stuck booking — ${pupilName} (${ageMins}m)`,
               html: `<h2>Booking stuck in awaiting_initial_payment</h2>

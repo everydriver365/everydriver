@@ -88,7 +88,7 @@ serve(async (req) => {
             "Authorization": `Bearer ${resendApiKey}`,
           },
           body: JSON.stringify({
-            from: "EveryDriver <notifications@resend.dev>",
+            from: "EveryDriver <noreply@everydriver.co.uk>",
             to: adminEmails,
             subject: isCallback 
               ? `📞 New Callback Request from ${enquiry.name}`

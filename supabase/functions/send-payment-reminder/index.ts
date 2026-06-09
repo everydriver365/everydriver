@@ -65,7 +65,7 @@ serve(async (req) => {
     if (!data.pupilIds || data.pupilIds.length === 0) {
       const results = { sent: 0, emailSent: 0, failed: 0, skipped: 0, details: [] as { name: string; status: string; error?: string }[] };
       const recipientName = data.manualName || "there";
-      const paymentLink = data.paymentLink || `${supabaseUrl.replace('.supabase.co', '.lovable.app')}/pay/${data.instructorId}`;
+      const paymentLink = data.paymentLink || `https://everydriver.co.uk/pay/${data.instructorId}`;
 
       // SMS
       if ((method === "sms" || method === "both") && data.manualPhone && twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
