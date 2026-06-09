@@ -11,7 +11,7 @@ interface PupilPaymentRequest {
   instructorId: string;
   amount: number;
   adminFee?: number;
-  gateway: "npi" | "clearpay" | "klarna" | "elavon";
+  gateway: "npi" | "clearpay" | "klarna";
   customerName: string;
   customerEmail?: string;
   customerPhone?: string;
@@ -127,49 +127,6 @@ serve(async (req: Request) => {
         );
       }
 
-      case "elavon": {
-        const merchantId = Deno.env.get("NPI_MERCHANT_ID");
-        const secretKey = Deno.env.get("NPI_MERCHANT_SECRET");
-
-        if (!merchantId || !secretKey) {
-          return new Response(
-            JSON.stringify({ error: "Elavon payment not configured" }),
-            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-
-        const amountInPence = Math.round(chargeAmount * 100);
-        const transactionUnique = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-        const formData: Record<string, string> = {
-          merchantID: merchantId,
-          action: "SALE",
-          type: "1",
-          countryCode: "826",
-          currencyCode: "826",
-          amount: amountInPence.toString(),
-          orderRef: orderReference,
-          transactionUnique,
-          redirectURL: callbackUrl,
-        };
-
-        if (customerEmail) formData.customerEmail = customerEmail;
-        if (customerName) formData.customerName = customerName;
-
-        const signature = await createSignature(formData, secretKey);
-        formData.signature = signature;
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            gateway: "elavon",
-            formAction: "https://gateway.cardstream.com/hosted/",
-            formFields: formData,
-            transactionId: transactionUnique,
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
 
       case "clearpay": {
         const merchantId = Deno.env.get("CLEARPAY_MERCHANT_ID");
