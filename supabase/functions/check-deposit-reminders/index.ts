@@ -94,6 +94,17 @@ serve(async (req) => {
 
       if (!reminderType) continue;
 
+      // Skip if already sent today
+      const todayStr = today.toISOString().split("T")[0];
+      const { data: alreadySent } = await supabase
+        .from("deposit_reminder_log")
+        .select("id")
+        .eq("pupil_id", pupil.id)
+        .eq("reminder_type", reminderType)
+        .gte("sent_at", todayStr)
+        .maybeSingle();
+      if (alreadySent) continue;
+
       console.log(`Processing ${reminderType} reminder for ${pupil.name} (${pupil.id})`);
 
       // Handle overdue - forfeit deposit and cancel lessons
