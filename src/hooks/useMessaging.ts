@@ -348,20 +348,6 @@ export function useConversationMessages(conversationId: string | null, userType:
         }
       }
 
-      // M3 — Always notify pupil when instructor sends a message (regardless of urgency)
-      if (userType === "instructor" && options?.pupilId) {
-        const title = options?.isUrgent
-          ? "⚠️ Urgent Message from Instructor"
-          : "New message from your instructor";
-        supabase.functions.invoke("notify-pupil", {
-          body: {
-            pupilId: options.pupilId,
-            type: options?.isUrgent ? "lesson_reminder" : "new_message",
-            title,
-            body: content.trim().slice(0, 100),
-          },
-        }).catch((e) => console.error("notify-pupil failed (non-fatal):", e));
-      }
 
       return true;
     } catch (error) {
