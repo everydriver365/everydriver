@@ -229,6 +229,15 @@ serve(async (req) => {
       if (reminderType === "14_days") results.reminders_14_days++;
       else if (reminderType === "7_days") results.reminders_7_days++;
       else if (reminderType === "1_day") results.reminders_1_day++;
+
+      // Log that reminder was sent (idempotency)
+      await supabase.from("deposit_reminder_log").insert({
+        pupil_id: pupil.id,
+        instructor_id: instructor.id,
+        reminder_type: reminderType,
+        amount_owed: amountOwed,
+        sent_at: new Date().toISOString(),
+      });
     }
 
     console.log("Reminder results:", results);
