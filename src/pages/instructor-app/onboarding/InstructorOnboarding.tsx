@@ -405,10 +405,15 @@ export default function InstructorOnboarding() {
           custom_domain_verified: false,
           personal_website_url: normalizedExternal,
           logo_url: data.logo_url,
-          // C3 (partial): only columns that exist on the instructors table
+          // C3: all onboarding fields now persisted
           adi_grade: data.adi_grade,
           website_theme: data.website_theme,
           welcome_video_url: data.welcome_video_url,
+          is_cpd_certified: data.is_cpd_certified,
+          follows_code_of_practice: data.follows_code_of_practice,
+          primary_color: data.primary_color,
+          wants_featured: data.wantsFeatured,
+          lesson_durations: data.lesson_durations,
         } as any)
         .eq("id", instructorId);
 
