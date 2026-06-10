@@ -31,6 +31,7 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
 import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
+import { TestReadinessCard } from "@/components/instructor/TestReadinessCard";
 import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
 import { EmergencyContactEditor } from "@/components/instructor/EmergencyContactEditor";
 import { supabase } from "@/integrations/supabase/client";
