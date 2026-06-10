@@ -340,7 +340,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   }, [geoCache, areaCache]);
 
   const fetchData = useCallback(async () => {
-    console.log("[useCourseDiscovery] fetchData start");
     setLoading(true);
     try {
       // PostgREST enforces a server-side max-rows of 1000. Paginate explicitly
