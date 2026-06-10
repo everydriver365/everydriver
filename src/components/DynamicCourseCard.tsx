@@ -31,7 +31,13 @@ interface DynamicCourseCardProps {
     odd_hours_surcharge_amount?: number | null;
     klarna_enabled?: boolean | null;
     clearpay_enabled?: boolean | null;
+    google_rating?: number | null;
+    google_review_count?: number | null;
+    google_top_review_text?: string | null;
+    google_top_review_author?: string | null;
+    google_review_url?: string | null;
   };
+
   hours: number;
   nextAvailable?: Date | null;
   courseImageUrl?: string | null;
@@ -277,6 +283,49 @@ function DynamicCourseCardImpl({
                 />
               </div>
 
+              {/* Google reviews — live from Google Places (only when populated) */}
+              {instructor.google_rating != null &&
+                (instructor.google_review_count ?? 0) > 0 && (
+                  <a
+                    href={instructor.google_review_url ?? undefined}
+                    target={instructor.google_review_url ? "_blank" : undefined}
+                    rel={instructor.google_review_url ? "noopener noreferrer" : undefined}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`flex flex-col gap-1 rounded-lg border border-border/60 bg-white px-2.5 py-2 ${
+                      instructor.google_review_url ? "hover:bg-muted/40 transition-colors" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <GoogleGlyph className="h-3.5 w-3.5 flex-shrink-0" />
+                      <span className="font-semibold text-foreground">
+                        {Number(instructor.google_rating).toFixed(1)}
+                      </span>
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <span className="text-muted-foreground">
+                        · {instructor.google_review_count} Google review
+                        {instructor.google_review_count === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                    {instructor.google_top_review_text && (
+                      <p
+                        className="text-[11px] italic leading-snug text-muted-foreground"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        “{instructor.google_top_review_text}”
+                        {instructor.google_top_review_author && (
+                          <span className="not-italic"> — {instructor.google_top_review_author.split(" ")[0]}</span>
+                        )}
+                      </p>
+                    )}
+                  </a>
+                )}
+
+
 
               {/* Price */}
               <div className="flex items-center gap-2 text-foreground">
@@ -403,4 +452,16 @@ function DynamicCourseCardImpl({
   );
 }
 
+function GoogleGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/>
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+      <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.3l-6.3-5.3C29.2 35 26.7 36 24 36c-5.3 0-9.7-3.4-11.3-8l-6.5 5C9.6 39.6 16.3 44 24 44z"/>
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.4l6.3 5.3C41.9 35.6 44 30.2 44 24c0-1.3-.1-2.3-.4-3.5z"/>
+    </svg>
+  );
+}
+
 export const DynamicCourseCard = memo(DynamicCourseCardImpl);
+

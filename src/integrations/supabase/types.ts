@@ -10449,9 +10449,15 @@ export type Database = {
           gender: string | null
           google_access_token: string | null
           google_calendar_id: string | null
+          google_place_id: string | null
+          google_rating: number | null
           google_refresh_token: string | null
+          google_review_count: number | null
           google_review_url: string | null
+          google_reviews_fetched_at: string | null
           google_token_expires_at: string | null
+          google_top_review_author: string | null
+          google_top_review_text: string | null
           gpsgate_user_id: number | null
           gpsgate_username: string | null
           has_completed_tour: boolean
@@ -10681,9 +10687,15 @@ export type Database = {
           gender?: string | null
           google_access_token?: string | null
           google_calendar_id?: string | null
+          google_place_id?: string | null
+          google_rating?: number | null
           google_refresh_token?: string | null
+          google_review_count?: number | null
           google_review_url?: string | null
+          google_reviews_fetched_at?: string | null
           google_token_expires_at?: string | null
+          google_top_review_author?: string | null
+          google_top_review_text?: string | null
           gpsgate_user_id?: number | null
           gpsgate_username?: string | null
           has_completed_tour?: boolean
@@ -10913,9 +10925,15 @@ export type Database = {
           gender?: string | null
           google_access_token?: string | null
           google_calendar_id?: string | null
+          google_place_id?: string | null
+          google_rating?: number | null
           google_refresh_token?: string | null
+          google_review_count?: number | null
           google_review_url?: string | null
+          google_reviews_fetched_at?: string | null
           google_token_expires_at?: string | null
+          google_top_review_author?: string | null
+          google_top_review_text?: string | null
           gpsgate_user_id?: number | null
           gpsgate_username?: string | null
           has_completed_tour?: boolean
@@ -21165,7 +21183,13 @@ export type Database = {
           email: string | null
           extra_info: string | null
           facebook_url: string | null
+          google_place_id: string | null
+          google_rating: number | null
+          google_review_count: number | null
           google_review_url: string | null
+          google_reviews_fetched_at: string | null
+          google_top_review_author: string | null
+          google_top_review_text: string | null
           hero_image_url: string | null
           hero_overlay_color: string | null
           hero_overlay_opacity: number | null
@@ -21245,7 +21269,13 @@ export type Database = {
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
+          google_place_id?: string | null
+          google_rating?: number | null
+          google_review_count?: number | null
           google_review_url?: string | null
+          google_reviews_fetched_at?: string | null
+          google_top_review_author?: string | null
+          google_top_review_text?: string | null
           hero_image_url?: string | null
           hero_overlay_color?: string | null
           hero_overlay_opacity?: number | null
@@ -21325,7 +21355,13 @@ export type Database = {
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
+          google_place_id?: string | null
+          google_rating?: number | null
+          google_review_count?: number | null
           google_review_url?: string | null
+          google_reviews_fetched_at?: string | null
+          google_top_review_author?: string | null
+          google_top_review_text?: string | null
           hero_image_url?: string | null
           hero_overlay_color?: string | null
           hero_overlay_opacity?: number | null

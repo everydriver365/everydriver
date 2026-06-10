@@ -15,13 +15,14 @@ serve(async (req) => {
   }
 
   try {
-    const { query, placeId, cacheKey } = await req.json().catch(() => ({}));
+    const { query, placeId, cacheKey, instructorId } = await req.json().catch(() => ({}));
     if (!query && !placeId) {
       return new Response(
         JSON.stringify({ error: "query or placeId required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
 
     const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
     if (!apiKey) throw new Error("GOOGLE_PLACES_API_KEY not configured");
@@ -44,6 +45,14 @@ serve(async (req) => {
       const ageHours =
         (Date.now() - new Date(cached.fetched_at).getTime()) / 3_600_000;
       if (ageHours < CACHE_TTL_HOURS) {
+        if (instructorId) {
+          await writeInstructorGoogleSnapshot(supabase, instructorId, {
+            placeId: cached.place_id,
+            rating: cached.rating,
+            count: cached.user_ratings_total,
+            reviews: cached.reviews,
+          });
+        }
         return new Response(
           JSON.stringify({
             cached: true,
@@ -57,6 +66,7 @@ serve(async (req) => {
         );
       }
     }
+
 
     // Resolve place_id if not provided
     let resolvedPlaceId = placeId;
@@ -114,6 +124,17 @@ serve(async (req) => {
       { onConflict: "cache_key" }
     );
 
+    if (instructorId) {
+      await writeInstructorGoogleSnapshot(supabase, instructorId, {
+        placeId: resolvedPlaceId,
+        rating: r.rating ?? null,
+        count: r.user_ratings_total ?? null,
+        reviews,
+      });
+    }
+
+
+
     return new Response(
       JSON.stringify({
         cached: false,
@@ -134,3 +155,43 @@ serve(async (req) => {
     );
   }
 });
+
+interface GoogleSnapshot {
+  placeId: string | null;
+  rating: number | null;
+  count: number | null;
+  reviews: Array<{ author_name?: string; rating?: number; text?: string }>;
+}
+
+async function writeInstructorGoogleSnapshot(
+  supabase: ReturnType<typeof createClient>,
+  instructorId: string,
+  snap: GoogleSnapshot
+) {
+  // Pick the highest-rated review with text as the snippet; tie-break by length.
+  const top = (snap.reviews || [])
+    .filter((rv) => rv && typeof rv.text === "string" && rv.text!.trim().length > 0)
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || (b.text!.length - a.text!.length))[0];
+
+  const snippetRaw = top?.text?.trim() ?? null;
+  const snippet =
+    snippetRaw && snippetRaw.length > 160
+      ? snippetRaw.slice(0, 157).trimEnd() + "…"
+      : snippetRaw;
+
+  const author = top?.author_name?.trim() || null;
+
+  const { error } = await supabase
+    .from("instructors")
+    .update({
+      google_place_id: snap.placeId,
+      google_rating: snap.rating,
+      google_review_count: snap.count,
+      google_top_review_text: snippet,
+      google_top_review_author: author,
+      google_reviews_fetched_at: new Date().toISOString(),
+    })
+    .eq("id", instructorId);
+  if (error) console.error("writeInstructorGoogleSnapshot:", error.message);
+}
+
