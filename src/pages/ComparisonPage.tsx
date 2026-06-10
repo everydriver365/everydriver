@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { Check, Minus, Star, MapPin, Camera, Video, Building2, Phone, Zap, ChevronLeft, ChevronRight, Heart, Stethoscope, Eye, SmilePlus, Brain, ShieldCheck, ArrowRight, Sparkles, Pill, Activity, Users, Plane, Info, Search, Scissors, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -352,6 +353,10 @@ export default function ComparisonPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="EveryDriver vs Other Driving Schools | Compare"
+        description="See how EveryDriver compares to national driving schools. Instructor choice, transparent pricing and no hidden fees."
+      />
       {/* Hero — Healthcare-led */}
       <div className="bg-primary text-primary-foreground py-10 md:py-16 px-4">
         <div className="max-w-[1200px] mx-auto text-center">

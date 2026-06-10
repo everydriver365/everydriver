@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Zap, Clock, Calendar, Star } from "lucide-react";
 import { useCourseDiscovery } from "@/hooks/useCourseDiscovery";
