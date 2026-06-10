@@ -37,6 +37,7 @@ import { useDemoMode } from "@/context/DemoModeContext";
 import { DemoModeBanner, DemoModeInviteCard } from "@/components/instructor/DemoModeBanner";
 import { demoStats } from "@/data/demoModeData";
 import { PDIBanner } from "@/components/instructor/PDIBanner";
+import { GettingStartedChecklist } from "@/components/instructor/GettingStartedChecklist";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
