@@ -839,7 +839,7 @@ export default function Index() {
                   <Badge className="bg-amber-100 text-amber-700 border-0 text-xs hover:bg-amber-100 mb-2">
                     {article.category || "DVSA News"}
                   </Badge>
-                  <h3 className="font-bold text-lg mb-1">{article.title}</h3>
+                  <h3 className="font-bold text-lg mb-1">{decodeHtml(article.title)}</h3>
                   <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{article.description}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
