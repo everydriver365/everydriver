@@ -571,6 +571,7 @@ function TestimonialsEditor({ searchQuery, onSearchChange }: { searchQuery: stri
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => { fetchTestimonials(); }, []);
 
