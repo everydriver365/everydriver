@@ -96,7 +96,7 @@ export function CourseRowCard({
       {/* Hours / icon */}
       <div className="flex shrink-0 flex-row sm:flex-col items-center gap-3 sm:gap-2 border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50/50 px-4 py-3 sm:py-4">
         {icon ? (
-          <img src={icon} alt={`${hours} hours`} className="h-10 w-10 sm:h-14 sm:w-14 object-contain" />
+          <img src={icon} alt={`${hours} hours`} loading="lazy" className="h-10 w-10 sm:h-14 sm:w-14 object-contain" />
         ) : (
           <>
             <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#0B2545] to-[#13346b] text-white shadow-sm">
@@ -145,12 +145,12 @@ export function CourseRowCard({
           )}
           {instructor.klarna_enabled && (
             <span className="inline-flex items-center gap-1 rounded-full border border-pink-200 bg-pink-50 px-2 py-1 text-[10px] sm:text-[11px] font-semibold text-pink-800">
-              <img src={klarnaLogo} alt="" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />3 × £{(finalPrice / 3).toFixed(0)}
+              <img src={klarnaLogo} alt="" loading="lazy" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />3 × £{(finalPrice / 3).toFixed(0)}
             </span>
           )}
           {instructor.clearpay_enabled && (
             <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] sm:text-[11px] font-semibold text-violet-800">
-              <img src={clearpayLogo} alt="" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />4 × £{(finalPrice / 4).toFixed(0)}
+              <img src={clearpayLogo} alt="" loading="lazy" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />4 × £{(finalPrice / 4).toFixed(0)}
             </span>
           )}
         </div>
