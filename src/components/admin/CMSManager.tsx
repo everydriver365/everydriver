@@ -27,6 +27,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -301,6 +311,7 @@ function FeaturesEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingFeature, setEditingFeature] = useState<any>(null);
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => { fetchFeatures(); }, []);
 
@@ -460,7 +471,7 @@ function FeaturesEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
                         <DropdownMenuItem onClick={() => handleToggleActive(feature)}>
                           {feature.is_active ? "Hide" : "Show"}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(feature.id)} className="text-destructive">
+                        <DropdownMenuItem onClick={() => setConfirmDeleteId(feature.id)} className="text-destructive">
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -542,7 +553,7 @@ function FeaturesEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
               <div className="flex gap-2 pt-4">
                 <Button onClick={handleSave} className="flex-1">Save</Button>
                 {editingFeature.id && (
-                  <Button variant="destructive" onClick={() => { handleDelete(editingFeature.id); setDialogOpen(false); }}>
+                  <Button variant="destructive" onClick={() => setConfirmDeleteId(editingFeature.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
@@ -551,9 +562,36 @@ function FeaturesEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete this feature? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDeleteId) {
+                  handleDelete(confirmDeleteId);
+                  setDialogOpen(false);
+                }
+                setConfirmDeleteId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
 
 // Testimonials Editor (Table View)
 function TestimonialsEditor({ searchQuery, onSearchChange }: { searchQuery: string; onSearchChange: (q: string) => void }) {
@@ -561,6 +599,7 @@ function TestimonialsEditor({ searchQuery, onSearchChange }: { searchQuery: stri
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => { fetchTestimonials(); }, []);
 
@@ -703,7 +742,7 @@ function TestimonialsEditor({ searchQuery, onSearchChange }: { searchQuery: stri
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleEdit(item)}>Edit</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDelete(item.id)} className="text-destructive">Delete</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setConfirmDeleteId(item.id)} className="text-destructive">Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -759,7 +798,7 @@ function TestimonialsEditor({ searchQuery, onSearchChange }: { searchQuery: stri
               <div className="flex gap-2 pt-4">
                 <Button onClick={handleSave} className="flex-1">Save</Button>
                 {editing.id && (
-                  <Button variant="destructive" onClick={() => { handleDelete(editing.id); setDialogOpen(false); }}>
+                  <Button variant="destructive" onClick={() => setConfirmDeleteId(editing.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
@@ -768,9 +807,36 @@ function TestimonialsEditor({ searchQuery, onSearchChange }: { searchQuery: stri
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete this testimonial? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDeleteId) {
+                  handleDelete(confirmDeleteId);
+                  setDialogOpen(false);
+                }
+                setConfirmDeleteId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
 
 // Stats Editor
 function StatsEditor() {
@@ -1077,6 +1143,7 @@ function IncludedEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => { fetchItems(); }, []);
 
@@ -1182,7 +1249,7 @@ function IncludedEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleEdit(item)}>Edit</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(item.id)} className="text-destructive">Delete</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setConfirmDeleteId(item.id)} className="text-destructive">Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -1243,7 +1310,7 @@ function IncludedEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
               <div className="flex gap-2 pt-4">
                 <Button onClick={handleSave} className="flex-1">Save</Button>
                 {editing.id && (
-                  <Button variant="destructive" onClick={() => { handleDelete(editing.id); setDialogOpen(false); }}>
+                  <Button variant="destructive" onClick={() => setConfirmDeleteId(editing.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
@@ -1252,6 +1319,33 @@ function IncludedEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete this item? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDeleteId) {
+                  handleDelete(confirmDeleteId);
+                  setDialogOpen(false);
+                }
+                setConfirmDeleteId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+

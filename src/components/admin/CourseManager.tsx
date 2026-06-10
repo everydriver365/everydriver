@@ -18,6 +18,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -60,6 +70,7 @@ export function CourseManager({ onNavigate }: CourseManagerProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CourseTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTemplates();
@@ -473,7 +484,7 @@ export function CourseManager({ onNavigate }: CourseManagerProps) {
                                 {template.is_active ? "Deactivate" : "Activate"}
                               </DropdownMenuItem>
                               <DropdownMenuItem 
-                                onClick={() => handleDelete(template.id)}
+                                onClick={() => setConfirmDeleteId(template.id)}
                                 className="text-destructive"
                               >
                                 Delete
@@ -499,6 +510,30 @@ export function CourseManager({ onNavigate }: CourseManagerProps) {
         isCreating={isCreating}
         onSaved={fetchTemplates}
       />
+
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete this course template? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDeleteId) handleDelete(confirmDeleteId);
+                setConfirmDeleteId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+

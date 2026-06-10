@@ -1,11 +1,15 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MapPin, Calendar, Clock, Check, X, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ScrapedMatch {
   id: string;
@@ -25,6 +29,7 @@ interface InstructorInfo {
 export function AdminScrapedMatchesPanel() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [confirmDismiss, setConfirmDismiss] = useState<ScrapedMatch | null>(null);
 
   const { data: matches = [], isLoading } = useQuery({
     queryKey: ["admin-scraped-matches"],
@@ -153,7 +158,7 @@ export function AdminScrapedMatchesPanel() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button size="sm" variant="outline" onClick={() => handleDismiss(slot)} className="h-8 w-8 p-0">
+                  <Button size="sm" variant="outline" onClick={() => setConfirmDismiss(slot)} className="h-8 w-8 p-0">
                     <X className="h-4 w-4" />
                   </Button>
                   <Button size="sm" onClick={() => handleConfirm(slot)} className="h-8 gap-1">
@@ -166,6 +171,30 @@ export function AdminScrapedMatchesPanel() {
           ))}
         </div>
       ))}
+
+      <AlertDialog open={!!confirmDismiss} onOpenChange={(open) => !open && setConfirmDismiss(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Dismiss this scraped match? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDismiss) handleDismiss(confirmDismiss);
+                setConfirmDismiss(null);
+              }}
+            >
+              Dismiss
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+

@@ -20,6 +20,16 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Satellite,
   Loader2,
   Car,
@@ -63,6 +73,7 @@ export function AdminTrackersManager() {
   const [selectedProvider, setSelectedProvider] = useState<string>("radius");
   const [isAdding, setIsAdding] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -212,7 +223,7 @@ export function AdminTrackersManager() {
                         variant="ghost"
                         size="sm"
                         className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                        onClick={() => removeDevice(d.id)}
+                        onClick={() => setConfirmRemoveId(d.id)}
                         disabled={actionId === d.id}
                       >
                         {actionId === d.id ? (
@@ -313,6 +324,29 @@ export function AdminTrackersManager() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!confirmRemoveId} onOpenChange={(open) => !open && setConfirmRemoveId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove this device? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmRemoveId) removeDevice(confirmRemoveId);
+                setConfirmRemoveId(null);
+              }}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

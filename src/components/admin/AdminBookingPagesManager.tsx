@@ -17,6 +17,10 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Plus, Copy, Pencil, Trash2, ExternalLink, Globe } from "lucide-react";
 
 interface BookingPage {
@@ -50,6 +54,7 @@ export function AdminBookingPagesManager() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => { fetchAll(); }, []);
@@ -134,7 +139,6 @@ export function AdminBookingPagesManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this booking page?")) return;
     const { error } = await supabase.from("booking_pages").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Deleted");
@@ -207,7 +211,7 @@ export function AdminBookingPagesManager() {
                       <Button size="icon" variant="ghost" onClick={() => openEdit(p)} title="Edit">
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => handleDelete(p.id)} title="Delete">
+                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setConfirmDeleteId(p.id)} title="Delete">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -301,6 +305,30 @@ export function AdminBookingPagesManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete this booking page? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDeleteId) handleDelete(confirmDeleteId);
+                setConfirmDeleteId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
+

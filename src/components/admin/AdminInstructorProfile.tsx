@@ -174,6 +174,7 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
   const [newDeviceId, setNewDeviceId] = useState("");
   const [newDeviceName, setNewDeviceName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const providerLabel = provider === "radius" ? "Radius" : provider;
 
@@ -235,7 +236,7 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
                 <p className="font-medium truncate">{d.device_name || "Unnamed"}</p>
                 <p className="text-xs text-muted-foreground font-mono">{d.device_identifier}</p>
               </div>
-              <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => removeDevice(d.id)}>
+              <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setConfirmRemoveId(d.id)}>
                 Remove
               </Button>
             </div>
@@ -263,6 +264,29 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
           </Button>
         </div>
       )}
+
+      <AlertDialog open={!!confirmRemoveId} onOpenChange={(open) => !open && setConfirmRemoveId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove this device? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmRemoveId) removeDevice(confirmRemoveId);
+                setConfirmRemoveId(null);
+              }}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -282,6 +306,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
 
   // Dialog states
   const [showDelete, setShowDelete] = useState(false);
+  const [showToggleActive, setShowToggleActive] = useState(false);
   const [showReassign, setShowReassign] = useState(false);
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState("");
@@ -592,7 +617,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             </Button>
           )}
           <div className="flex-1" />
-          <Button variant={instructor.is_active ? "outline" : "default"} size="sm" onClick={handleToggleActive}>
+          <Button variant={instructor.is_active ? "outline" : "default"} size="sm" onClick={() => setShowToggleActive(true)}>
             <Power className="mr-1.5 h-3.5 w-3.5" />
             {instructor.is_active ? "Deactivate" : "Activate"}
           </Button>
@@ -906,6 +931,31 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
               {isDeleting ? "Archiving..." : "Archive"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showToggleActive} onOpenChange={setShowToggleActive}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {instructor.is_active
+                ? "Deactivate this instructor? They will lose access to the app."
+                : "Activate this instructor? They will regain access to the app."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={instructor.is_active ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+              onClick={() => {
+                handleToggleActive();
+                setShowToggleActive(false);
+              }}
+            >
+              {instructor.is_active ? "Deactivate" : "Activate"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

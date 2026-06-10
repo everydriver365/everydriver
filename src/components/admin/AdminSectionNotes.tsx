@@ -20,6 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   Plus,
@@ -66,6 +70,7 @@ export function AdminSectionNotes({ sectionKey, className }: AdminSectionNotesPr
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingNote, setEditingNote] = useState<SectionNote | null>(null);
+  const [confirmDeleteNote, setConfirmDeleteNote] = useState<SectionNote | null>(null);
   
   // Form state
   const [title, setTitle] = useState("");
@@ -170,7 +175,6 @@ export function AdminSectionNotes({ sectionKey, className }: AdminSectionNotesPr
   };
 
   const deleteNote = async (note: SectionNote) => {
-    if (!confirm("Delete this note?")) return;
 
     try {
       const { error } = await supabase
@@ -237,7 +241,7 @@ export function AdminSectionNotes({ sectionKey, className }: AdminSectionNotesPr
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 text-destructive"
-                onClick={() => deleteNote(note)}
+                onClick={() => setConfirmDeleteNote(note)}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -355,6 +359,30 @@ export function AdminSectionNotes({ sectionKey, className }: AdminSectionNotesPr
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!confirmDeleteNote} onOpenChange={(open) => !open && setConfirmDeleteNote(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete this note? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDeleteNote) deleteNote(confirmDeleteNote);
+                setConfirmDeleteNote(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
