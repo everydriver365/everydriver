@@ -54,6 +54,7 @@ export function AdminBookingPagesManager() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => { fetchAll(); }, []);
