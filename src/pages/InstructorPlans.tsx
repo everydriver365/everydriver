@@ -226,7 +226,7 @@ export default function InstructorPlans() {
     // Contact us plans
     if (plan.show_contact_us) {
       toast.success(`To upgrade to ${plan.name}, please contact us`, {
-        description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
+        description: "Email hello@everydriver.co.uk or call us to upgrade your plan.",
         duration: 5000,
       });
       return;
@@ -546,8 +546,8 @@ export default function InstructorPlans() {
               <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-muted/50 border border-border text-sm text-muted-foreground">
                 <Mail className="h-4 w-4" />
                 Questions? Email{" "}
-                <a href="mailto:hello@drive365.co.uk" className="text-primary font-medium hover:underline">
-                  hello@drive365.co.uk
+                <a href="mailto:hello@everydriver.co.uk" className="text-primary font-medium hover:underline">
+                  hello@everydriver.co.uk
                 </a>
               </div>
             </motion.div>

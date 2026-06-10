@@ -450,8 +450,8 @@ function MySiteInner() {
 
   const domain = useMemo(() => {
     if (instructor?.custom_domain) return instructor.custom_domain;
-    if (instructor?.app_slug) return `${instructor.app_slug}.drive365.co.uk`;
-    return "your-site.drive365.co.uk";
+    if (instructor?.app_slug) return `${instructor.app_slug}.everydriver.co.uk`;
+    return "your-site.everydriver.co.uk";
   }, [instructor?.custom_domain, instructor?.app_slug]);
 
   const initials = useMemo(

@@ -11,7 +11,7 @@ export interface DomainBranding {
   homeLink: string;
 }
 
-const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
+const DRIVE365_DOMAINS = ["everydriver.co.uk", "www.everydriver.co.uk"];
 const EVERYDRIVER_BASE_DOMAIN = "everydriver.co.uk";
 const ACCESSIBLE_BASE_DOMAIN = "driveforall.co.uk";
 const ACCESSIBLE_BASE_DOMAIN_ALT = "drivingforall.co.uk";

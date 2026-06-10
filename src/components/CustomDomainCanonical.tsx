@@ -33,7 +33,7 @@ export function CustomDomainCanonical() {
     // Only enforce on real custom domains (not subdomains of our own brands)
     const isOurSubdomain =
       canonicalHost.endsWith(".everydriver.co.uk") ||
-      canonicalHost.endsWith(".drive365.co.uk") ||
+      canonicalHost.endsWith(".everydriver.co.uk") ||
       canonicalHost.endsWith(".lovable.app") ||
       canonicalHost.endsWith(".lovableproject.com") ||
       canonicalHost === "localhost";

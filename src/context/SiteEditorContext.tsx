@@ -37,7 +37,7 @@ export const defaultSite: SiteState = {
     date: "2025-09",
   })),
   booking: { leadTime: 24, deposit: 20, methods: ["square", "cash"] },
-  contact: { phone: "07000 000000", whatsapp: "07000 000000", email: "info@drive365.co.uk", area: "Watford, Kings Langley, Hemel Hempstead" },
+  contact: { phone: "07000 000000", whatsapp: "07000 000000", email: "info@everydriver.co.uk", area: "Watford, Kings Langley, Hemel Hempstead" },
   seo: {
     title: "Ken Driving – Driving Lessons Watford",
     description: "DVSA-approved driving instructor in Watford and Kings Langley. Pass first time with calm, patient lessons. Book online today.",

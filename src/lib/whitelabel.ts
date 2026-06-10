@@ -5,7 +5,7 @@
  * instructor's logo, name, contact details and data scope. There are two
  * ways a hostname can map to an instructor:
  *
- *   1. Subdomain  →  {app_slug}.everydriver.co.uk  or  {app_slug}.drive365.co.uk
+ *   1. Subdomain  →  {app_slug}.everydriver.co.uk  or  {app_slug}.everydriver.co.uk
  *   2. Custom domain  →  matches `instructors.custom_domain`
  *      (paid add-on; only counted when `custom_domain_verified = true`)
  *
@@ -36,7 +36,7 @@ export interface WhitelabelConfig {
 }
 
 const EVERYDRIVER_HOST_SUFFIX = ".everydriver.co.uk";
-const DRIVE365_HOST_SUFFIX = ".drive365.co.uk";
+const DRIVE365_HOST_SUFFIX = ".everydriver.co.uk";
 const EVERYDRIVER_PREVIEW_OVERRIDE_KEY = "lovable_everydriver_override";
 
 let cachedConfig: WhitelabelConfig | null | undefined = undefined; // undefined = not loaded yet
@@ -97,14 +97,14 @@ export function isEveryDriverPreviewOverrideActive(
  */
 function isBareMarketingHost(host: string): boolean {
   return (
-    host === "drive365.co.uk" ||
+    host === "everydriver.co.uk" ||
     host === "everydriver.co.uk" ||
     host === "drivingschoolmanager.co.uk" ||
     host === "driveforall.co.uk" ||
     host === "drivingforall.co.uk" ||
     host === "everydriver.co" ||
     host === "everydriver.lovable.app" ||
-    host === "bookings.drive365.co.uk" ||
+    host === "bookings.everydriver.co.uk" ||
     host.endsWith(".lovable.app") ||
     host.endsWith(".lovableproject.com") ||
     host === "localhost" ||

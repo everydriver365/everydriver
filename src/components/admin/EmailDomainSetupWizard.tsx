@@ -58,10 +58,10 @@ const REGISTRARS: { name: string; steps: string[] }[] = [
 ];
 
 interface Props {
-  domainFqdn?: string; // e.g. "notify.drive365.co.uk"
+  domainFqdn?: string; // e.g. "notify.everydriver.co.uk"
 }
 
-export function EmailDomainSetupWizard({ domainFqdn = "notify.drive365.co.uk" }: Props) {
+export function EmailDomainSetupWizard({ domainFqdn = "notify.everydriver.co.uk" }: Props) {
   const rootDomain = useMemo(
     () => domainFqdn.replace(new RegExp(`^${SUBDOMAIN}\\.`), ""),
     [domainFqdn]

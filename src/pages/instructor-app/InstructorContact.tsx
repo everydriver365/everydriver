@@ -99,8 +99,8 @@ export default function InstructorContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">Email Us</h3>
-                    <p className="text-muted-foreground text-sm">support@drive365.co.uk</p>
-                    <p className="text-muted-foreground text-sm">sales@drive365.co.uk</p>
+                    <p className="text-muted-foreground text-sm">support@everydriver.co.uk</p>
+                    <p className="text-muted-foreground text-sm">sales@everydriver.co.uk</p>
                   </div>
                 </div>
               </CardContent>

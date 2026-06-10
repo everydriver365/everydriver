@@ -27,7 +27,7 @@ export const MODULES: ModuleDef[] = [
   { id: "inbox",      name: "Inbox",              description: "Pupil messages in one place",                     icon: "MessageSquare", category: "Communication", status: "active" },
   { id: "whatsapp",   name: "WhatsApp Reminders", description: "Auto-send lesson reminders via WhatsApp",         icon: "MessageCircle", category: "Communication", status: "off" },
   { id: "ed",         name: "AI Assistant ED",    description: "Unlimited AI replies and lesson notes",           icon: "Sparkles",      category: "Communication", status: "locked", requiredPlan: "Studio" },
-  { id: "website",    name: "Mini Website",       description: "Public booking site at your-name.drive365.co.uk", icon: "Globe",         category: "Website",       status: "active" },
+  { id: "website",    name: "Mini Website",       description: "Public booking site at your-name.everydriver.co.uk", icon: "Globe",         category: "Website",       status: "active" },
 ];
 
 const STORAGE_KEY = "dsm.activeModules";
