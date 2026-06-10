@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
