@@ -188,6 +188,70 @@ function generateTaxReport(doc: any, data: any) {
   return doc;
 }
 
+function generateInvoice(doc: any, data: any) {
+  const pw = doc.internal.pageSize.getWidth();
+  let y = 20;
+  doc.setFontSize(20);
+  doc.text("INVOICE", 14, y);
+  doc.setFontSize(11);
+  doc.text(data.invoice_number || "", pw - 14, y, { align: "right" });
+  y += 10;
+  doc.setFontSize(10);
+  doc.text(`Date: ${data.issue_date || ""}`, pw - 14, y, { align: "right" });
+  y += 10;
+
+  const inst = data.instructor || {};
+  doc.setFontSize(11);
+  doc.text("From:", 14, y); y += 6;
+  doc.setFontSize(10);
+  doc.text(inst.name || "", 14, y); y += 5;
+  if (inst.address) {
+    const lines = doc.splitTextToSize(inst.address, 90);
+    doc.text(lines, 14, y); y += lines.length * 5;
+  }
+  if (inst.vat_number) { doc.text(`VAT: ${inst.vat_number}`, 14, y); y += 5; }
+  if (inst.email) { doc.text(inst.email, 14, y); y += 5; }
+  y += 4;
+
+  const pupil = data.pupil || {};
+  doc.setFontSize(11);
+  doc.text("To:", 14, y); y += 6;
+  doc.setFontSize(10);
+  doc.text(pupil.name || "", 14, y); y += 5;
+  if (pupil.email) { doc.text(pupil.email, 14, y); y += 5; }
+  y += 6;
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, "bold");
+  doc.text("Date", 14, y);
+  doc.text("Duration", 60, y);
+  doc.text("Rate", 100, y);
+  doc.text("Amount", pw - 14, y, { align: "right" });
+  doc.setFont(undefined, "normal");
+  y += 4;
+  doc.line(14, y, pw - 14, y);
+  y += 6;
+
+  for (const li of (data.line_items || [])) {
+    if (y > 260) { doc.addPage(); y = 20; }
+    doc.text(String(li.date || ""), 14, y);
+    doc.text(`${li.duration_mins || 0} min`, 60, y);
+    doc.text(`£${Number(li.rate || 0).toFixed(2)}`, 100, y);
+    doc.text(`£${Number(li.amount || 0).toFixed(2)}`, pw - 14, y, { align: "right" });
+    y += 6;
+  }
+
+  y += 4;
+  doc.line(14, y, pw - 14, y);
+  y += 8;
+  doc.setFont(undefined, "bold");
+  doc.setFontSize(12);
+  doc.text("Total", 100, y);
+  doc.text(`£${Number(data.total || 0).toFixed(2)} ${data.currency || "GBP"}`, pw - 14, y, { align: "right" });
+  doc.setFont(undefined, "normal");
+  return doc;
+}
+
 function generateGenericReport(doc: any, data: any) {
   const pw = doc.internal.pageSize.getWidth();
   let y = 20;
