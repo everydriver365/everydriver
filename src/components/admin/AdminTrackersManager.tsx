@@ -223,7 +223,7 @@ export function AdminTrackersManager() {
                         variant="ghost"
                         size="sm"
                         className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                        onClick={() => removeDevice(d.id)}
+                        onClick={() => setConfirmRemoveId(d.id)}
                         disabled={actionId === d.id}
                       >
                         {actionId === d.id ? (
