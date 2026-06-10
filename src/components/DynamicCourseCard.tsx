@@ -256,16 +256,16 @@ function DynamicCourseCardImpl({
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  With <span className="font-medium text-primary">{instructor.name}</span>
+                  With <span className="font-medium text-primary">{displayName}</span>
                 </span>
               </div>
 
               {/* Trust strip — live rating, Verified Pro chip, top review */}
               <div className="flex items-start gap-2 rounded-lg border border-border/60 bg-muted/30 px-2.5 py-2">
                 <Avatar className="h-7 w-7 flex-shrink-0">
-                  <AvatarImage src={instructor.profile_image_url || undefined} alt={instructor.name} loading="lazy" />
+                  <AvatarImage src={instructor.profile_image_url || undefined} alt={displayName} loading="lazy" />
                   <AvatarFallback className="text-[10px] font-semibold">
-                    {instructor.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                    {displayName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
                 <InstructorSignalRow
@@ -329,11 +329,11 @@ function DynamicCourseCardImpl({
                   className="text-sm text-white"
                   style={{ backgroundColor: brandColour }}
                 >
-                  {instructor.name.split(" ").map((n) => n[0]).join("")}
+                  {displayName.split(" ").map((n) => n[0]).join("")}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-medium text-primary-foreground">{instructor.name}</div>
+                <div className="font-medium text-primary-foreground">{displayName}</div>
                 <div className="flex items-center gap-1 text-xs text-primary-foreground/70">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                   <span>4.9 rating</span>
