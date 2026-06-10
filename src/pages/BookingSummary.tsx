@@ -334,7 +334,7 @@ export default function BookingSummary() {
         return;
       }
 
-      const instructor = instructorRes.data;
+      const instructor = { ...instructorRes.data, name: cleanInstructorName(instructorRes.data.name) };
       const template = templateRes.data;
       const instructorCourse = instructorCourseRes.data;
 
