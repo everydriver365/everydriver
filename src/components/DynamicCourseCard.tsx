@@ -55,7 +55,7 @@ interface DynamicCourseCardProps {
   learnerPostcode?: string | null;
 }
 
-export function DynamicCourseCard({ 
+function DynamicCourseCardImpl({ 
   instructor, 
   hours, 
   nextAvailable,
@@ -399,3 +399,6 @@ export function DynamicCourseCard({
     </div>
   );
 }
+
+import { memo } from "react";
+export const DynamicCourseCard = memo(DynamicCourseCardImpl);
