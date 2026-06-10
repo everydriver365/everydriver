@@ -202,7 +202,7 @@ export function CoursePaymentBlock({
                 {courseName.toLowerCase().includes("intensive") ? "" : ""} · {courseName}
               </div>
               <div className="text-[12px] text-muted-foreground truncate mt-0.5">
-                With {instructorName}
+                With {displayName}
                 {locationName ? ` · ${locationName}` : ""}
               </div>
             </div>
