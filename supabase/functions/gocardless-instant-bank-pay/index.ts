@@ -48,7 +48,37 @@ serve(async (req) => {
 
     const amountInPence = Math.round(amount * 100);
 
+    // Server-side gate: verify instructor has Instant Bank Pay enabled
+    {
+      const sbUrl = Deno.env.get("SUPABASE_URL")!;
+      const sbKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const sb = createClient(sbUrl, sbKey);
+      const { data: pupilRow } = await sb
+        .from("pupils")
+        .select("instructor_id")
+        .eq("id", pupilId)
+        .maybeSingle();
+      if (!pupilRow?.instructor_id) {
+        return new Response(
+          JSON.stringify({ error: "Pupil not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const { data: instructorRow } = await sb
+        .from("instructors")
+        .select("instant_bank_pay_enabled")
+        .eq("id", pupilRow.instructor_id)
+        .maybeSingle();
+      if (!instructorRow?.instant_bank_pay_enabled) {
+        return new Response(
+          JSON.stringify({ error: "Instant Bank Pay is not enabled for this instructor." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Step 1: Create a billing request with payment_request only (one-off, no mandate)
+
     const brResponse = await fetch(`${baseUrl}/billing_requests`, {
       method: "POST",
       headers: {
