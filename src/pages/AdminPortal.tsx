@@ -412,9 +412,8 @@ export default function AdminPortal() {
                 </Card>
               </Link>
 
-              <BackfillCommuteMileageTile />
-              <BackfillTelematicsTile />
               <DuplicateLessonsTile />
+
 
             </div>
 
