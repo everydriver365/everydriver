@@ -111,7 +111,6 @@ export function AdminEventsManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this event?")) return;
     await supabase.from("admin_events").delete().eq("id", id);
     toast.success("Event deleted");
     fetchEvents();
