@@ -19,31 +19,6 @@ export function SchoolAuthProvider({ children }: { children: React.ReactNode }) 
   const [isSchoolManager, setIsSchoolManager] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        setTimeout(() => checkRole(session.user.id), 0);
-      } else {
-        setIsSchoolManager(false);
-        setLoading(false);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkRole(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   const checkRole = async (userId: string) => {
     try {
       const { data } = await supabase
@@ -52,13 +27,50 @@ export function SchoolAuthProvider({ children }: { children: React.ReactNode }) 
         .eq("user_id", userId)
         .eq("role", "school_manager")
         .maybeSingle();
-      setIsSchoolManager(!!data);
+      return !!data;
     } catch {
-      setIsSchoolManager(false);
-    } finally {
-      setLoading(false);
+      return false;
     }
   };
+
+  useEffect(() => {
+    let mounted = true;
+
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const ok = await checkRole(session.user.id);
+        if (mounted) setIsSchoolManager(ok);
+      }
+      if (mounted) setLoading(false);
+    };
+
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const ok = await checkRole(session.user.id);
+        if (mounted) {
+          setIsSchoolManager(ok);
+          setLoading(false);
+        }
+      } else {
+        setIsSchoolManager(false);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
