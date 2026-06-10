@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown, Clock, LayoutGrid, List } from "lucide-react";
