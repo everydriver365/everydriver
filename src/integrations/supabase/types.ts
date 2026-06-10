@@ -16180,6 +16180,42 @@ export type Database = {
           },
         ]
       }
+      pupil_test_readiness: {
+        Row: {
+          assessed_at: string
+          created_at: string
+          id: string
+          instructor_id: string
+          pupil_id: string
+          recommendations: Json
+          score: number
+          summary: string
+          verdict: string
+        }
+        Insert: {
+          assessed_at?: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          pupil_id: string
+          recommendations?: Json
+          score: number
+          summary: string
+          verdict: string
+        }
+        Update: {
+          assessed_at?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          pupil_id?: string
+          recommendations?: Json
+          score?: number
+          summary?: string
+          verdict?: string
+        }
+        Relationships: []
+      }
       pupil_upsells: {
         Row: {
           amount_paid: number
