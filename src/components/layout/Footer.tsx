@@ -87,6 +87,7 @@ export function Footer() {
                   { to: "/", label: "EveryDriver" },
                   { to: "/login", label: "Pupil Sign In" },
                   { to: "/instructor-app/login", label: "Instructor Portal" },
+                  { to: "/admin/login", label: "Admin Login" },
                 ].map((l) => (
                   <li key={l.label}>
                     <Link to={l.to} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
@@ -171,7 +172,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-primary-foreground/70">
               <li><Link to="/drive365/login" className="hover:text-accent">Pupil Sign In</Link></li>
               <li><Link to="/instructor-app/login" className="hover:text-accent">Instructor Portal</Link></li>
-              
+              <li><Link to="/admin/login" className="hover:text-accent">Admin Login</Link></li>
             </ul>
           </div>
 
