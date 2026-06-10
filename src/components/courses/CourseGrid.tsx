@@ -38,19 +38,10 @@ export function CourseGrid({
   }, [filteredCourses.length]);
 
 
-  if (!selectedDate) {
-    return (
-      <div className="flex h-full items-center justify-center py-16">
-        <div className="text-center">
-          <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold">Select a date to see available courses</h2>
-          <p className="mt-2 text-muted-foreground">
-            Choose an available date from the calendar
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Note: we intentionally do NOT gate on selectedDate. Courses load
+  // immediately for the soonest available date; the calendar filters.
+
+
 
   // Build location display string
   const locationDisplay = searchedPostcode 
@@ -68,7 +59,7 @@ export function CourseGrid({
             Driving courses near
           </div>
           <h2 className="mt-1 text-[22px] font-extrabold text-[#0A0E27] tracking-[-0.5px] leading-tight">
-            {searchedAreaName || searchedPostcode || format(selectedDate, "EEEE, d MMMM")}
+            {searchedAreaName || searchedPostcode || (selectedDate ? format(selectedDate, "EEEE, d MMMM") : "Available courses")}
             {(searchedAreaName || searchedPostcode) && (
               <span className="ml-2 text-sm font-normal text-[#9CA3AF]">
                 {searchedAreaName && searchedPostcode ? searchedPostcode : ""}
@@ -150,7 +141,8 @@ export function CourseGrid({
       {/* Day heading */}
       <div className="mb-3.5">
         <div className="text-[15px] font-bold text-[#0A0E27] leading-tight">
-          {format(selectedDate, "EEEE, d MMMM")}
+          {selectedDate ? format(selectedDate, "EEEE, d MMMM") : "Soonest available"}
+
         </div>
         <div className="mt-1 text-xs text-[#9CA3AF]">
           {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available

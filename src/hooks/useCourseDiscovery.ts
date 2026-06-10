@@ -717,7 +717,12 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   }, [loading, availableDatesInMonth, nextAvailableDates, selectedMonth, instructors, instructorsInArea, userLocation]);
 
   const coursesForSelectedDate = useMemo(() => {
-    if (!selectedDate) return [];
+    // Fall back to the first available date so courses always render even
+    // before the user explicitly picks a date in the calendar.
+    const effectiveDate = selectedDate ?? nextAvailableDates[0] ?? null;
+    if (!effectiveDate) return [];
+
+
 
     const courses: CourseWithInstructor[] = [];
 
@@ -727,7 +732,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       // hours, calendar, or lessons, so the standard availability resolver
       // would always reject them. We treat them as always available on the
       // selected date and route the user through the enquiry flow.
-      if (!isPlaceholder && !hasInstructorAvailabilityOn(instructor as InstructorLite, selectedDate, sources, { candidatePickup: userLocation ?? undefined })) {
+      if (!isPlaceholder && !hasInstructorAvailabilityOn(instructor as InstructorLite, effectiveDate, sources, { candidatePickup: userLocation ?? undefined })) {
         continue;
       }
 
@@ -747,7 +752,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
           courses.push({
             instructor,
             hours,
-            bookableDate: selectedDate,
+            bookableDate: effectiveDate,
             courseImageUrl: courseData.course_image_url || template?.default_image_url || null,
             isPopular: template?.is_popular || false,
             availableFrom: instructor.available_from,
@@ -771,7 +776,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     }
 
     return courses;
-  }, [selectedDate, instructors, instructorCourses, courseTemplates, sources, displayHours, courseTypeFilter, premiumPlacements, userLocation]);
+  }, [selectedDate, nextAvailableDates, instructors, instructorCourses, courseTemplates, sources, displayHours, courseTypeFilter, premiumPlacements, userLocation]);
 
   const coursesWithDistance = useMemo(() => {
     if (!userLocation) return coursesForSelectedDate;
