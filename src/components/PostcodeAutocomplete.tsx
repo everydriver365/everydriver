@@ -93,14 +93,12 @@ export function PostcodeAutocomplete({
       return;
     }
 
-    // On initial mount, if a value is already present (URL params), keep the
-    // dropdown closed — the user did not type, so showing suggestions is wrong.
-    if (isInitialMountRef.current) {
-      isInitialMountRef.current = false;
-      if (value.length >= 2) {
-        setShowDropdown(false);
-        return;
-      }
+    // Only open dropdown if the user has actively typed/interacted.
+    // Prevents opening on mount when value comes from URL params.
+    if (!userInteractedRef.current) {
+      setShowDropdown(false);
+      setIsLoading(false);
+      return;
     }
 
     if (value.length >= 2) {
@@ -115,6 +113,7 @@ export function PostcodeAutocomplete({
       setIsLoading(false);
       setShowDropdown(false);
     }
+
 
     return () => {
       if (debounceRef.current) {
