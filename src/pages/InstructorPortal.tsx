@@ -37,6 +37,7 @@ import { useDemoMode } from "@/context/DemoModeContext";
 import { DemoModeBanner, DemoModeInviteCard } from "@/components/instructor/DemoModeBanner";
 import { demoStats } from "@/data/demoModeData";
 import { PDIBanner } from "@/components/instructor/PDIBanner";
+import { GettingStartedChecklist } from "@/components/instructor/GettingStartedChecklist";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -217,6 +218,7 @@ export default function InstructorPortal() {
       <InstructorPortalLayout>
         <div className="space-y-0">
         <DemoModeBanner />
+        <div className="px-4 pt-3"><GettingStartedChecklist instructorId={instructorId} /></div>
         {layoutStyle === "settings-v2" ? (
           <SettingsV2HomeView instructorId={instructorId} instructor={instructorData as any} />
         ) : (
@@ -356,6 +358,7 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
           />
         }
       >
+        <GettingStartedChecklist instructorId={instructorId} />
         <HybridDashboard
           instructorId={instructorId}
           instructorName={instructorData?.name}

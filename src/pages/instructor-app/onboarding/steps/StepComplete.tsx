@@ -39,7 +39,7 @@ export function StepComplete({ data }: StepCompleteProps) {
       icon: LayoutDashboard,
       label: "Go to Dashboard",
       desc: "Start managing your diary",
-      action: () => navigate("/instructor"),
+      action: () => navigate("/instructor-app"),
       primary: true,
     },
     {
@@ -59,7 +59,7 @@ export function StepComplete({ data }: StepCompleteProps) {
 
   return (
     <OnboardingLayout
-      step={9}
+      step={10}
       totalSteps={10}
       title=""
       description=""
