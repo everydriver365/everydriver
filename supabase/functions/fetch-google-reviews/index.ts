@@ -49,9 +49,28 @@ serve(async (req) => {
       });
     }
 
-    if (!query && !placeId) {
+    // Instructor-only mode: resolve query/placeId from the instructor record.
+    let effectiveQuery = query as string | undefined;
+    let effectivePlaceId = placeId as string | undefined;
+    if (!effectiveQuery && !effectivePlaceId && instructorId) {
+      const { data: inst, error: instErr } = await supabase
+        .from("instructors")
+        .select("id, name, business_name, home_postcode, google_place_id")
+        .eq("id", instructorId)
+        .maybeSingle();
+      if (instErr) throw instErr;
+      if (!inst) throw new Error(`Instructor not found: ${instructorId}`);
+      if (inst.google_place_id) {
+        effectivePlaceId = inst.google_place_id as string;
+      } else {
+        const parts = [inst.business_name, inst.name, inst.home_postcode, "driving instructor"].filter(Boolean);
+        effectiveQuery = parts.join(" ");
+      }
+    }
+
+    if (!effectiveQuery && !effectivePlaceId) {
       return new Response(
-        JSON.stringify({ error: "query or placeId required" }),
+        JSON.stringify({ error: "query, placeId, or instructorId required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
