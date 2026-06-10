@@ -38,19 +38,10 @@ export function CourseGrid({
   }, [filteredCourses.length]);
 
 
-  if (!selectedDate) {
-    return (
-      <div className="flex h-full items-center justify-center py-16">
-        <div className="text-center">
-          <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold">Select a date to see available courses</h2>
-          <p className="mt-2 text-muted-foreground">
-            Choose an available date from the calendar
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Note: we intentionally do NOT gate on selectedDate. Courses load
+  // immediately for the soonest available date; the calendar filters.
+
+
 
   // Build location display string
   const locationDisplay = searchedPostcode 
