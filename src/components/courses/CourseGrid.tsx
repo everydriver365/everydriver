@@ -141,7 +141,8 @@ export function CourseGrid({
       {/* Day heading */}
       <div className="mb-3.5">
         <div className="text-[15px] font-bold text-[#0A0E27] leading-tight">
-          {format(selectedDate, "EEEE, d MMMM")}
+          {selectedDate ? format(selectedDate, "EEEE, d MMMM") : "Soonest available"}
+
         </div>
         <div className="mt-1 text-xs text-[#9CA3AF]">
           {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available
