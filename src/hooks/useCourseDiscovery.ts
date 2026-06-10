@@ -732,7 +732,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       // hours, calendar, or lessons, so the standard availability resolver
       // would always reject them. We treat them as always available on the
       // selected date and route the user through the enquiry flow.
-      if (!isPlaceholder && !hasInstructorAvailabilityOn(instructor as InstructorLite, selectedDate, sources, { candidatePickup: userLocation ?? undefined })) {
+      if (!isPlaceholder && !hasInstructorAvailabilityOn(instructor as InstructorLite, effectiveDate, sources, { candidatePickup: userLocation ?? undefined })) {
         continue;
       }
 
