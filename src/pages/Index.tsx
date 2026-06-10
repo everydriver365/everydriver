@@ -36,6 +36,7 @@ import { getWhitelabelConfig } from "@/lib/whitelabel";
 import { getAreasForHost, areaToSlug } from "@/lib/whitelabelAreas";
 import { supabase } from "@/integrations/supabase/client";
 import { useDVSANews } from "@/hooks/useDVSANews";
+import { decodeHtml } from "@/lib/utils";
 import { useHomepageFeatures } from "@/hooks/useHomepageFeatures";
 import { useHomepageHero } from "@/hooks/useHomepageHero";
 import { useHomepageTestimonials } from "@/hooks/useHomepageTestimonials";
@@ -765,7 +766,7 @@ export default function Index() {
                           {article.category || "DVSA News"}
                         </div>
                         <div style={{ fontSize: 14, fontWeight: 500, color: "#0A1936", lineHeight: 1.5, marginBottom: 8 }}>
-                          {article.title}
+                          {decodeHtml(article.title)}
                         </div>
                         <div style={{ color: "#9ca3af", fontSize: 11, marginTop: "auto" }}>
                           {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
@@ -791,7 +792,7 @@ export default function Index() {
                             {article.category || "DVSA News"}
                           </div>
                           <div style={{ fontSize: 13, fontWeight: 500, color: "#0A1936", lineHeight: 1.4, marginBottom: 6 }}>
-                            {article.title}
+                            {decodeHtml(article.title)}
                           </div>
                           <div style={{ color: "#9ca3af", fontSize: 11 }}>
                             {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
@@ -838,7 +839,7 @@ export default function Index() {
                   <Badge className="bg-amber-100 text-amber-700 border-0 text-xs hover:bg-amber-100 mb-2">
                     {article.category || "DVSA News"}
                   </Badge>
-                  <h3 className="font-bold text-lg mb-1">{article.title}</h3>
+                  <h3 className="font-bold text-lg mb-1">{decodeHtml(article.title)}</h3>
                   <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{article.description}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />

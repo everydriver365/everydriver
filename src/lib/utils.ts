@@ -26,3 +26,17 @@ export function formatMph(kmh: number | null | undefined): string {
   if (kmh == null) return "—";
   return `${Math.round(kmhToMph(kmh))} mph`;
 }
+
+/** Strip internal parenthetical labels like "(manual assign)" from instructor names. */
+export function cleanInstructorName(name: string | null | undefined): string {
+  if (!name) return "";
+  return name.replace(/\s*\(.*?\)\s*/g, "").trim();
+}
+
+/** Decode HTML entities (e.g. &#038; → &) in a string. */
+export function decodeHtml(html: string | null | undefined): string {
+  if (!html) return "";
+  const txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+}

@@ -6,6 +6,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { useDVSANews } from "@/hooks/useDVSANews";
 import { Link } from "react-router-dom";
+import { decodeHtml } from "@/lib/utils";
 import newsFeatured from "@/assets/news-featured.jpg";
 import newsArticle1 from "@/assets/news-article1.jpg";
 import newsArticle2 from "@/assets/news-article2.jpg";
@@ -72,7 +73,7 @@ export default function News() {
                       {article.category || "DVSA News"}
                     </Badge>
                     <h2 className="font-bold text-lg mb-1 group-hover:text-amber-600 transition-colors">
-                      {article.title}
+                      {decodeHtml(article.title)}
                     </h2>
                     <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
                       {article.description}

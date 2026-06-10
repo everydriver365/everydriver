@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
-import { cn } from "@/lib/utils";
+import { cn, cleanInstructorName } from "@/lib/utils";
 import { computeOfferStatus } from "@/lib/courseOffer";
 import tenHoursBadge from "@/assets/10-hours-badge.png";
 import twentyHoursBadge from "@/assets/20-hours-badge.png";
@@ -72,6 +72,7 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
   const price = offer.isLive ? offer.finalPrice : totalPrice;
   const formattedDate = format(bookableDate, "d MMM");
   const transmissionType = instructor.car_type || "Manual";
+  const displayName = cleanInstructorName(instructor.name);
 
   const handleLearnMore = () => {
     const params = new URLSearchParams({
@@ -183,12 +184,12 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
             <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-border/50">
               <div className="flex items-center gap-2">
                 <Avatar className="h-6 w-6 border border-border">
-                  <AvatarImage src={instructor.profile_image_url || undefined} alt={instructor.name} />
+                  <AvatarImage src={instructor.profile_image_url || undefined} alt={displayName} />
                   <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">
-                    {instructor.name?.split(" ").map(n => n[0]).join("") || "?"}
+                    {displayName?.split(" ").map(n => n[0]).join("") || "?"}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-muted-foreground truncate max-w-[100px]">{instructor.name}</span>
+                <span className="text-xs text-muted-foreground truncate max-w-[100px]">{displayName}</span>
                 <span className="text-xs text-amber-500 flex items-center gap-0.5">
                   <Star className="h-3 w-3 fill-current" />5.0
                 </span>
@@ -219,13 +220,13 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
                 {/* Instructor detail row */}
                 <div className="flex items-center gap-3 p-3 mt-3 rounded-xl bg-muted/40">
                   <Avatar className="h-11 w-11 border-2 border-primary/20">
-                    <AvatarImage src={instructor.profile_image_url || undefined} alt={instructor.name} />
+                    <AvatarImage src={instructor.profile_image_url || undefined} alt={displayName} />
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {instructor.name?.split(" ").map(n => n[0]).join("") || "?"}
+                      {displayName?.split(" ").map(n => n[0]).join("") || "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-sm text-foreground">{instructor.name}</h4>
+                    <h4 className="font-semibold text-sm text-foreground">{displayName}</h4>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1 text-amber-500">
                         <Star className="h-3 w-3 fill-current" />5.0

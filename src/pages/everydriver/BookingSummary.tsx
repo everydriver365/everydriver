@@ -40,7 +40,7 @@ import { fetchInstructorPostcodeRules } from "@/hooks/useInstructorPostcodeRules
 import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from "@/lib/pricing/applyRateModifiers";
 import { PLATFORM_FEE_GBP } from "@/lib/pricing/platformFee";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
-
+import { cleanInstructorName } from "@/lib/utils";
 
 interface Instructor {
   id: string;
@@ -451,7 +451,7 @@ export default function BookingSummary() {
         return;
       }
 
-      const instructor = instructorRes.data;
+      const instructor = { ...instructorRes.data, name: cleanInstructorName(instructorRes.data.name) };
       const template = templateRes.data;
       const instructorCourse = instructorCourseRes.data;
 

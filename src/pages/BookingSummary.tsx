@@ -39,6 +39,7 @@ import { applyRateModifiers, loadUkBankHolidays, type RateModifiers } from "@/li
 import { PLATFORM_FEE_GBP } from "@/lib/pricing/platformFee";
 import { getWhitelabelConfig } from "@/lib/whitelabel";
 import { computeOfferStatus } from "@/lib/courseOffer";
+import { cleanInstructorName } from "@/lib/utils";
 
 
 interface Instructor {
@@ -333,7 +334,7 @@ export default function BookingSummary() {
         return;
       }
 
-      const instructor = instructorRes.data;
+      const instructor = { ...instructorRes.data, name: cleanInstructorName(instructorRes.data.name) };
       const template = templateRes.data;
       const instructorCourse = instructorCourseRes.data;
 

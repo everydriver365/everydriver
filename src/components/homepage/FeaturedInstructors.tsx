@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { cleanInstructorName } from "@/lib/utils";
 import richardPhoto from "@/assets/testimonial-james.jpg";
 import kenPhoto from "@/assets/ken-d-hero.jpg";
 import sarahPhoto from "@/assets/testimonial-sarah-m.jpg";
@@ -201,7 +202,7 @@ export function FeaturedInstructors() {
           const score = r.total * 0.4 + r.avg * 10 * 0.3 + (pass_rate ?? 0) * 0.3;
           return {
             id: row.id,
-            name: row.name,
+            name: cleanInstructorName(row.name),
             photo: row.profile_image_url,
             hourly_rate: row.hourly_rate,
             location: row.location_name ?? (row.home_postcode ? row.home_postcode.split(" ")[0] : null),
