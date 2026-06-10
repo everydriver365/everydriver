@@ -120,7 +120,7 @@ export function CourseRowCard({
           {instructor.name && (
             <span className="flex items-center gap-1">
               <User className="h-3 w-3 text-slate-400" />
-              {instructor.name}
+              {cleanInstructorName(instructor.name)}
             </span>
           )}
           {(areaName || typeof distance === "number") && (
