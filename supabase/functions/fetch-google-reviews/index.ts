@@ -49,9 +49,28 @@ serve(async (req) => {
       });
     }
 
-    if (!query && !placeId) {
+    // Instructor-only mode: resolve query/placeId from the instructor record.
+    let effectiveQuery = query as string | undefined;
+    let effectivePlaceId = placeId as string | undefined;
+    if (!effectiveQuery && !effectivePlaceId && instructorId) {
+      const { data: inst, error: instErr } = await supabase
+        .from("instructors")
+        .select("id, name, business_name, home_postcode, google_place_id")
+        .eq("id", instructorId)
+        .maybeSingle();
+      if (instErr) throw instErr;
+      if (!inst) throw new Error(`Instructor not found: ${instructorId}`);
+      if (inst.google_place_id) {
+        effectivePlaceId = inst.google_place_id as string;
+      } else {
+        const parts = [inst.business_name, inst.name, inst.home_postcode, "driving instructor"].filter(Boolean);
+        effectiveQuery = parts.join(" ");
+      }
+    }
+
+    if (!effectiveQuery && !effectivePlaceId) {
       return new Response(
-        JSON.stringify({ error: "query or placeId required" }),
+        JSON.stringify({ error: "query, placeId, or instructorId required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -59,7 +78,7 @@ serve(async (req) => {
 
 
 
-    const key = cacheKey || placeId || query;
+    const key = cacheKey || effectivePlaceId || effectiveQuery;
 
     // Check cache
     const { data: cached } = await supabase
@@ -96,17 +115,17 @@ serve(async (req) => {
 
 
     // Resolve place_id if not provided
-    let resolvedPlaceId = placeId;
+    let resolvedPlaceId = effectivePlaceId;
     if (!resolvedPlaceId) {
       const findRes = await fetch(
         `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(
-          query
+          effectiveQuery!
         )}&inputtype=textquery&fields=place_id,name&key=${apiKey}`
       );
       const findData = await findRes.json();
       if (findData.status !== "OK" || !findData.candidates?.length) {
         throw new Error(
-          `Place not found: ${findData.status} ${findData.error_message ?? ""}`
+          `Place not found for "${effectiveQuery}": ${findData.status} ${findData.error_message ?? ""}`
         );
       }
       resolvedPlaceId = findData.candidates[0].place_id;
