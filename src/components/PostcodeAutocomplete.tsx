@@ -267,11 +267,12 @@ export function PostcodeAutocomplete({
             enableDictation={enableDictation}
             placeholder={placeholder}
             value={value}
-            onChange={(e) => onChange(e.target.value.toUpperCase())}
+            onChange={(e) => { userInteractedRef.current = true; onChange(e.target.value.toUpperCase()); }}
             onKeyDown={handleKeyDown}
             onFocus={() => {
-              if (value.length >= 2) setShowDropdown(true);
+              if (userInteractedRef.current && value.length >= 2) setShowDropdown(true);
             }}
+
             className={cn(showInputIcon ? "pl-10" : "pl-3", inputClassName)}
             autoComplete="off"
           />
