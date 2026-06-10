@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const link = `https://drive365.co.uk/r/${pupil.referral_code ?? pupil_id}`;
+    const link = `https://everydriver.co.uk/r/${pupil.referral_code ?? pupil_id}`;
     const body = `🎉 Congrats on passing, ${pupil.name?.split(" ")[0] ?? ""}! Recommend your instructor and you both get £10 off lessons. Share: ${link}`;
 
     const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
