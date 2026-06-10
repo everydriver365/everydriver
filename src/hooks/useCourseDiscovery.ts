@@ -340,6 +340,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   }, [geoCache, areaCache]);
 
   const fetchData = useCallback(async () => {
+    console.log("[useCourseDiscovery] fetchData start");
     setLoading(true);
     try {
       // PostgREST enforces a server-side max-rows of 1000. Paginate explicitly
@@ -375,6 +376,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         supabase.from("instructor_premium_placements").select("instructor_id, placement_type, priority_score, expires_at").eq("is_active", true),
       ]);
 
+      console.log("[useCourseDiscovery] step 1 done", { instructors: instructorsRes.data?.length, templates: templatesRes.data?.length });
       if (instructorsRes.error) throw instructorsRes.error;
       if (templatesRes.error) throw templatesRes.error;
 
@@ -382,17 +384,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       setInstructors(loadedInstructors);
       setCourseTemplates(templatesRes.data || []);
 
-      // 2. Only load courses for real instructors (or the explicit instructorId
-      //    if one was passed). Placeholder courses are fetched lazily by
-      //    handleSearch when the user actually searches that district. This
-      //    drops a 27-round-trip pagination loop (~26k rows) down to a single
-      //    request and removes the silent-empty failure mode.
       const realInstructorIds = loadedInstructors
         .filter((i) => !i.is_network_placeholder)
         .map((i) => i.id as string);
       const coursesScope = instructorId ? [instructorId] : realInstructorIds;
       let initialCourses: InstructorCourse[] = [];
       if (coursesScope.length > 0) {
+        console.log("[useCourseDiscovery] step 2 fetching instructor_courses for", coursesScope.length, "instructors");
         const { data: courseRows, error: coursesErr } = await supabase
           .from("instructor_courses")
           .select("*")
@@ -400,19 +398,20 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
           .in("instructor_id", coursesScope);
         if (coursesErr) throw coursesErr;
         initialCourses = (courseRows || []) as InstructorCourse[];
+        console.log("[useCourseDiscovery] step 2 done", { courses: initialCourses.length });
       }
       setInstructorCourses(initialCourses);
 
-      // Load all six availability sources for every real instructor across the
-      // search horizon (today + 18 months).
       const fromDate = new Date();
       const toDate = addMonths(fromDate, 18);
+      console.log("[useCourseDiscovery] step 3 loading availability sources");
       const newSources = await loadCourseAvailabilitySources(
         supabase as any,
         realInstructorIds,
         fromDate,
         toDate,
       );
+      console.log("[useCourseDiscovery] step 3 done");
       setSources(newSources);
 
       // Store premium placements (filter expired)
@@ -462,13 +461,14 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         });
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("[useCourseDiscovery] fetchData error:", error);
       toast({
         title: "Couldn't load courses",
         description: "Please refresh and try again.",
         variant: "destructive",
       });
     } finally {
+      console.log("[useCourseDiscovery] fetchData finally — setLoading(false)");
       setLoading(false);
     }
   }, [findFirstAvailableDate, geocodePostcodes, instructorId]);
@@ -478,7 +478,12 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     // If instructorId is null, the caller wants to filter by instructor but it hasn't loaded yet — skip
     if (instructorId === null) return;
     fetchData();
-  }, [instructorId, fetchData]);
+    // Intentionally only re-fetch when the instructor scope changes. fetchData
+    // itself depends on geoCache/areaCache via geocodePostcodes, so including
+    // it here causes an infinite refetch loop (each fetch updates the cache,
+    // recreating fetchData, retriggering the effect, keeping loading=true).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instructorId]);
 
   const handleSearch = async () => {
     if (!postcode.trim()) {

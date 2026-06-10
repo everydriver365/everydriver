@@ -503,7 +503,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
   useEffect(() => {
     if (initialPostcode && !hasSearchedFromUrl.current && !loading && instructors.length > 0) {
       hasSearchedFromUrl.current = true;
-      handleSearch();
+      handleSearch(initialPostcode);
     }
   }, [initialPostcode, loading, instructors.length]);
 
@@ -736,35 +736,7 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
       let instructorsNearby = computeNearby(coursesForSearch);
       const hasRealMatch = instructorsNearby.some((i) => !i.is_network_placeholder);
 
-      // Diagnostic — remove once "no instructors nearby" is resolved.
-      const courseIdsSet = new Set(coursesForSearch.filter((c) => c.is_active).map((c) => c.instructor_id));
-      const districtInstructors = instructors.filter(
-        (i) =>
-          (!i.is_network_placeholder && i.home_postcode?.replace(/\s+/g, "").toUpperCase().startsWith(district || "ZZZZ")) ||
-          (i.is_network_placeholder && i.placeholder_district === district),
-      );
-      console.log("[Courses search]", {
-        cleanPostcode,
-        district,
-        radiusMiles,
-        location,
-        totalInstructors: instructors.length,
-        totalCourses: coursesForSearch.length,
-        districtInstructors: districtInstructors.map((i) => ({
-          id: i.id,
-          name: i.name,
-          home_postcode: i.home_postcode,
-          placeholder: i.is_network_placeholder,
-          lat: (i as any).lat,
-          lng: (i as any).lng,
-          hasActiveCourse: courseIdsSet.has(i.id),
-          distance: location && (i as any).lat != null && (i as any).lng != null
-            ? calculateDistance(location.lat, location.lng, Number((i as any).lat), Number((i as any).lng))
-            : null,
-        })),
-        matched: instructorsNearby.length,
-        matchedReal: instructorsNearby.filter((i) => !i.is_network_placeholder).length,
-      });
+      // (Diagnostic logging removed — public course search path)
 
       // Step 2: lazily fall back to network placeholders only when no real
       // instructor covers the searched area.
@@ -1715,11 +1687,38 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
               </motion.div>
             )}
 
-            {!selectedDate ? (
+            {!selectedDate && (loading || isSearching) ? (
               <div className="flex h-full items-center justify-center py-16">
                 <div className="text-center">
                   <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4 animate-pulse" />
                   <h2 className="text-xl font-semibold">Loading available courses…</h2>
+                </div>
+              </div>
+            ) : !selectedDate ? (
+              <div className="py-16 text-center max-w-md mx-auto">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                  <Search className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h2 className="text-xl font-semibold text-foreground">No courses found</h2>
+                <p className="mt-2 text-muted-foreground">
+                  We couldn't find available courses for this postcode. Try widening your radius or entering a different postcode.
+                </p>
+                <div className="mt-6 flex flex-wrap justify-center gap-3">
+                  {userLocation && parseInt(radius) < 50 && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        const next = parseInt(radius) < 25 ? "25" : "50";
+                        setRadius(next);
+                        handleSearch(searchedPostcode || postcode);
+                      }}
+                    >
+                      Expand to {parseInt(radius) < 25 ? "25" : "50"} miles
+                    </Button>
+                  )}
+                  <Button variant="outline" asChild>
+                    <a href="/contact"><MapPin className="h-4 w-4 mr-1" /> Contact Us</a>
+                  </Button>
                 </div>
               </div>
             ) : (
