@@ -299,6 +299,9 @@ serve(async (req) => {
       case "tax":
         doc = generateTaxReport(doc, data);
         break;
+      case "invoice":
+        doc = generateInvoice(doc, data);
+        break;
       default:
         doc = generateGenericReport(doc, data);
     }
