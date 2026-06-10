@@ -792,7 +792,7 @@ export default function Index() {
                             {article.category || "DVSA News"}
                           </div>
                           <div style={{ fontSize: 13, fontWeight: 500, color: "#0A1936", lineHeight: 1.4, marginBottom: 6 }}>
-                            {article.title}
+                            {decodeHtml(article.title)}
                           </div>
                           <div style={{ color: "#9ca3af", fontSize: 11 }}>
                             {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
