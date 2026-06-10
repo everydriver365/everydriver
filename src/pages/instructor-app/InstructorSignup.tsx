@@ -322,6 +322,6 @@ export default function InstructorSignup() {
           </motion.div>
         </div>
       </div>
-    </InstructorSaaSLayout>
+    </div>
   );
 }
