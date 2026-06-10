@@ -403,7 +403,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
       const fromDate = new Date();
       const toDate = addMonths(fromDate, 18);
-      console.log("[useCourseDiscovery] step 3 loading availability sources");
+      
       const newSources = await loadCourseAvailabilitySources(
         supabase as any,
         realInstructorIds,
