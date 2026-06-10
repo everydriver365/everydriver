@@ -113,6 +113,31 @@ serve(async (req) => {
       }
     };
 
+    // Per-instructor preference cache to avoid re-querying per reminder.
+    const prefCache = new Map<string, {
+      push_enabled: boolean;
+      sms_enabled: boolean;
+      email_enabled: boolean;
+      reminder_1h_enabled: boolean;
+    }>();
+    const getPrefs = async (instructorId: string | undefined) => {
+      if (!instructorId) return { push_enabled: true, sms_enabled: true, email_enabled: true, reminder_1h_enabled: true };
+      if (prefCache.has(instructorId)) return prefCache.get(instructorId)!;
+      const { data } = await supabase
+        .from("instructor_reminder_preferences")
+        .select("push_enabled, sms_enabled, email_enabled, reminder_1h_enabled")
+        .eq("instructor_id", instructorId)
+        .maybeSingle();
+      const resolved = {
+        push_enabled: data?.push_enabled ?? true,
+        sms_enabled: data?.sms_enabled ?? true,
+        email_enabled: data?.email_enabled ?? true,
+        reminder_1h_enabled: data?.reminder_1h_enabled ?? true,
+      };
+      prefCache.set(instructorId, resolved);
+      return resolved;
+    };
+
     for (const reminder of reminders) {
       try {
         const pupil = reminder.pupils as any;
@@ -128,16 +153,27 @@ serve(async (req) => {
         const lessonDate = lesson.lesson_date;
         const lessonId = lesson.id as string | undefined;
 
-        // Always fire the pupil push as a third channel — additive, no-op if no subscription.
-        await firePupilPush(pupil.id, lessonId, lessonDate, lessonTime, reminder.reminder_type);
+        const prefs = await getPrefs(instructor?.id);
+
+        // Honour the 1h reminder kill-switch entirely.
+        if (reminder.reminder_type === "1h" && !prefs.reminder_1h_enabled) {
+          await supabase.from("lesson_reminders").update({ status: "skipped" }).eq("id", reminder.id);
+          continue;
+        }
+
+        // Pupil push — gated by instructor push_enabled. Pupil-side prefs table
+        // (pupil_notification_preferences) does not exist, so default to allowed.
+        if (prefs.push_enabled) {
+          await firePupilPush(pupil.id, lessonId, lessonDate, lessonTime, reminder.reminder_type);
+        }
 
         // Instructor push only for the 1h reminder (24h would be noise).
-        if (reminder.reminder_type === "1h" && instructor?.id) {
+        if (reminder.reminder_type === "1h" && instructor?.id && prefs.push_enabled) {
           await fireInstructorPush(instructor.id, pupil.name ?? "Your pupil", lessonId, lessonTime);
         }
 
-        // 1) Try WhatsApp template first if pupil opted in and we have a phone
-        if (pupil.phone && pupil.whatsapp_opt_in && instructor?.id) {
+        // 1) Try WhatsApp template first if pupil opted in and SMS channel is on.
+        if (prefs.sms_enabled && pupil.phone && pupil.whatsapp_opt_in && instructor?.id) {
           const templateName = reminder.reminder_type === "24h"
             ? "lesson_reminder_24h"
             : "lesson_reminder_1h";
@@ -166,7 +202,8 @@ serve(async (req) => {
           console.log(`WhatsApp template failed (${waResult.reason}), falling back to SMS for reminder ${reminder.id}`);
         }
 
-        if (reminder.channel === "sms" && hasTwilio && pupil.phone) {
+
+        if (reminder.channel === "sms" && hasTwilio && pupil.phone && prefs.sms_enabled) {
           const message = reminder.reminder_type === "24h"
             ? `Hi ${pupil.name}, reminder: you have a driving lesson tomorrow (${lessonDate}) at ${lessonTime} with ${instructor?.name || "your instructor"}. Reply CANCEL to cancel.`
             : `Hi ${pupil.name}, your driving lesson starts in about 1 hour at ${lessonTime}. See you soon!`;
@@ -187,13 +224,19 @@ serve(async (req) => {
 
           await supabase.from("lesson_reminders").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", reminder.id);
           sent++;
+        } else if (reminder.channel === "sms" && !prefs.sms_enabled) {
+          // SMS muted by instructor preference.
+          await supabase.from("lesson_reminders").update({ status: "skipped" }).eq("id", reminder.id);
         } else if (reminder.channel === "in_app") {
           await supabase.from("lesson_reminders").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", reminder.id);
           sent++;
-        } else {
+        } else if (prefs.push_enabled) {
           // Push already attempted above; mark as sent so we don't retry the row.
           await supabase.from("lesson_reminders").update({ status: "sent", sent_at: new Date().toISOString(), channel: "push" }).eq("id", reminder.id);
           sent++;
+        } else {
+          // Push muted by instructor preference.
+          await supabase.from("lesson_reminders").update({ status: "skipped" }).eq("id", reminder.id);
         }
       } catch (err) {
         console.error(`Reminder ${reminder.id} failed:`, err);
