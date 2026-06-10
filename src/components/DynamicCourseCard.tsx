@@ -277,7 +277,13 @@ function DynamicCourseCardImpl({
                 <InstructorSignalRow
                   instructorId={instructor.id}
                   tone="light"
-                  showSnippet
+                  showSnippet={
+                    !(
+                      instructor.google_rating != null &&
+                      (instructor.google_review_count ?? 0) > 0 &&
+                      !!instructor.google_top_review_text
+                    )
+                  }
                   snippetClamp={1}
                   className="min-w-0 flex-1"
                 />
