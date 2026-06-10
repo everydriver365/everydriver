@@ -75,14 +75,14 @@ Deno.serve(async (req) => {
   // Title
   const title = pageMeta?.meta_title
     || (page === "home"
-      ? `${businessName} | Driving Lessons | Drive365`
-      : `${pageTitle} - ${businessName} | Drive365`);
+      ? `${businessName} | Driving Lessons | EveryDriver`
+      : `${pageTitle} - ${businessName} | EveryDriver`);
 
   // Description
   const rawDesc = pageMeta?.meta_description
     || siteSettings?.default_meta_description
     || instructor.bio
-    || `${businessName} - Professional driving lessons${instructor.home_postcode ? ` in ${instructor.home_postcode}` : ""}. Book your driving course today with Drive365.`;
+    || `${businessName} - Professional driving lessons${instructor.home_postcode ? ` in ${instructor.home_postcode}` : ""}. Book your driving course today with EveryDriver.`;
   const description = rawDesc.length > 160 ? rawDesc.slice(0, 157) + "..." : rawDesc;
 
   const keywords = pageMeta?.keywords || siteSettings?.default_keywords || "";
