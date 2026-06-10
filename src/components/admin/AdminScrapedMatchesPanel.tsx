@@ -171,6 +171,30 @@ export function AdminScrapedMatchesPanel() {
           ))}
         </div>
       ))}
+
+      <AlertDialog open={!!confirmDismiss} onOpenChange={(open) => !open && setConfirmDismiss(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Dismiss this scraped match? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDismiss) handleDismiss(confirmDismiss);
+                setConfirmDismiss(null);
+              }}
+            >
+              Dismiss
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
