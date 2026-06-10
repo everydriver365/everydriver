@@ -94,6 +94,20 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // ── Instructor availability/booking-mode gate ─────────────────────────
+    const { data: instructorGate } = await supabase
+      .from("instructors")
+      .select("availability_paused, booking_mode")
+      .eq("id", booking.instructorId)
+      .maybeSingle();
+    if (instructorGate?.availability_paused) {
+      return json({ error: "This instructor is not currently accepting bookings." }, 400);
+    }
+    if (instructorGate?.booking_mode === "enquiry_only") {
+      return json({ error: "This instructor only accepts enquiries." }, 400);
+    }
+
+
     // ── Availability guard ────────────────────────────────────────────────
     // Uses the SAME engine functions as the browser — no bespoke re-implementation.
     if (booking.slots.length > 0) {

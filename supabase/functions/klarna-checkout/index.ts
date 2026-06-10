@@ -9,6 +9,7 @@ interface KlarnaCheckoutRequest {
   amount: number;
   currency?: string;
   merchantReference: string;
+  instructorId?: string;
   consumer: {
     givenName: string;
     familyName: string;
@@ -31,6 +32,7 @@ interface KlarnaCheckoutRequest {
     cancelUrl: string;
   };
 }
+
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -61,6 +63,26 @@ serve(async (req: Request) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Instructor toggle gate (only enforced if instructorId is supplied)
+    if (data.instructorId) {
+      const supaUrl = Deno.env.get("SUPABASE_URL");
+      const supaKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (supaUrl && supaKey) {
+        const gateRes = await fetch(
+          `${supaUrl}/rest/v1/instructors?id=eq.${data.instructorId}&select=klarna_enabled`,
+          { headers: { apikey: supaKey, Authorization: `Bearer ${supaKey}` } }
+        );
+        const rows = await gateRes.json().catch(() => []);
+        if (Array.isArray(rows) && rows[0] && rows[0].klarna_enabled === false) {
+          return new Response(
+            JSON.stringify({ error: "Klarna is not enabled for this instructor." }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+    }
+
 
     // Klarna Checkout API endpoints - region-specific
     const baseUrls = isSandbox
