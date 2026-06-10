@@ -211,7 +211,7 @@ export function AdminBookingPagesManager() {
                       <Button size="icon" variant="ghost" onClick={() => openEdit(p)} title="Edit">
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => handleDelete(p.id)} title="Delete">
+                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setConfirmDeleteId(p.id)} title="Delete">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
