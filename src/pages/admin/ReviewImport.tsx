@@ -156,6 +156,52 @@ export default function ReviewImport() {
   const [parsed, setParsed] = useState<ParsedReview[]>([]);
   const [importing, setImporting] = useState(false);
   const [loadingDoc, setLoadingDoc] = useState(false);
+  const [fetchingGoogle, setFetchingGoogle] = useState(false);
+
+  async function handleFetchFromGoogle() {
+    if (!instructorId) {
+      toast({ title: "Pick an instructor first", variant: "destructive" });
+      return;
+    }
+    setFetchingGoogle(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-google-reviews", {
+        body: { instructorId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const reviews: any[] = data?.reviews ?? [];
+      if (reviews.length === 0) {
+        toast({
+          title: "No Google reviews found",
+          description: "Make sure the instructor has a Google Place ID set on their profile.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const mapped: ParsedReview[] = reviews.map((rv) => ({
+        id: uid(),
+        reviewer_name: rv.author_name || "Anonymous",
+        reviewer_location: "",
+        review_text: (rv.text || "").trim(),
+        rating: Math.max(1, Math.min(5, Number(rv.rating) || 5)),
+        review_date: rv.time
+          ? new Date(rv.time * 1000).toISOString().slice(0, 10)
+          : todayISO(),
+        passed_first_time: false,
+        include: true,
+      }));
+      setParsed(mapped);
+      toast({
+        title: `Fetched ${mapped.length} Google review${mapped.length === 1 ? "" : "s"}`,
+        description: "Google returns up to 5 most recent. Edit then Insert.",
+      });
+    } catch (e: any) {
+      toast({ title: "Google fetch failed", description: e.message, variant: "destructive" });
+    } finally {
+      setFetchingGoogle(false);
+    }
+  }
 
   useEffect(() => {
     (async () => {
