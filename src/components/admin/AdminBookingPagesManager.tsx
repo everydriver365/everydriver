@@ -139,7 +139,6 @@ export function AdminBookingPagesManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this booking page?")) return;
     const { error } = await supabase.from("booking_pages").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Deleted");
