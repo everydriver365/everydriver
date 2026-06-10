@@ -106,7 +106,7 @@ export function useMiniWebsiteSEO({
     const pagePath = page === "Home" ? "" : `/${page.toLowerCase()}`;
     const canonicalBase = instructor.custom_domain && instructor.custom_domain_verified
       ? `https://${instructor.custom_domain}`
-      : `https://${slug}.drive365.co.uk`;
+      : `https://everydriver.co.uk/i/${slug}`;
     const canonicalUrl = `${canonicalBase}${pagePath}`;
     setMetaTag("property", "og:url", canonicalUrl);
     setLinkTag("canonical", canonicalUrl);

@@ -14,7 +14,7 @@ interface MiniWebsiteTestsProps {
 export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProps = {}) {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = subdomainSlug || paramSlug;
-  const { page, instructor, loading, notFound } = useWebsitePage(slug, "about");
+  const { page, instructor, loading, notFound } = useWebsitePage(slug, "tests");
 
   if (loading) {
     return (
@@ -36,10 +36,7 @@ export default function MiniWebsiteTests({ subdomainSlug }: MiniWebsiteTestsProp
     );
   }
 
-  const STYLE_OVERRIDES: Record<string, { primaryColor?: string }> = {
-    "ken-d": { primaryColor: "#142040" },
-  };
-  const primaryColor = STYLE_OVERRIDES[slug!]?.primaryColor || instructor.brand_colour || "#1e3a5f";
+  const primaryColor = instructor.brand_colour || "#1e3a5f";
 
   return (
     <MiniWebsiteLayout

@@ -70,23 +70,14 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
   // SEO meta tags, JSON-LD, canonical URL
   useMiniWebsiteSEO({ instructor, pageTitle, pageDescription, metaTitle, metaDescription, avgRating, reviewCount });
 
-  // Per-instructor footer contact overrides
-  const FOOTER_CONTACT_OVERRIDES: Record<string, FooterOverrides> = {
-    "ken-d": { email: "info@drive365.co.uk", phone: "07506 782870", location: "Winchester" },
-  };
-  const resolvedFooterOverrides = { ...FOOTER_CONTACT_OVERRIDES[slug], ...footerOverrides };
+  // Footer contact overrides only via prop — no hardcoded per-slug data
+  const resolvedFooterOverrides = { ...footerOverrides };
 
-  // Per-instructor style overrides (highest priority)
-  const STYLE_OVERRIDES: Record<string, { primaryColor?: string; headerBg?: string; footerBg?: string }> = {
-    "ken-d": { primaryColor: "#08507f", headerBg: "#08507f", footerBg: "#08507f" },
-  };
-  const styleOverride = STYLE_OVERRIDES[slug] || {};
-
-  const primaryColor = styleOverride.primaryColor || instructor.brand_colour || "#1e3a5f";
+  const primaryColor = instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#3b82f6";
-  const headerBg = styleOverride.headerBg || instructor.website_header_bg || primaryColor;
+  const headerBg = instructor.website_header_bg || primaryColor;
   const buttonColor = instructor.website_button_color || secondaryColor;
-  const footerBg = styleOverride.footerBg || instructor.website_footer_bg || primaryColor;
+  const footerBg = instructor.website_footer_bg || primaryColor;
   const fontFamily = instructor.website_font || "Inter";
   const headerStyle = instructor.website_header_style || "solid";
   const menuTextColor = instructor.website_menu_text_color || "#ffffff";
@@ -146,6 +137,8 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
                 <img
                   src={instructor.logo_url}
                   alt={instructor.name}
+                  loading="eager"
+                  fetchPriority="high"
                   className="h-8 sm:h-12 w-auto object-contain rounded p-1"
                 />
               ) : (
@@ -336,7 +329,7 @@ export function MiniWebsiteLayout({ instructor, children, footerOverrides, pageT
             <p className="mt-1">
               Powered by{" "}
               <Link to={`/i/${instructor.app_slug}`} className="hover:text-white transition-colors">
-                Drive365
+                EveryDriver
               </Link>
             </p>
           </div>
