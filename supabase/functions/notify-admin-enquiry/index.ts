@@ -161,7 +161,7 @@ function renderHtml(enquiry: any, instructor: any): string {
       <tr><td style="background:${D365_PRIMARY};padding:22px 24px;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
           <td align="left" style="vertical-align:middle;">
-            <img src="${DRIVE365_LOGO_URL}" alt="Drive365" height="28" style="display:inline-block;height:28px;width:auto;filter:brightness(0) invert(1);"/>
+            <img src="${BRAND_LOGO_URL}" alt="EveryDriver" height="28" style="display:inline-block;height:28px;width:auto;filter:brightness(0) invert(1);"/>
           </td>
           <td align="right" style="vertical-align:middle;">
             <span style="display:inline-block;background:${D365_ACCENT};color:#ffffff;font-size:10px;font-weight:700;letter-spacing:0.1em;padding:5px 10px;border-radius:999px;text-transform:uppercase;">NEW ENQUIRY</span>
