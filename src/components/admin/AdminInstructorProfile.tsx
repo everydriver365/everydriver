@@ -174,6 +174,7 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
   const [newDeviceId, setNewDeviceId] = useState("");
   const [newDeviceName, setNewDeviceName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const providerLabel = provider === "radius" ? "Radius" : provider;
 
