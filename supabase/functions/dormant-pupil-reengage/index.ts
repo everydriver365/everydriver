@@ -186,8 +186,8 @@ Deno.serve(async (req) => {
 
       const instructorName = instructor.name ?? "your instructor";
       const link = instructor.slug
-        ? `https://drive365.co.uk/i/${instructor.slug}`
-        : `https://drive365.co.uk`;
+        ? `https://everydriver.co.uk/i/${instructor.slug}`
+        : `https://everydriver.co.uk`;
       const body = `Hi ${pupil.name}, it's ${instructorName} — been a while! Reply BOOK to grab a slot, or tap ${link} to view my diary.`;
 
       const useWhatsApp = pupil.whatsapp_opt_in && pupil.phone.startsWith("+");
