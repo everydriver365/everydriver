@@ -936,6 +936,31 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={showToggleActive} onOpenChange={setShowToggleActive}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {instructor.is_active
+                ? "Deactivate this instructor? They will lose access to the app."
+                : "Activate this instructor? They will regain access to the app."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={instructor.is_active ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+              onClick={() => {
+                handleToggleActive();
+                setShowToggleActive(false);
+              }}
+            >
+              {instructor.is_active ? "Deactivate" : "Activate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <ReassignPupilsDialog
         open={showReassign}
         onOpenChange={setShowReassign}
