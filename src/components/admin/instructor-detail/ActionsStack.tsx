@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export function ActionsStack({
   isAdmin,
@@ -33,6 +33,16 @@ export function ActionsStack({
         <ActionLink label="📅 View diary" onClick={onViewDiary} />
         <ActionLink label="📋 View bookings" onClick={onViewBookings} />
         <ActionLink label="⭐ View reviews" onClick={onViewReviews} />
+        <div style={{ paddingLeft: 14, marginTop: -2, marginBottom: 2 }}>
+          <Link
+            to="/admin/review-import"
+            style={{ fontSize: 10, color: "#6B7280", textDecoration: "none" }}
+            onMouseEnter={(e) => { (e.target as HTMLElement).style.textDecoration = "underline"; }}
+            onMouseLeave={(e) => { (e.target as HTMLElement).style.textDecoration = "none"; }}
+          >
+            ↻ Refresh Google reviews
+          </Link>
+        </div>
         <ActionLink label="💳 Payments" onClick={onViewPayments} />
         <ActionLink label="📄 Documents" onClick={onViewDocuments} />
         <ActionLink label="📨 Message" onClick={onMessage} last />
