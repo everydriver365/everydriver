@@ -1,46 +1,77 @@
-# Audit results + plan
+## What the data actually shows
 
-## Fix 1 — CourseGrid useMemo (already done)
+For postcode `SO30 2TD` (district `SO30`) there ARE matches in the database:
 
-`src/components/courses/CourseGrid.tsx` no longer wraps JSX in `useMemo`. The current file uses plain conditional JSX (`filteredCourses.length === 0 ? … : viewMode === "list" ? … : isMobile ? … : …`) and the only hooks are `useState` and `useCallback` at the top. `React.memo` on `DynamicCourseCard` is untouched. **No change needed.**
+- **2 real instructors** at `SO30 2TD` with active courses and geocoded coords:
+  - Richard Chapman — 4 active courses, lat/lng populated
+  - Ken D — 5 active courses, lat/lng populated
+- **2 network placeholders** for `placeholder_district = 'SO30'` (Archie Lee, Charlie Knight) — no lat/lng (expected for placeholders).
 
-## Fix 2 — Google reviews on course cards
+The `public_instructors` view does expose `lat`, `lng`, `home_postcode`, `is_network_placeholder`, and `placeholder_district`, so the client has everything it needs to match these rows.
 
-### Schema reality check
-The `instructors` table and the `public_instructors` view only expose **`google_review_url`** (a link). There are **no `google_rating` or `google_review_count` columns** on either.
+So this is not "no data" — it's a client-side filter/timing issue.
 
-Live Google rating data does exist, but in a separate cache table: `public.google_place_reviews` (columns: `cache_key`, `place_id`, `place_name`, `rating`, `user_ratings_total`, `reviews`, `photo_reference`, `fetched_at`). It's populated on demand by the `fetch-google-reviews` edge function and keyed by `place_id` or a free-text query — there is **no foreign key from an instructor to a cached place**.
+## Most likely cause
 
-So the line the user wants to add — `{instructor.google_rating && instructor.google_review_count > 0 && …}` — cannot render anything today, because those fields don't exist on the course card's instructor object. This is a real schema gap, not just a UI omission.
+`src/pages/Courses.tsx` (lines 502–508):
 
-Per the live-data-only rule (mem://constraints/no-hardcoded-fallbacks-live-data-only) we must not invent a rating, and per the project memory we shouldn't ship UI that silently no-ops either. Need a direction before editing.
+```ts
+useEffect(() => {
+  if (initialPostcode && !hasSearchedFromUrl.current && !loading && instructors.length > 0) {
+    hasSearchedFromUrl.current = true;
+    handleSearch();
+  }
+}, [initialPostcode, loading, instructors.length]);
+```
 
-### Options for surfacing Google reviews on cards
+`handleSearch()` reads `postcode` from state (not `initialPostcode`), and we call it with no argument. The signature in `Courses.tsx` is `handleSearch(searchPostcode?: string)` and falls back to `postcode` state — that's fine because `postcode` is seeded from `initialPostcode` at mount.
 
-**Option A — Link only (smallest change, ship today)**
-Show a small "View Google reviews" pill on `DynamicCourseCard` when `instructor.google_review_url` is present. No new columns, no new fetches. Doesn't show a star rating on the card, but it's accurate and live.
+But inside the URL flow, several second-order things can each independently produce the toast:
 
-**Option B — Add cached rating/count columns + view (medium)**
-1. Add `google_place_id text`, `google_rating numeric`, `google_review_count int`, `google_reviews_fetched_at timestamptz` to `public.instructors`.
-2. Expose those four on the `public_instructors` view (re-create view — same pattern as the `google_review_url` migration `20260524111911`).
-3. Extend `fetch-google-reviews` to also write rating/count back to `instructors` whenever it refreshes the cache, keyed by `google_place_id`.
-4. Trigger a refresh (existing edge function) for instructors who have a `google_review_url` or `google_place_id` set, so the columns populate.
-5. Render on `DynamicCourseCard` only when `google_review_count > 0`:
-   ```
-   ★ 4.8 · 42 Google reviews
-   ```
-   alongside the existing internal rating (already rendered via `InstructorSignalRow` / `useInstructorRating`).
+1. **Real instructors not matched because the geocode-postcode edge call hadn't finished before the radius filter ran.** `fetchData` kicks off `geocodePostcodes` for all instructor postcodes, but it doesn't block before `setLoading(false)` returns — instructors render before their coords are in `geoCache`. The auto-search effect waits for `instructors.length > 0`, not for coords. If `geoCache` is empty when `handleSearch` runs, `resolveInstructorCoords` falls back to `instructor.lat/lng` only — which IS present for the 2 real SO30 instructors via the view, so they should match. Unless the view shape returned to the client differs from what the type expects (the `Instructor` interface marks lat/lng as `number | null | undefined`).
 
-**Option C — Client-side fetch per card (not recommended)**
-Call `fetch-google-reviews` from each card. Slow, hammers the edge function on every search render, and breaks if Google Places key is missing. Skipping unless you really want it.
+2. **The radius default in the URL is `10` miles.** Both real SO30 2TD instructors are at the same postcode the user searched, so distance ≈ 0 — they pass. Placeholders are matched by `placeholder_district === 'SO30'` and don't need coords. So all 4 should be in `instructorsNearby`.
 
-### Recommended
-Option B if you want a star rating on the card. Option A if you just want a clickable Google badge today and can defer the rating work.
+3. **Stale toast from an earlier search** — `handleSearch` shows the toast unconditionally after computing `instructorsNearby`. If `instructors` was momentarily empty (e.g. RLS error on `public_instructors` for the unauthenticated browser session), the toast fires once and never retries.
 
-### What I will NOT do without your call
-- Add fake/zeroed rating fields.
-- Render the user-supplied snippet against non-existent columns (it would always be `undefined && … → nothing`, which is dead code).
-- Touch `React.memo` on `DynamicCourseCard` or anything else in `CourseGrid`.
+Console logs already show 20 queries in the route budget but no `public_instructors` error, so #3 is the leading candidate only if RLS silently returned 0 rows for some queries.
 
-## Question
-Which option for Fix 2 — **A (link-only pill)**, **B (add cached rating columns + view + edge-fn writeback)**, or **defer**?
+## Proposed plan (still in plan mode — no edits yet)
+
+Two short diagnostic steps, then a targeted fix:
+
+**Step 1 — confirm the actual cause (instrument once, read logs, then revert)**
+
+In `useCourseDiscovery.ts` `handleSearch`, log:
+
+```ts
+console.log("[Courses search]", {
+  cleanPostcode, district, location,
+  totalInstructors: instructors.length,
+  realCount: instructors.filter(i => !i.is_network_placeholder).length,
+  withCoords: instructors.filter(i => i.lat != null && i.lng != null).length,
+  matched: instructorsNearby.length,
+  matchedReal: instructorsNearby.filter(i => !i.is_network_placeholder).length,
+});
+```
+
+Reload `/courses?postcode=SO302TD`, read the line, then remove the log.
+
+**Step 2 — fix based on what Step 1 shows**
+
+- If `totalInstructors === 0` at search time → tighten the auto-search guard to also wait until at least one non-placeholder instructor row is present, and re-run `handleSearch` whenever `instructors` grows after the first auto-search.
+- If `withCoords` is low → block `handleSearch` until `geocodePostcodes` for instructor postcodes has resolved (await it in the auto-search effect, or check `geoCache` size).
+- If `matchedReal > 0` but the toast still says "no instructors nearby" → the toast condition is reading a stale closure; change it to compute from the fresh `instructorsNearby` length we just built (it already does, so this case is unlikely).
+- Always: change the toast copy to suppress when `hasPlaceholderNearby` is true (we still have enquiry-only ADIs to show, so "no instructors nearby" is misleading).
+
+**Step 3 — verify**
+
+Reload `/courses?postcode=SO302TD` and confirm Richard Chapman + Ken D cards render and the toast no longer fires.
+
+## What I will NOT change
+
+- The `public_instructors` view (it already exposes the right columns).
+- `React.memo` on `DynamicCourseCard`.
+- Any business logic beyond the search-trigger timing and toast condition.
+
+Want me to switch to build mode and run Step 1 (add the one diagnostic log, you reload, paste the line back)? Or jump straight to Step 2's "wait for coords + don't toast when placeholders exist" fix without the diagnostic?
