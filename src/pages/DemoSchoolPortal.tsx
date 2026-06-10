@@ -30,7 +30,7 @@ import SchoolRevenueAnalyticsSection from "@/components/school/SchoolRevenueAnal
 import SchoolDiscountCodesSection from "@/components/school/SchoolDiscountCodesSection";
 import SchoolLeaderboardSection from "@/components/school/SchoolLeaderboardSection";
 import SchoolBookingPagesSection from "@/components/school/SchoolBookingPagesSection";
-import SchoolCampaignsSection from "@/components/school/SchoolCampaignsSection";
+
 import SchoolFranchiseFeesSection from "@/components/school/SchoolFranchiseFeesSection";
 import SchoolSubscriptionSection from "@/components/school/SchoolSubscriptionSection";
 import SchoolPupilProgressSection from "@/components/school/SchoolPupilProgressSection";
@@ -91,8 +91,6 @@ export default function DemoSchoolPortal() {
         return <SchoolPassRatesSection instructorIds={instructorIds} />;
       case "discount-codes":
         return <SchoolDiscountCodesSection schoolId={school.id} />;
-      case "campaigns":
-        return <SchoolCampaignsSection schoolId={school.id} />;
       case "profile":
         return <SchoolProfileSection school={school} onRefresh={noop} />;
       case "branding":
@@ -116,6 +114,9 @@ export default function DemoSchoolPortal() {
 
   return (
     <SchoolDemoProvider isDemo={true}>
+      <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center text-sm text-amber-800 font-medium">
+        This is a demo — no real data is shown
+      </div>
       <SchoolLayout activeSection={activeSection} onSectionChange={setActiveSection} onLogout={noop} instructorIds={instructorIds} enabledFeatures={null} schoolId={school.id} notificationPreferences={null}>
         {renderSection()}
       </SchoolLayout>

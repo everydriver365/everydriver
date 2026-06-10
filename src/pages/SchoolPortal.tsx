@@ -36,7 +36,7 @@ import SchoolRevenueAnalyticsSection from "@/components/school/SchoolRevenueAnal
 import SchoolDiscountCodesSection from "@/components/school/SchoolDiscountCodesSection";
 import SchoolLeaderboardSection from "@/components/school/SchoolLeaderboardSection";
 import SchoolBookingPagesSection from "@/components/school/SchoolBookingPagesSection";
-import SchoolCampaignsSection from "@/components/school/SchoolCampaignsSection";
+
 import SchoolFranchiseFeesSection from "@/components/school/SchoolFranchiseFeesSection";
 import SchoolSubscriptionSection from "@/components/school/SchoolSubscriptionSection";
 import SchoolPupilProgressSection from "@/components/school/SchoolPupilProgressSection";
@@ -154,8 +154,6 @@ export default function SchoolPortal() {
         return <SchoolPassRatesSection instructorIds={instructorIds} />;
       case "discount-codes":
         return <SchoolDiscountCodesSection schoolId={school.id} />;
-      case "campaigns":
-        return <SchoolCampaignsSection schoolId={school.id} />;
       case "ai-voice":
         return <FamulorHub scope="school" schoolId={school.id} instructorIds={instructorIds} />;
       case "profile":
