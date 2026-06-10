@@ -102,7 +102,7 @@ serve(async (req) => {
     const ownerHtml = shell(
       `${esc(meFirst)} would like to swap tests with you`,
       `
-        <p style="margin:0 0 16px;">Good news — another learner registered with Drive365 Test Swap thinks your test date could work for them, and theirs could work for you.</p>
+        <p style="margin:0 0 16px;">Good news — another learner registered with EveryDriver Test Swap thinks your test date could work for them, and theirs could work for you.</p>
 
         <div style="border:1px solid ${D365_BORDER};border-radius:12px;padding:16px;margin:16px 0;">
           <div style="font-weight:600;margin-bottom:8px;">${esc(meFirst)}'s details</div>
