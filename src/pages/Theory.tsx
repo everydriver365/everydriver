@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { BookOpen, CheckCircle, Clock, ChevronRight, RotateCcw, Trophy, AlertTriangle } from "lucide-react";
@@ -428,6 +429,10 @@ export function TheoryContent() {
 export default function Theory() {
   return (
     <MainLayout>
+      <SEOHead
+        title="Theory Test Preparation | EveryDriver"
+        description="Prepare for your driving theory test with practice questions, hazard perception and revision guides."
+      />
       <TheoryContent />
     </MainLayout>
   );
