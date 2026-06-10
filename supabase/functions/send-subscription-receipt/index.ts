@@ -82,7 +82,7 @@ serve(async (req) => {
 
         <p style="color: #666; font-size: 12px; margin-top: 24px;">
           This payment was collected via Direct Debit and is protected by the Direct Debit Guarantee.
-          If you have any questions, contact us at hello@drive365.co.uk
+          If you have any questions, contact us at hello@everydriver.co.uk
         </p>
       </div>
     `;
