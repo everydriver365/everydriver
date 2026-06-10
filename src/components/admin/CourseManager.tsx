@@ -484,7 +484,7 @@ export function CourseManager({ onNavigate }: CourseManagerProps) {
                                 {template.is_active ? "Deactivate" : "Activate"}
                               </DropdownMenuItem>
                               <DropdownMenuItem 
-                                onClick={() => handleDelete(template.id)}
+                                onClick={() => setConfirmDeleteId(template.id)}
                                 className="text-destructive"
                               >
                                 Delete
