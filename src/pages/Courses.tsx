@@ -1683,7 +1683,14 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
               </motion.div>
             )}
 
-            {false ? null : (
+            {!selectedDate ? (
+              <div className="flex h-full items-center justify-center py-16">
+                <div className="text-center">
+                  <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4 animate-pulse" />
+                  <h2 className="text-xl font-semibold">Loading available courses…</h2>
+                </div>
+              </div>
+            ) : (
               <>
                 {/* Selected date header */}
                 {isChapmansMobile ? (
