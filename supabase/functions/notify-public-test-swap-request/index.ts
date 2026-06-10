@@ -125,7 +125,7 @@ serve(async (req) => {
           </div>
         </div>
 
-        <p style="margin:16px 0 0;color:${D365_TEXT_MUTED};font-size:13px;">Please contact ${esc(meFirst)} directly to arrange the swap on the DVSA website. Drive365 doesn't change your booking for you.</p>
+        <p style="margin:16px 0 0;color:${D365_TEXT_MUTED};font-size:13px;">Please contact ${esc(meFirst)} directly to arrange the swap on the DVSA website. EveryDriver doesn't change your booking for you.</p>
       `,
     );
 
