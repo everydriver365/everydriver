@@ -70,6 +70,7 @@ export function CourseManager({ onNavigate }: CourseManagerProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CourseTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTemplates();
