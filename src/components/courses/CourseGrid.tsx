@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown, Clock, LayoutGrid, List } from "lucide-react";
+import { PoundSterling, Navigation, X, ChevronDown, Clock, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { EDCourseList } from "@/components/everydriver/EDCourseList";
