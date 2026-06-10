@@ -59,7 +59,7 @@ export function CourseGrid({
             Driving courses near
           </div>
           <h2 className="mt-1 text-[22px] font-extrabold text-[#0A0E27] tracking-[-0.5px] leading-tight">
-            {searchedAreaName || searchedPostcode || format(selectedDate, "EEEE, d MMMM")}
+            {searchedAreaName || searchedPostcode || (selectedDate ? format(selectedDate, "EEEE, d MMMM") : "Available courses")}
             {(searchedAreaName || searchedPostcode) && (
               <span className="ml-2 text-sm font-normal text-[#9CA3AF]">
                 {searchedAreaName && searchedPostcode ? searchedPostcode : ""}
