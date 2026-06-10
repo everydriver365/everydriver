@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
@@ -290,16 +291,18 @@ export default function CourseResults({
           </div>
 
           <div className="flex-1">
-            <CourseGrid
-              selectedDate={selectedDate}
-              filteredCourses={filteredCourses}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              userLocation={userLocation}
-              searchedPostcode={searchedPostcode}
-              searchedAreaName={searchedAreaName}
-              onClearSearch={clearSearch}
-            />
+            <ErrorBoundary section="results">
+              <CourseGrid
+                selectedDate={selectedDate}
+                filteredCourses={filteredCourses}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                userLocation={userLocation}
+                searchedPostcode={searchedPostcode}
+                searchedAreaName={searchedAreaName}
+                onClearSearch={clearSearch}
+              />
+            </ErrorBoundary>
           </div>
         </div>
       </section>

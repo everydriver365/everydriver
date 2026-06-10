@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Calendar, List, CalendarDays, ChevronDown, Check, Plus, RefreshCw, CalendarRange, Columns3 } from "lucide-react";
@@ -258,41 +259,43 @@ export default function InstructorSchedule() {
           <div className={cn("px-1", isMobile && viewMode === 'list' ? "px-4 pt-3" : "pb-2")}>
             <ActiveGapOffersList instructorId={instructorId} />
           </div>
-          {viewMode === 'list' ? (
-            <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
-          ) : viewMode === 'week' ? (
-            <div className="h-full overflow-hidden pb-20">
-              <WeekTimelineView
-                events={calendar.events}
-                currentDate={calendar.currentDate}
-                onGoToDate={calendar.goToDate}
-                onEventClick={(event) => setSelectedEvent(event)}
-                onAddEvent={handleAddEvent}
-                loading={calendar.loading}
-              />
-            </div>
-          ) : viewMode === 'month' ? (
-            <MobileMonthCalendarView instructorId={instructorId} />
-          ) : viewMode === 'schedule' ? (
-            <div className="h-[calc(100vh-12rem)] overflow-hidden">
-              <GoogleStyleScheduleView
-                events={calendar.events}
-                calendarColors={calendar.calendarColors}
-                currentDate={calendar.currentDate}
-                onNavigate={calendar.navigate}
-                loading={calendar.loading}
-                onColorSettingsClick={() => setColorSettingsOpen(true)}
-                onAddEvent={handleAddEvent}
-                onEventClick={(event) => setSelectedEvent(event)}
-                onDeleteEvent={handleDeleteEvent}
-                onGoToDate={calendar.goToDate}
-              />
-            </div>
-          ) : (
-            <div className="h-[calc(100vh-12rem)]">
-              <InstructorCalendar instructorId={instructorId} />
-            </div>
-          )}
+          <ErrorBoundary section="diary">
+            {viewMode === 'list' ? (
+              <MultiDayScheduleView key={mobileListRefreshKey} instructorId={instructorId} />
+            ) : viewMode === 'week' ? (
+              <div className="h-full overflow-hidden pb-20">
+                <WeekTimelineView
+                  events={calendar.events}
+                  currentDate={calendar.currentDate}
+                  onGoToDate={calendar.goToDate}
+                  onEventClick={(event) => setSelectedEvent(event)}
+                  onAddEvent={handleAddEvent}
+                  loading={calendar.loading}
+                />
+              </div>
+            ) : viewMode === 'month' ? (
+              <MobileMonthCalendarView instructorId={instructorId} />
+            ) : viewMode === 'schedule' ? (
+              <div className="h-[calc(100vh-12rem)] overflow-hidden">
+                <GoogleStyleScheduleView
+                  events={calendar.events}
+                  calendarColors={calendar.calendarColors}
+                  currentDate={calendar.currentDate}
+                  onNavigate={calendar.navigate}
+                  loading={calendar.loading}
+                  onColorSettingsClick={() => setColorSettingsOpen(true)}
+                  onAddEvent={handleAddEvent}
+                  onEventClick={(event) => setSelectedEvent(event)}
+                  onDeleteEvent={handleDeleteEvent}
+                  onGoToDate={calendar.goToDate}
+                />
+              </div>
+            ) : (
+              <div className="h-[calc(100vh-12rem)]">
+                <InstructorCalendar instructorId={instructorId} />
+              </div>
+            )}
+          </ErrorBoundary>
         </div>
       </div>
 

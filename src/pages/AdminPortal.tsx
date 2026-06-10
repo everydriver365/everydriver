@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate, Link } from "react-router-dom";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1235,7 +1236,9 @@ export default function AdminPortal() {
         onFindSlot={() => setFindOpen(true)}
         tabCounts={tabCounts}
       >
-        {renderContent()}
+        <ErrorBoundary section="admin">
+          {renderContent()}
+        </ErrorBoundary>
         <WhatsNewModal portalType="admin" />
       </AdminLayout>
 

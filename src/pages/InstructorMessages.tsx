@@ -4,6 +4,7 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { InstructorInbox } from "@/components/instructor/InstructorInbox";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { MessagesSkeleton } from "@/components/ui/skeletons/MessagesSkeleton";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 export default function InstructorMessages() {
   const { instructor, loading } = useInstructorAuth();
@@ -27,7 +28,9 @@ export default function InstructorMessages() {
 
   return (
     <InstructorPortalLayout>
-      <InstructorInbox instructorId={instructor.id} />
+      <ErrorBoundary section="messages">
+        <InstructorInbox instructorId={instructor.id} />
+      </ErrorBoundary>
     </InstructorPortalLayout>
   );
 }
