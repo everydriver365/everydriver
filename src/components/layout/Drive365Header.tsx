@@ -225,41 +225,7 @@ export function Drive365Header() {
       </div>
 
 
-      {/* Promo bar */}
-      {promoVisible && (
-        <div
-          className="w-full bg-[#fdf6e3] flex items-center px-[60px] max-sm:px-4 relative"
-          style={{ height: "40px" }}
-        >
-          <span className="block rounded-full bg-[#d92e3a] shrink-0" style={{ width: "8px", height: "8px" }} />
-          <span
-            className="ml-4 text-[#5a4a1f] font-medium hidden sm:inline"
-            style={{ fontSize: "13px" }}
-          >
-            New Year offer · 10% off intensive courses until 31 January
-          </span>
-          <span
-            className="ml-4 text-[#5a4a1f] font-medium sm:hidden"
-            style={{ fontSize: "13px" }}
-          >
-            10% off intensives
-          </span>
-          <Link
-            to="/courses?type=intensive"
-            className="ml-4 text-[#0a1936] font-semibold underline"
-            style={{ fontSize: "13px" }}
-          >
-            Book now →
-          </Link>
-          <button
-            onClick={dismissPromo}
-            aria-label="Dismiss promotion"
-            className="ml-auto text-[#5a4a1f] hover:text-[#0a1936] p-1"
-          >
-            <X style={{ width: "14px", height: "14px" }} />
-          </button>
-        </div>
-      )}
+      {/* Promo bar removed — managed via admin CMS PromoBanner */}
     </header>
   );
 }
