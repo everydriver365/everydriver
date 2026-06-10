@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
+import dsmLogo from "@/assets/dsm-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
