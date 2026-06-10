@@ -54,7 +54,7 @@ export const SIDEBAR_SECTIONS: SidebarSectionConfig[] = [
   },
   {
     id: "drive365",
-    label: "Drive365",
+    label: "EveryDriver",
     items: [
       { id: "swap",    label: "Test swap",      iconBg: "#FBEAEA", iconColour: "#CC2229", icon: "arrow-left-right" },
       { id: "help",    label: "Help & support", iconBg: "#E8EDF6", iconColour: "#0F2044", icon: "info" },

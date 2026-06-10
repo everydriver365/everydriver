@@ -175,7 +175,7 @@ function DynamicCourseCardImpl({
           {/* Network placeholder badge — enquiry-only fallback for postcodes with no real instructor yet */}
           {(instructor as any).is_network_placeholder && (
             <div className="absolute top-4 left-4 z-30 flex items-center gap-1 bg-slate-900/90 text-white px-2.5 py-1 rounded-md shadow-lg">
-              <span className="text-xs font-bold tracking-wide">Drive365 Network — Enquire</span>
+              <span className="text-xs font-bold tracking-wide">EveryDriver Network — Enquire</span>
             </div>
           )}
 
