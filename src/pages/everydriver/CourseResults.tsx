@@ -83,12 +83,11 @@ export default function CourseResults({
   useEffect(() => {
     if (autoSearched.current) return;
     if (!initialPostcode) return;
-    if (loading) return;
     autoSearched.current = true;
     setPostcode(initialPostcode);
-    handleSearch();
+    setTimeout(() => handleSearch(), 100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, initialPostcode]);
+  }, []);
 
   const setType = (next: CourseTypeFilter) => {
     const params = new URLSearchParams(searchParams);
