@@ -187,6 +187,7 @@ export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsP
         </div>
         <ToggleList toggles={aiFeatureToggles} instructorId={instructorId} />
       </div>
+      <AutoInvoicingSettings instructorId={instructorId} />
     </div>
   );
 }
