@@ -8,8 +8,8 @@ const config: CapacitorConfig = {
     // Point the native wrapper at the PUBLISHED app, not the sandbox preview.
     // This way Despia/TestFlight pick up every Lovable Publish automatically
     // (combined with the bundle-refresh logic in src/lib/bundleRefresh.ts).
-    url: 'https://everydriver.lovable.app',
-    cleartext: true,
+    url: 'https://everydriver.co.uk',
+    cleartext: false,
     androidScheme: 'https',
     iosScheme: 'https',
   },
