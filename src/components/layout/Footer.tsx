@@ -87,6 +87,7 @@ export function Footer() {
                   { to: "/", label: "EveryDriver" },
                   { to: "/login", label: "Pupil Sign In" },
                   { to: "/instructor-app/login", label: "Instructor Portal" },
+                  { to: "/admin/login", label: "Admin Login" },
                 ].map((l) => (
                   <li key={l.label}>
                     <Link to={l.to} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
