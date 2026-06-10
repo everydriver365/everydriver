@@ -216,7 +216,7 @@ function renderHtml(enquiry: any, instructor: any): string {
 
       <!-- Footer -->
       <tr><td style="border-top:1px solid ${D365_BORDER};background:${D365_SOFT};padding:18px 24px;text-align:center;font-size:11px;color:${D365_TEXT_MUTED};line-height:1.5;">
-        <strong style="color:${D365_TEXT};">Automated notification</strong> from Drive365. Reply to this email to respond directly to ${escape(learnerFirst)}.
+        <strong style="color:${D365_TEXT};">Automated notification</strong> from EveryDriver. Reply to this email to respond directly to ${escape(learnerFirst)}.
       </td></tr>
     </table>
   </td></tr>
