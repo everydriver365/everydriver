@@ -47,12 +47,12 @@ function shell(title: string, inner: string) {
   return `<!doctype html><html><body style="margin:0;background:#f4f6fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:${D365_TEXT};">
     <div style="max-width:560px;margin:0 auto;padding:24px;">
       <div style="background:#fff;border:1px solid ${D365_BORDER};border-radius:16px;padding:28px;">
-        <div style="font-size:12px;color:${D365_ACCENT};font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Drive365 · Test Swap</div>
+        <div style="font-size:12px;color:${D365_ACCENT};font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">EveryDriver · Test Swap</div>
         <h1 style="margin:0 0 16px;color:${D365_PRIMARY};font-size:22px;">${esc(title)}</h1>
         ${inner}
       </div>
       <div style="text-align:center;color:${D365_TEXT_MUTED};font-size:12px;margin-top:16px;">
-        Drive365 · You're receiving this because you registered for a free test swap match.
+        EveryDriver · You're receiving this because you registered for a free test swap match.
       </div>
     </div>
   </body></html>`;
