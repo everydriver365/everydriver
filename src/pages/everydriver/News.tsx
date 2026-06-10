@@ -6,6 +6,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { useDVSANews } from "@/hooks/useDVSANews";
 import { Link } from "react-router-dom";
+import { decodeHtml } from "@/lib/utils";
 import newsFeatured from "@/assets/news-featured.jpg";
 import newsArticle1 from "@/assets/news-article1.jpg";
 import newsArticle2 from "@/assets/news-article2.jpg";
