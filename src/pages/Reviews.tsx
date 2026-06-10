@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { useEffect, useMemo, useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -68,6 +69,10 @@ export default function Reviews() {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Driving Instructor Reviews | EveryDriver"
+        description="Read genuine reviews from pupils about their driving instructors. Find the highest rated instructors near you."
+      />
       <div className="container mx-auto max-w-4xl px-4 py-10 md:py-16">
         <header className="mb-8 text-center">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">
