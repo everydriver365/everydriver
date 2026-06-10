@@ -59,7 +59,7 @@ export function StepComplete({ data }: StepCompleteProps) {
 
   return (
     <OnboardingLayout
-      step={9}
+      step={10}
       totalSteps={10}
       title=""
       description=""
