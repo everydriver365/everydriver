@@ -927,11 +927,13 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
       setManualBlocks(loadedManualBlocks);
       setBookedLessonGeo(loadedAvailabilitySources.bookedLessonGeo || []);
 
-      // Auto-advance to first available date
+      // Auto-advance to first available date (fallback to today so courses always render)
       const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedAvailabilitySources);
       if (firstAvailable) {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
+      } else {
+        setSelectedDate(startOfDay(new Date()));
       }
 
       // Geocode all instructor postcodes
@@ -1686,11 +1688,8 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
             {!selectedDate ? (
               <div className="flex h-full items-center justify-center py-16">
                 <div className="text-center">
-                  <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h2 className="text-xl font-semibold">Select a date to see available courses</h2>
-                  <p className="mt-2 text-muted-foreground">
-                    Choose an available date from the calendar
-                  </p>
+                  <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4 animate-pulse" />
+                  <h2 className="text-xl font-semibold">Loading available courses…</h2>
                 </div>
               </div>
             ) : (
