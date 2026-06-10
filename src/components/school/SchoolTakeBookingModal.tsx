@@ -1,14 +1,6 @@
-import { useState, useEffect } from "react";
-import { CalendarPlus, X, Loader2 } from "lucide-react";
+import { CalendarPlus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { useSchoolDemo } from "@/context/SchoolDemoContext";
-import { useToast } from "@/hooks/use-toast";
-import { demoSchoolInstructors, demoSchoolPupils } from "@/data/demoSchoolData";
 
 interface BookingPrefill {
   instructorId?: string;
@@ -24,7 +16,30 @@ interface Props {
   prefill?: BookingPrefill;
 }
 
-export default function SchoolTakeBookingModal({ open, onClose, instructorIds, prefill }: Props) {
+export default function SchoolTakeBookingModal({ open, onClose }: Props) {
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CalendarPlus className="h-5 w-5 text-primary" />
+            Take a Booking
+          </DialogTitle>
+        </DialogHeader>
+        <div className="p-6 text-center text-muted-foreground">
+          <p className="font-medium">Coming soon</p>
+          <p className="text-sm mt-1">This feature is being set up. Please use the main booking flow for now.</p>
+        </div>
+        <div className="flex justify-end pt-2">
+          <Button type="button" variant="outline" onClick={onClose}>Close</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Legacy stub retained to preserve module shape — not rendered.
+function _UnusedLegacy() {
   const { isDemo } = useSchoolDemo();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);

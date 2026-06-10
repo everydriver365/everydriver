@@ -2,13 +2,9 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Save, ShieldCheck, Info } from "lucide-react";
+import { ShieldCheck, Info, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useSchoolDemo } from "@/context/SchoolDemoContext";
 import type { SchoolRecord } from "@/hooks/useSchoolData";
@@ -29,14 +25,11 @@ export default function SchoolPaymentGatewaysSection({ school, onRefresh }: Prop
   const schoolAny = school as any;
   const [mode, setMode] = useState<string>(schoolAny.payment_gateway_mode || "platform");
 
-  // Own gateway credentials
-  const [squareAppId, setSquareAppId] = useState(schoolAny.own_square_app_id || "");
-  const [squareAccessToken, setSquareAccessToken] = useState(schoolAny.own_square_access_token || "");
-  const [squareLocationId, setSquareLocationId] = useState(schoolAny.own_square_location_id || "");
-  const [stripePublishableKey, setStripePublishableKey] = useState(schoolAny.own_stripe_publishable_key || "");
-  const [stripeSecretKey, setStripeSecretKey] = useState(schoolAny.own_stripe_secret_key || "");
-  const [paypalClientId, setPaypalClientId] = useState(schoolAny.own_paypal_client_id || "");
-  const [paypalSecret, setPaypalSecret] = useState(schoolAny.own_paypal_secret || "");
+  // Connection status only — secret credentials are NEVER fetched to the client.
+  // Publishable keys / app IDs are public and safe to display.
+  const squareConnected = !!schoolAny.own_square_app_id;
+  const stripeConnected = !!schoolAny.own_stripe_publishable_key;
+  const paypalConnected = !!schoolAny.own_paypal_client_id;
 
   // Fetch commission config for school_payment
   const { data: commission } = useQuery({
@@ -68,22 +61,6 @@ export default function SchoolPaymentGatewaysSection({ school, onRefresh }: Prop
     onError: () => toast.error("Failed to update gateway mode"),
   });
 
-  const credentialsMutation = useMutation({
-    mutationFn: async (updates: Record<string, string>) => {
-      if (isDemo) return;
-      const { error } = await supabase
-        .from("schools")
-        .update(updates as any)
-        .eq("id", school.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      onRefresh();
-      toast.success("Credentials saved");
-    },
-    onError: () => toast.error("Failed to save credentials"),
-  });
-
   const handleModeChange = (newMode: string) => {
     setMode(newMode);
     if (isDemo) {
@@ -91,31 +68,6 @@ export default function SchoolPaymentGatewaysSection({ school, onRefresh }: Prop
       return;
     }
     modeMutation.mutate(newMode);
-  };
-
-  const saveSquare = () => {
-    if (isDemo) { toast.success("Square credentials saved (demo)"); return; }
-    credentialsMutation.mutate({
-      own_square_app_id: squareAppId,
-      own_square_access_token: squareAccessToken,
-      own_square_location_id: squareLocationId,
-    });
-  };
-
-  const saveStripe = () => {
-    if (isDemo) { toast.success("Stripe credentials saved (demo)"); return; }
-    credentialsMutation.mutate({
-      own_stripe_publishable_key: stripePublishableKey,
-      own_stripe_secret_key: stripeSecretKey,
-    });
-  };
-
-  const savePaypal = () => {
-    if (isDemo) { toast.success("PayPal credentials saved (demo)"); return; }
-    credentialsMutation.mutate({
-      own_paypal_client_id: paypalClientId,
-      own_paypal_secret: paypalSecret,
-    });
   };
 
   const commissionRate = commission?.rate_percent ?? 3.5;
@@ -192,108 +144,26 @@ export default function SchoolPaymentGatewaysSection({ school, onRefresh }: Prop
         </CardContent>
       </Card>
 
-      {/* Own gateway credentials */}
+      {/* Gateway connection status (no secrets exposed) */}
       {mode === "own" && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Gateway Credentials</CardTitle>
+            <CardTitle className="text-base">Connected Gateways</CardTitle>
             <CardDescription>
-              Enter the API credentials for your preferred payment provider. You can configure multiple providers.
+              Connection status for your payment providers. Secret credentials are stored securely on the server and are never displayed here.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="square">
-              <TabsList className="w-full grid grid-cols-3">
-                <TabsTrigger value="square" className="flex items-center gap-2">
-                  <img src={squareLogo} alt="Square" className="h-4 w-4 object-contain" loading="lazy" />
-                  Square
-                </TabsTrigger>
-                <TabsTrigger value="stripe" className="flex items-center gap-2">
-                  <img src={stripeLogo} alt="Stripe" className="h-4 w-4 object-contain" loading="lazy" />
-                  Stripe
-                </TabsTrigger>
-                <TabsTrigger value="paypal" className="flex items-center gap-2">
-                  <img src={paypalLogo} alt="PayPal" className="h-4 w-4 object-contain" loading="lazy" />
-                  PayPal
-                </TabsTrigger>
-              </TabsList>
+          <CardContent className="space-y-3">
+            <GatewayRow logo={squareLogo} name="Square" connected={squareConnected} />
+            <GatewayRow logo={stripeLogo} name="Stripe" connected={stripeConnected} />
+            <GatewayRow logo={paypalLogo} name="PayPal" connected={paypalConnected} />
 
-              {/* Square */}
-              <TabsContent value="square" className="space-y-4 pt-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <img src={squareLogo} alt="Square" className="h-8 object-contain" loading="lazy" />
-                  <Badge variant={squareAccessToken ? "default" : "secondary"}>
-                    {squareAccessToken ? "Configured" : "Not Connected"}
-                  </Badge>
-                </div>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Application ID</Label>
-                    <Input value={squareAppId} onChange={(e) => setSquareAppId(e.target.value)} placeholder="sq0idp-..." className="h-9 font-mono text-xs" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Access Token</Label>
-                    <Input type="password" value={squareAccessToken} onChange={(e) => setSquareAccessToken(e.target.value)} placeholder="EAAAl..." className="h-9 font-mono text-xs" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Location ID</Label>
-                    <Input value={squareLocationId} onChange={(e) => setSquareLocationId(e.target.value)} placeholder="L..." className="h-9 font-mono text-xs" />
-                  </div>
-                  <Button onClick={saveSquare} disabled={credentialsMutation.isPending} size="sm" className="w-full">
-                    {credentialsMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                    Save Square Credentials
-                  </Button>
-                </div>
-              </TabsContent>
-
-              {/* Stripe */}
-              <TabsContent value="stripe" className="space-y-4 pt-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <img src={stripeLogo} alt="Stripe" className="h-8 object-contain" loading="lazy" />
-                  <Badge variant={stripePublishableKey ? "default" : "secondary"}>
-                    {stripePublishableKey ? "Configured" : "Not Connected"}
-                  </Badge>
-                </div>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Publishable Key</Label>
-                    <Input value={stripePublishableKey} onChange={(e) => setStripePublishableKey(e.target.value)} placeholder="pk_live_..." className="h-9 font-mono text-xs" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Secret Key</Label>
-                    <Input type="password" value={stripeSecretKey} onChange={(e) => setStripeSecretKey(e.target.value)} placeholder="sk_live_..." className="h-9 font-mono text-xs" />
-                  </div>
-                  <Button onClick={saveStripe} disabled={credentialsMutation.isPending} size="sm" className="w-full">
-                    {credentialsMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                    Save Stripe Credentials
-                  </Button>
-                </div>
-              </TabsContent>
-
-              {/* PayPal */}
-              <TabsContent value="paypal" className="space-y-4 pt-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <img src={paypalLogo} alt="PayPal" className="h-8 object-contain" loading="lazy" />
-                  <Badge variant={paypalClientId ? "default" : "secondary"}>
-                    {paypalClientId ? "Configured" : "Not Connected"}
-                  </Badge>
-                </div>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Client ID</Label>
-                    <Input value={paypalClientId} onChange={(e) => setPaypalClientId(e.target.value)} placeholder="AV..." className="h-9 font-mono text-xs" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Secret</Label>
-                    <Input type="password" value={paypalSecret} onChange={(e) => setPaypalSecret(e.target.value)} placeholder="EI..." className="h-9 font-mono text-xs" />
-                  </div>
-                  <Button onClick={savePaypal} disabled={credentialsMutation.isPending} size="sm" className="w-full">
-                    {credentialsMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                    Save PayPal Credentials
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
+            <div className="rounded-md border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground flex items-start gap-2 mt-4">
+              <Lock className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              <span>
+                For security, gateway secret keys can only be set up by the platform team. Contact support to connect or update a gateway.
+              </span>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -304,11 +174,25 @@ export default function SchoolPaymentGatewaysSection({ school, onRefresh }: Prop
           <p className="text-xs text-muted-foreground flex items-start gap-2">
             <Info className="h-4 w-4 mt-0.5 shrink-0" />
             <span>
-              <strong>How it works:</strong> When using the DSM Square account, payments are processed through the platform and a service commission is deducted before funds are settled to your school. When using your own gateway, payments go directly to your account with no platform commission — you only pay the provider's standard processing fees. Gateway credentials can be wired up to live processing later.
+              <strong>How it works:</strong> When using the DSM Square account, payments are processed through the platform and a service commission is deducted before funds are settled to your school. When using your own gateway, payments go directly to your account with no platform commission — you only pay the provider's standard processing fees.
             </span>
           </p>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function GatewayRow({ logo, name, connected }: { logo: string; name: string; connected: boolean }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border p-3">
+      <div className="flex items-center gap-3">
+        <img src={logo} alt={name} className="h-6 object-contain" loading="lazy" />
+        <span className="font-medium text-sm">{name}</span>
+      </div>
+      <Badge variant={connected ? "default" : "secondary"}>
+        {connected ? "Connected" : "Not connected"}
+      </Badge>
     </div>
   );
 }
