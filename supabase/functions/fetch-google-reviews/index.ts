@@ -15,13 +15,14 @@ serve(async (req) => {
   }
 
   try {
-    const { query, placeId, cacheKey } = await req.json().catch(() => ({}));
+    const { query, placeId, cacheKey, instructorId } = await req.json().catch(() => ({}));
     if (!query && !placeId) {
       return new Response(
         JSON.stringify({ error: "query or placeId required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
 
     const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
     if (!apiKey) throw new Error("GOOGLE_PLACES_API_KEY not configured");
@@ -44,6 +45,14 @@ serve(async (req) => {
       const ageHours =
         (Date.now() - new Date(cached.fetched_at).getTime()) / 3_600_000;
       if (ageHours < CACHE_TTL_HOURS) {
+        if (instructorId) {
+          await writeInstructorGoogleSnapshot(supabase, instructorId, {
+            placeId: cached.place_id,
+            rating: cached.rating,
+            count: cached.user_ratings_total,
+            reviews: cached.reviews,
+          });
+        }
         return new Response(
           JSON.stringify({
             cached: true,
@@ -57,6 +66,7 @@ serve(async (req) => {
         );
       }
     }
+
 
     // Resolve place_id if not provided
     let resolvedPlaceId = placeId;
@@ -113,6 +123,17 @@ serve(async (req) => {
       },
       { onConflict: "cache_key" }
     );
+
+    if (instructorId) {
+      await writeInstructorGoogleSnapshot(supabase, instructorId, {
+        placeId: resolvedPlaceId,
+        rating: r.rating ?? null,
+        count: r.user_ratings_total ?? null,
+        reviews,
+      });
+    }
+
+
 
     return new Response(
       JSON.stringify({
