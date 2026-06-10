@@ -15,14 +15,23 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get all pupils with parent phones
-    const { data: pupils } = await supabase
+    // Get instructors with parent-reports toggle ON
+    const { data: enabledInstructors } = await supabase
+      .from("instructors")
+      .select("id")
+      .eq("ai_parent_reports_enabled", true);
+    const enabledIds = new Set((enabledInstructors || []).map((i: any) => i.id));
+
+    // Get all pupils with parent phones, then filter by enabled instructors
+    const { data: pupilsRaw } = await supabase
       .from("pupils")
       .select("id, name, parent_phone, instructor_id, lessons_completed, progress, account_balance")
       .not("parent_phone", "is", null);
 
+    const pupils = (pupilsRaw || []).filter((p: any) => enabledIds.has(p.instructor_id));
+
     if (!pupils || pupils.length === 0) {
-      return new Response(JSON.stringify({ message: "No parents to notify" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ message: "No parents to notify (toggle off or no pupils)" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const oneWeekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];

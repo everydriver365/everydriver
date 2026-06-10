@@ -48,6 +48,27 @@ serve(async (req: Request) => {
       startTime,
       endTime,
       durationMins,
+    }: ProcessRequest = await req.json();
+
+    // Toggle gate
+    const { data: instructorToggle } = await supabase
+      .from("instructors")
+      .select("ai_waitlist_filling_enabled")
+      .eq("id", instructorId)
+      .maybeSingle();
+    if (instructorToggle && instructorToggle.ai_waitlist_filling_enabled === false) {
+      console.log(`Waitlist filling disabled for instructor ${instructorId} — skipping`);
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, offersCreated: 0, reason: "ai_waitlist_filling_enabled is false" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const {
+      lessonDate: _ld,
+      startTime: _st,
+      endTime: _et,
+      durationMins: _dm,
       originalLessonId,
     }: ProcessRequest = await req.json();
 
