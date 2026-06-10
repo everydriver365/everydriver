@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useCallback, useMemo, useState } from "react";
+
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown, Clock, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,9 +33,10 @@ export function CourseGrid({
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     setMobileVisibleCount(prev => Math.min(prev + 6, filteredCourses.length));
-  };
+  }, [filteredCourses.length]);
+
 
   if (!selectedDate) {
     return (
@@ -189,12 +190,9 @@ export function CourseGrid({
         if (isMobile) {
           return (
             <div className="flex flex-col gap-4">
-              {filteredCourses.slice(0, mobileVisibleCount).map((course, index) => (
-                <motion.div
+              {filteredCourses.slice(0, mobileVisibleCount).map((course) => (
+                <div
                   key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
                 >
                   <DynamicCourseCard
                     instructor={course.instructor}
@@ -216,14 +214,10 @@ export function CourseGrid({
                     isPremium={course.isPremium}
                     placementType={course.placementType}
                   />
-                </motion.div>
+                </div>
               ))}
               {mobileVisibleCount < filteredCourses.length && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="mt-4"
-                >
+                <div className="mt-4">
                   <Button
                     variant="outline"
                     size="lg"
@@ -233,7 +227,7 @@ export function CourseGrid({
                     <ChevronDown className="h-4 w-4" />
                     Load More ({filteredCourses.length - mobileVisibleCount} remaining)
                   </Button>
-                </motion.div>
+                </div>
               )}
             </div>
           );
@@ -241,12 +235,9 @@ export function CourseGrid({
 
         return (
           <div className="grid gap-6 sm:grid-cols-2">
-            {filteredCourses.slice(0, 6).map((course, index) => (
-              <motion.div
+            {filteredCourses.slice(0, 6).map((course) => (
+              <div
                 key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
               >
                 <DynamicCourseCard
                   instructor={course.instructor}
@@ -268,10 +259,11 @@ export function CourseGrid({
                   isPremium={course.isPremium}
                   placementType={course.placementType}
                 />
-              </motion.div>
+              </div>
             ))}
           </div>
         );
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [filteredCourses, viewMode, isMobile, mobileVisibleCount, searchedAreaName])}
 

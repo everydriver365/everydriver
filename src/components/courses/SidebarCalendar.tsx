@@ -142,8 +142,8 @@ export function SidebarCalendar({
               const disabled = !day.isAvailable || day.isPast;
 
               let bg = "transparent";
-              let color = "#C4C9D4";
-              let weight: number = 400;
+              let color = day.isPast ? "#D1D5DB" : "#6B7280";
+              let weight: number = 500;
               let cursor = "default";
               let hoverCls = "";
 
@@ -155,10 +155,11 @@ export function SidebarCalendar({
               } else if (!disabled) {
                 bg = "#EEF2FF";
                 color = "#0A0E27";
-                weight = 500;
+                weight = 600;
                 cursor = "pointer";
                 hoverCls = "hover:!bg-[#DBEAFE]";
               }
+
 
               return (
                 <button

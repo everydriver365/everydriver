@@ -45,10 +45,10 @@ export function PostcodeAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const skipNextFetchRef = useRef(false);
-  // If the input is pre-filled (e.g. postcode came in via URL params), the
-  // first effect run would otherwise auto-open the dropdown on page load.
-  // Treat the initial mount as a no-op fetch when a value is already present.
-  const isInitialMountRef = useRef(true);
+  // Only show the dropdown after the user has actually interacted with the
+  // input. Prevents auto-opening when value is pre-filled from URL params.
+  const userInteractedRef = useRef(false);
+
   const [isLocating, setIsLocating] = useState(false);
 
   // Fetch suggestions from edge function. Keeps any previous suggestions
@@ -93,14 +93,12 @@ export function PostcodeAutocomplete({
       return;
     }
 
-    // On initial mount, if a value is already present (URL params), keep the
-    // dropdown closed — the user did not type, so showing suggestions is wrong.
-    if (isInitialMountRef.current) {
-      isInitialMountRef.current = false;
-      if (value.length >= 2) {
-        setShowDropdown(false);
-        return;
-      }
+    // Only open dropdown if the user has actively typed/interacted.
+    // Prevents opening on mount when value comes from URL params.
+    if (!userInteractedRef.current) {
+      setShowDropdown(false);
+      setIsLoading(false);
+      return;
     }
 
     if (value.length >= 2) {
@@ -115,6 +113,7 @@ export function PostcodeAutocomplete({
       setIsLoading(false);
       setShowDropdown(false);
     }
+
 
     return () => {
       if (debounceRef.current) {
@@ -268,11 +267,12 @@ export function PostcodeAutocomplete({
             enableDictation={enableDictation}
             placeholder={placeholder}
             value={value}
-            onChange={(e) => onChange(e.target.value.toUpperCase())}
+            onChange={(e) => { userInteractedRef.current = true; onChange(e.target.value.toUpperCase()); }}
             onKeyDown={handleKeyDown}
             onFocus={() => {
-              if (value.length >= 2) setShowDropdown(true);
+              if (userInteractedRef.current && value.length >= 2) setShowDropdown(true);
             }}
+
             className={cn(showInputIcon ? "pl-10" : "pl-3", inputClassName)}
             autoComplete="off"
           />
