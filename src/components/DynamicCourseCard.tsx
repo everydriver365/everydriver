@@ -9,6 +9,7 @@ import { format, isFuture, parseISO, differenceInDays } from "date-fns";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
 import { InstructorSignalRow } from "@/components/courses/variants/InstructorSignalRow";
 import { computeOfferStatus } from "@/lib/courseOffer";
+import { cleanInstructorName } from "@/lib/utils";
 
 
 interface DynamicCourseCardProps {
