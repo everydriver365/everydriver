@@ -1342,7 +1342,6 @@ export default function BookingSummary() {
           amount={totalPrice + upsellTotal}
           merchantReference={klarnaMerchantReference}
           orderDescription={`${courseName} - ${hours} Hour Driving Course`}
-          instructorId={instructor?.id ?? null}
           onSuccess={handleKlarnaSuccess}
           consumer={{
             givenName: pupilName.trim().split(" ")[0] || pupilName.trim(),
@@ -2212,7 +2211,6 @@ export default function BookingSummary() {
           amount={totalPrice + upsellTotal}
           merchantReference={klarnaMerchantReference}
           orderDescription={`${courseName} - ${hours} Hour Driving Course`}
-          instructorId={instructor?.id ?? null}
           onSuccess={handleKlarnaSuccess}
           consumer={{
             givenName: pupilName.trim().split(" ")[0] || pupilName.trim(),
