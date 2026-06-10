@@ -14,6 +14,7 @@ import {
   getBiometricCredentials,
   saveBiometricCredentials,
   getBiometryLabel,
+  isNativePlatform,
 } from "@/lib/biometricAuth";
 import { setRememberMe, getRememberMe } from "@/lib/sessionPersistence";
 import { isEmailNotConfirmedError, resendSignupConfirmation } from "@/lib/emailConfirmation";
@@ -593,10 +594,10 @@ export default function InstructorLogin() {
                   </div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 500, color: t.navy, marginBottom: 2 }}>
-                      Remember me (enables {biometryLabel})
+                      {isNativePlatform() ? `Remember me (enables ${biometryLabel})` : "Remember me"}
                     </div>
                     <div style={{ fontSize: 11, fontWeight: 300, color: t.muted, lineHeight: 1.5 }}>
-                      Face ID is only available in the iOS or Android app. Remember me keeps you signed in on this browser.
+                      Keep me signed in on this device
                     </div>
                   </div>
                 </div>
