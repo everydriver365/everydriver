@@ -766,7 +766,7 @@ export default function Index() {
                           {article.category || "DVSA News"}
                         </div>
                         <div style={{ fontSize: 14, fontWeight: 500, color: "#0A1936", lineHeight: 1.5, marginBottom: 8 }}>
-                          {article.title}
+                          {decodeHtml(article.title)}
                         </div>
                         <div style={{ color: "#9ca3af", fontSize: 11, marginTop: "auto" }}>
                           {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • 3 min read
