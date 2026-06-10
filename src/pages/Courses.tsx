@@ -927,11 +927,13 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
       setManualBlocks(loadedManualBlocks);
       setBookedLessonGeo(loadedAvailabilitySources.bookedLessonGeo || []);
 
-      // Auto-advance to first available date
+      // Auto-advance to first available date (fallback to today so courses always render)
       const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedAvailabilitySources);
       if (firstAvailable) {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
+      } else {
+        setSelectedDate(startOfDay(new Date()));
       }
 
       // Geocode all instructor postcodes
