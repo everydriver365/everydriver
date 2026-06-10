@@ -174,7 +174,7 @@ serve(async (req) => {
 
       case "admin_direct_message":
         const directPreview = data.messagePreview?.substring(0, 50) || "New message";
-        smsMessage = `📩 New message from Drive 365 Admin: "${directPreview}${(data.messagePreview?.length || 0) > 50 ? '...' : ''}"`;
+        smsMessage = `📩 New message from EveryDriver Admin: "${directPreview}${(data.messagePreview?.length || 0) > 50 ? '...' : ''}"`;
         pushNotification = {
           title: "📩 Message from Admin",
           body: `${directPreview}${(data.messagePreview?.length || 0) > 50 ? '...' : ''}`,
