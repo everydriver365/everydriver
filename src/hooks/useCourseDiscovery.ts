@@ -340,7 +340,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   }, [geoCache, areaCache]);
 
   const fetchData = useCallback(async () => {
-    console.log("[useCourseDiscovery] fetchData start");
     setLoading(true);
     try {
       // PostgREST enforces a server-side max-rows of 1000. Paginate explicitly
@@ -376,7 +375,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         supabase.from("instructor_premium_placements").select("instructor_id, placement_type, priority_score, expires_at").eq("is_active", true),
       ]);
 
-      console.log("[useCourseDiscovery] step 1 done", { instructors: instructorsRes.data?.length, templates: templatesRes.data?.length });
+      
       if (instructorsRes.error) throw instructorsRes.error;
       if (templatesRes.error) throw templatesRes.error;
 
@@ -390,7 +389,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       const coursesScope = instructorId ? [instructorId] : realInstructorIds;
       let initialCourses: InstructorCourse[] = [];
       if (coursesScope.length > 0) {
-        console.log("[useCourseDiscovery] step 2 fetching instructor_courses for", coursesScope.length, "instructors");
+        
         const { data: courseRows, error: coursesErr } = await supabase
           .from("instructor_courses")
           .select("*")
@@ -398,20 +397,20 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
           .in("instructor_id", coursesScope);
         if (coursesErr) throw coursesErr;
         initialCourses = (courseRows || []) as InstructorCourse[];
-        console.log("[useCourseDiscovery] step 2 done", { courses: initialCourses.length });
+        
       }
       setInstructorCourses(initialCourses);
 
       const fromDate = new Date();
       const toDate = addMonths(fromDate, 18);
-      console.log("[useCourseDiscovery] step 3 loading availability sources");
+      
       const newSources = await loadCourseAvailabilitySources(
         supabase as any,
         realInstructorIds,
         fromDate,
         toDate,
       );
-      console.log("[useCourseDiscovery] step 3 done");
+      
       setSources(newSources);
 
       // Store premium placements (filter expired)
@@ -468,7 +467,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         variant: "destructive",
       });
     } finally {
-      console.log("[useCourseDiscovery] fetchData finally — setLoading(false)");
+      
       setLoading(false);
     }
   }, [findFirstAvailableDate, geocodePostcodes, instructorId]);
