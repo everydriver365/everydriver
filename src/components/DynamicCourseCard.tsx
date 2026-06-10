@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEmbed } from "@/context/EmbedContext";
 import { MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
@@ -400,5 +400,4 @@ function DynamicCourseCardImpl({
   );
 }
 
-import { memo } from "react";
 export const DynamicCourseCard = memo(DynamicCourseCardImpl);
