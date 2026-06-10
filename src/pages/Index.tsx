@@ -36,6 +36,7 @@ import { getWhitelabelConfig } from "@/lib/whitelabel";
 import { getAreasForHost, areaToSlug } from "@/lib/whitelabelAreas";
 import { supabase } from "@/integrations/supabase/client";
 import { useDVSANews } from "@/hooks/useDVSANews";
+import { decodeHtml } from "@/lib/utils";
 import { useHomepageFeatures } from "@/hooks/useHomepageFeatures";
 import { useHomepageHero } from "@/hooks/useHomepageHero";
 import { useHomepageTestimonials } from "@/hooks/useHomepageTestimonials";
