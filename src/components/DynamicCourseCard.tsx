@@ -31,7 +31,13 @@ interface DynamicCourseCardProps {
     odd_hours_surcharge_amount?: number | null;
     klarna_enabled?: boolean | null;
     clearpay_enabled?: boolean | null;
+    google_rating?: number | null;
+    google_review_count?: number | null;
+    google_top_review_text?: string | null;
+    google_top_review_author?: string | null;
+    google_review_url?: string | null;
   };
+
   hours: number;
   nextAvailable?: Date | null;
   courseImageUrl?: string | null;
@@ -276,6 +282,49 @@ function DynamicCourseCardImpl({
                   className="min-w-0 flex-1"
                 />
               </div>
+
+              {/* Google reviews — live from Google Places (only when populated) */}
+              {instructor.google_rating != null &&
+                (instructor.google_review_count ?? 0) > 0 && (
+                  <a
+                    href={instructor.google_review_url ?? undefined}
+                    target={instructor.google_review_url ? "_blank" : undefined}
+                    rel={instructor.google_review_url ? "noopener noreferrer" : undefined}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`flex flex-col gap-1 rounded-lg border border-border/60 bg-white px-2.5 py-2 ${
+                      instructor.google_review_url ? "hover:bg-muted/40 transition-colors" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <GoogleGlyph className="h-3.5 w-3.5 flex-shrink-0" />
+                      <span className="font-semibold text-foreground">
+                        {Number(instructor.google_rating).toFixed(1)}
+                      </span>
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <span className="text-muted-foreground">
+                        · {instructor.google_review_count} Google review
+                        {instructor.google_review_count === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                    {instructor.google_top_review_text && (
+                      <p
+                        className="text-[11px] italic leading-snug text-muted-foreground"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        “{instructor.google_top_review_text}”
+                        {instructor.google_top_review_author && (
+                          <span className="not-italic"> — {instructor.google_top_review_author.split(" ")[0]}</span>
+                        )}
+                      </p>
+                    )}
+                  </a>
+                )}
+
 
 
               {/* Price */}
