@@ -321,7 +321,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <Link to={links.services}>
               <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50 hover:shadow-md transition-shadow">
-                <img src={courseWeekly} alt="Weekly Lessons" className="w-full h-20 sm:h-32 lg:h-40 object-cover" />
+                <img src={courseWeekly} alt="Weekly Lessons" className="w-full h-20 sm:h-32 lg:h-40 object-cover" loading="lazy" />
                 <div className="p-2 sm:p-3 text-center">
                   <div className="font-bold text-[11px] sm:text-sm text-foreground">Weekly</div>
                   <div className="text-[10px] sm:text-xs text-muted-foreground">From £{instructor.hourly_rate || 40}/hr</div>
@@ -330,7 +330,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             </Link>
             <Link to={links.courses}>
               <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50 hover:shadow-md transition-shadow">
-                <img src={courseSemiIntensive} alt="Semi-Intensive" className="w-full h-20 sm:h-32 lg:h-40 object-cover" />
+                <img src={courseSemiIntensive} alt="Semi-Intensive" className="w-full h-20 sm:h-32 lg:h-40 object-cover" loading="lazy" />
                 <div className="p-2 sm:p-3 text-center">
                   <div className="font-bold text-[11px] sm:text-sm text-foreground">Semi-Intensive</div>
                   <div className="text-[10px] sm:text-xs text-muted-foreground">20-30 hours</div>
@@ -339,7 +339,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             </Link>
             <Link to={links.courses}>
               <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50 hover:shadow-md transition-shadow">
-                <img src={courseIntensive} alt="Intensive" className="w-full h-20 sm:h-32 lg:h-40 object-cover" />
+                <img src={courseIntensive} alt="Intensive" className="w-full h-20 sm:h-32 lg:h-40 object-cover" loading="lazy" />
                 <div className="p-2 sm:p-3 text-center">
                   <div className="font-bold text-[11px] sm:text-sm text-foreground">Intensive</div>
                   <div className="text-[10px] sm:text-xs text-muted-foreground">Test in a week</div>
@@ -350,9 +350,9 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
           {/* Finance badges */}
           <div className="flex items-center gap-3 justify-center">
-            <img src={klarnaRoundLogo} alt="Klarna" className="h-6 w-6 sm:h-8 sm:w-8" />
-            <img src={clearpayRoundLogo} alt="Clearpay" className="h-6 w-6 sm:h-8 sm:w-8" />
-            <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-10 sm:h-12 object-contain" />
+            <img src={klarnaRoundLogo} alt="Klarna" className="h-6 w-6 sm:h-8 sm:w-8" loading="lazy" />
+            <img src={clearpayRoundLogo} alt="Clearpay" className="h-6 w-6 sm:h-8 sm:w-8" loading="lazy" />
+            <img src={klarnaCleanpayLogos} alt="Pay with Klarna or Clearpay" className="h-10 sm:h-12 object-contain" loading="lazy" />
           </div>
 
           {/* Free Test Swapping CTA */}
@@ -398,7 +398,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl bg-card"
             >
               <div className="relative h-48 overflow-hidden">
-                <img src={courseIntensive} alt="Intensive Courses" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                <img src={courseIntensive} alt="Intensive Courses" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                 <Badge className="absolute right-3 top-3 border-0 bg-primary text-primary-foreground gap-1">
                   <Zap className="h-3 w-3" /> Fast Track
                 </Badge>
@@ -432,7 +432,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl bg-card"
             >
               <div className="relative h-48 overflow-hidden">
-                <img src={courseSemiIntensive} alt="Semi-Intensive Courses" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                <img src={courseSemiIntensive} alt="Semi-Intensive Courses" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                 <Badge className="absolute right-3 top-3 border-0 bg-emerald-500 text-white gap-1">
                   <Star className="h-3 w-3" /> Popular
                 </Badge>
@@ -466,7 +466,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
               className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl bg-card"
             >
               <div className="relative h-48 overflow-hidden">
-                <img src={courseWeekly} alt="Weekly Lessons" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                <img src={courseWeekly} alt="Weekly Lessons" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                 <Badge className="absolute right-3 top-3 border-0 bg-blue-500 text-white gap-1">
                   <Heart className="h-3 w-3" /> Flexible
                 </Badge>
@@ -534,7 +534,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                         src={feature.image_url}
                         alt={feature.title}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
+                      loading="lazy" />
                     ) : (
                       <div className="h-full w-full bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center">
                         <IconComponent className="h-10 w-10 text-primary/30" />
@@ -584,7 +584,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                   className="rounded-2xl bg-card ring-1 ring-border overflow-hidden hover:shadow-xl transition-all cursor-pointer group"
                 >
                   <div className="overflow-hidden h-36 md:h-48">
-                    <img src={f.image} alt={f.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <img src={f.image} alt={f.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                   </div>
                   <div className="p-4">
                     <h3 className="font-bold text-sm mb-1" style={{ color: primaryColor }}>{f.title}</h3>
