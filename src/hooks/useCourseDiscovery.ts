@@ -375,7 +375,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         supabase.from("instructor_premium_placements").select("instructor_id, placement_type, priority_score, expires_at").eq("is_active", true),
       ]);
 
-      console.log("[useCourseDiscovery] step 1 done", { instructors: instructorsRes.data?.length, templates: templatesRes.data?.length });
+      
       if (instructorsRes.error) throw instructorsRes.error;
       if (templatesRes.error) throw templatesRes.error;
 
