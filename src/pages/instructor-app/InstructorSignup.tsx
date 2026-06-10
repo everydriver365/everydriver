@@ -88,7 +88,20 @@ export default function InstructorSignup() {
   };
 
   return (
-    <InstructorSaaSLayout>
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-background">
+        <div className="container flex items-center justify-between h-16">
+          <Link to="/instructor-app" className="flex items-center">
+            <img src={dsmLogo} alt="DSM" className="h-8 w-auto" />
+          </Link>
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link to="/instructor-app/login" className="text-primary hover:underline font-medium">
+              Log in
+            </Link>
+          </p>
+        </div>
+      </header>
       <div className="container py-12 md:py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
           {/* Left Section - Video & Benefits */}
