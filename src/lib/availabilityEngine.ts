@@ -298,8 +298,9 @@ export function resolveAvailability(input: EngineInput): EngineResult {
   const {
     dateStr, dayStartMin, dayEndMin, bufferMinutes, durationMinutes,
     conflicts, timeOfDay = "any", isToday, anchorSkipMinutes,
-    minNoticeMinutes = 0,
+    minNoticeMinutes = 0, preferEarliestSlot = false,
   } = input;
+
 
   const padMin = Math.max(0, bufferMinutes); // no hidden travel padding
   // Past-cutoff is computed in Europe/London wall-clock to match how
