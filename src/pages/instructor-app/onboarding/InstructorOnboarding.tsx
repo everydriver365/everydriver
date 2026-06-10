@@ -417,6 +417,7 @@ export default function InstructorOnboarding() {
           is_active: true,
           onboarding_completed: true,
           onboarding_completed_at: new Date().toISOString(),
+        } as any)
         .eq("id", instructorId);
 
       if (error) throw error;
