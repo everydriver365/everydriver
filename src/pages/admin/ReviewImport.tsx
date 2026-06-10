@@ -171,6 +171,101 @@ export default function ReviewImport() {
   const [importing, setImporting] = useState(false);
   const [loadingDoc, setLoadingDoc] = useState(false);
   const [fetchingGoogle, setFetchingGoogle] = useState(false);
+  const [existing, setExisting] = useState<ExistingReview[]>([]);
+  const [loadingExisting, setLoadingExisting] = useState(false);
+
+  async function loadExisting(id: string) {
+    if (!id) {
+      setExisting([]);
+      return;
+    }
+    setLoadingExisting(true);
+    const { data, error } = await supabase
+      .from("course_reviews")
+      .select("id, reviewer_name, reviewer_location, review_text, rating, review_date, passed_first_time, is_visible, moderation_status")
+      .eq("instructor_id", id)
+      .order("review_date", { ascending: false, nullsFirst: false })
+      .limit(200);
+    setLoadingExisting(false);
+    if (error) {
+      toast({ title: "Failed to load reviews", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExisting((data ?? []) as ExistingReview[]);
+  }
+
+  useEffect(() => {
+    loadExisting(instructorId);
+  }, [instructorId]);
+
+  function patchExisting(id: string, patch: Partial<ExistingReview>) {
+    setExisting((rows) =>
+      rows.map((r) => (r.id === id ? { ...r, ...patch, _dirty: true } : r))
+    );
+  }
+
+  async function saveExisting(row: ExistingReview) {
+    setExisting((rows) => rows.map((r) => (r.id === row.id ? { ...r, _saving: true } : r)));
+    const { error } = await supabase
+      .from("course_reviews")
+      .update({
+        reviewer_name: row.reviewer_name || "Anonymous",
+        reviewer_location: row.reviewer_location || null,
+        review_text: row.review_text.trim(),
+        rating: Math.max(1, Math.min(5, row.rating)),
+        review_date: row.review_date || null,
+        passed_first_time: !!row.passed_first_time,
+        is_visible: row.is_visible,
+        moderation_status: row.moderation_status,
+      })
+      .eq("id", row.id);
+    setExisting((rows) =>
+      rows.map((r) => (r.id === row.id ? { ...r, _saving: false, _dirty: !!error } : r))
+    );
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Saved" });
+    }
+  }
+
+  async function deleteExisting(id: string) {
+    if (!confirm("Delete this review?")) return;
+    const { error } = await supabase.from("course_reviews").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExisting((rows) => rows.filter((r) => r.id !== id));
+    toast({ title: "Deleted" });
+  }
+
+  async function addBlankReview() {
+    if (!instructorId) {
+      toast({ title: "Pick an instructor first", variant: "destructive" });
+      return;
+    }
+    const { data, error } = await supabase
+      .from("course_reviews")
+      .insert({
+        instructor_id: instructorId,
+        reviewer_name: "New reviewer",
+        review_text: "Write the review here…",
+        rating: 5,
+        review_date: todayISO(),
+        course_hours: 0,
+        moderation_status: "approved",
+        is_visible: true,
+        is_verified: true,
+      })
+      .select("id, reviewer_name, reviewer_location, review_text, rating, review_date, passed_first_time, is_visible, moderation_status")
+      .single();
+    if (error) {
+      toast({ title: "Create failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExisting((rows) => [data as ExistingReview, ...rows]);
+  }
 
   async function handleFetchFromGoogle() {
     if (!instructorId) {
