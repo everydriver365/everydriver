@@ -18,7 +18,7 @@ export const SECTION_TITLES: Record<string, string> = {
 };
 
 export const SECTION_SUBTITLES: Record<string, string> = {
-  profile:           "How learners and Drive365 identify you",
+  profile:           "How learners and EveryDriver identify you",
   security:          "Password and biometrics",
   notifications:     "Control when and how you receive alerts",
   vehicle:           "Your car, licence number and DVSA credentials",
@@ -32,6 +32,6 @@ export const SECTION_SUBTITLES: Record<string, string> = {
   payout:            "Where your earnings are sent",
   vat:               "VAT registration and invoice templates",
   swap:              "Test swap network and notification settings",
-  help:              "FAQs, contact Drive365 and leave feedback",
+  help:              "FAQs, contact EveryDriver and leave feedback",
   privacy:           "Data export, account deletion and GDPR rights",
 };

@@ -43,7 +43,7 @@ const SQUARE_STEPS = [
   },
   {
     title: "Click Connect Square Account",
-    body: <>This opens Square in a popup. Sign in and approve access for Drive365 to take payments on your behalf.</>,
+    body: <>This opens Square in a popup. Sign in and approve access for EveryDriver to take payments on your behalf.</>,
   },
   {
     title: "Verify the connection",

@@ -91,7 +91,7 @@ export default function InstructorWhatsAppSettings() {
               )}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Token scope</span>
-                <Badge variant="outline">{scope === "instructor" ? "Your account" : "Shared (Drive365)"}</Badge>
+                <Badge variant="outline">{scope === "instructor" ? "Your account" : "Shared (EveryDriver)"}</Badge>
               </div>
               {account?.last_health_check_at && (
                 <p className="text-xs text-muted-foreground pt-1">
@@ -112,7 +112,7 @@ export default function InstructorWhatsAppSettings() {
         <Card className="p-5">
           <h2 className="font-semibold mb-1">Use your own WhatsApp number</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Connect your own WhatsApp Business account so messages come from your number, not the shared Drive365 line.
+            Connect your own WhatsApp Business account so messages come from your number, not the shared EveryDriver line.
           </p>
           {scope === "instructor" ? (
             <Button variant="outline" onClick={handleDisconnect} disabled={disconnect.isPending}>
