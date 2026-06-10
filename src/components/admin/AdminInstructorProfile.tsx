@@ -617,7 +617,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
             </Button>
           )}
           <div className="flex-1" />
-          <Button variant={instructor.is_active ? "outline" : "default"} size="sm" onClick={handleToggleActive}>
+          <Button variant={instructor.is_active ? "outline" : "default"} size="sm" onClick={() => setShowToggleActive(true)}>
             <Power className="mr-1.5 h-3.5 w-3.5" />
             {instructor.is_active ? "Deactivate" : "Activate"}
           </Button>
