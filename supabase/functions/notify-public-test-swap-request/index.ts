@@ -11,7 +11,7 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM = "Drive365 Test Swap <noreply@drive365.co.uk>";
+const FROM = "EveryDriver Test Swap <noreply@drive365.co.uk>";
 const ADMIN_BCC = Deno.env.get("ADMIN_ENQUIRY_EMAIL") || "enquiries@drive365.co.uk";
 
 const D365_PRIMARY = "#142040";
@@ -47,12 +47,12 @@ function shell(title: string, inner: string) {
   return `<!doctype html><html><body style="margin:0;background:#f4f6fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:${D365_TEXT};">
     <div style="max-width:560px;margin:0 auto;padding:24px;">
       <div style="background:#fff;border:1px solid ${D365_BORDER};border-radius:16px;padding:28px;">
-        <div style="font-size:12px;color:${D365_ACCENT};font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Drive365 · Test Swap</div>
+        <div style="font-size:12px;color:${D365_ACCENT};font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">EveryDriver · Test Swap</div>
         <h1 style="margin:0 0 16px;color:${D365_PRIMARY};font-size:22px;">${esc(title)}</h1>
         ${inner}
       </div>
       <div style="text-align:center;color:${D365_TEXT_MUTED};font-size:12px;margin-top:16px;">
-        Drive365 · You're receiving this because you registered for a free test swap match.
+        EveryDriver · You're receiving this because you registered for a free test swap match.
       </div>
     </div>
   </body></html>`;
@@ -102,7 +102,7 @@ serve(async (req) => {
     const ownerHtml = shell(
       `${esc(meFirst)} would like to swap tests with you`,
       `
-        <p style="margin:0 0 16px;">Good news — another learner registered with Drive365 Test Swap thinks your test date could work for them, and theirs could work for you.</p>
+        <p style="margin:0 0 16px;">Good news — another learner registered with EveryDriver Test Swap thinks your test date could work for them, and theirs could work for you.</p>
 
         <div style="border:1px solid ${D365_BORDER};border-radius:12px;padding:16px;margin:16px 0;">
           <div style="font-weight:600;margin-bottom:8px;">${esc(meFirst)}'s details</div>
@@ -125,7 +125,7 @@ serve(async (req) => {
           </div>
         </div>
 
-        <p style="margin:16px 0 0;color:${D365_TEXT_MUTED};font-size:13px;">Please contact ${esc(meFirst)} directly to arrange the swap on the DVSA website. Drive365 doesn't change your booking for you.</p>
+        <p style="margin:16px 0 0;color:${D365_TEXT_MUTED};font-size:13px;">Please contact ${esc(meFirst)} directly to arrange the swap on the DVSA website. EveryDriver doesn't change your booking for you.</p>
       `,
     );
 

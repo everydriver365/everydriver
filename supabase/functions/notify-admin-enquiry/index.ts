@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const ADMIN_EMAIL = Deno.env.get("ADMIN_ENQUIRY_EMAIL") || "enquiries@drive365.co.uk";
 const ADMIN_BASE = "https://everydriver.co.uk";
-const DRIVE365_LOGO_URL = "https://everydriver.co.uk/drive365-logo.png";
+const BRAND_LOGO_URL = "https://everydriver.co.uk/drive365-logo.png";
 
 const D365_PRIMARY = "#142040";
 const D365_ACCENT = "#2B7BC8";
@@ -62,7 +62,7 @@ serve(async (req) => {
     const text = renderText(enquiry, instructor);
 
     const result = await resend.emails.send({
-      from: "Drive 365 Enquiries <enquiries@notifications.drive365.co.uk>",
+      from: "EveryDriver Enquiries <enquiries@notifications.drive365.co.uk>",
       to: [ADMIN_EMAIL],
       reply_to: enquiry.pupil_email,
       subject,
@@ -145,7 +145,7 @@ function renderHtml(enquiry: any, instructor: any): string {
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>New Drive365 enquiry</title>
+<title>New EveryDriver enquiry</title>
 <style>
   @media only screen and (max-width: 480px) {
     .d365-stack td { display:block !important; width:100% !important; padding:4px 0 !important; border:0 !important; }
@@ -161,7 +161,7 @@ function renderHtml(enquiry: any, instructor: any): string {
       <tr><td style="background:${D365_PRIMARY};padding:22px 24px;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
           <td align="left" style="vertical-align:middle;">
-            <img src="${DRIVE365_LOGO_URL}" alt="Drive365" height="28" style="display:inline-block;height:28px;width:auto;filter:brightness(0) invert(1);"/>
+            <img src="${BRAND_LOGO_URL}" alt="EveryDriver" height="28" style="display:inline-block;height:28px;width:auto;filter:brightness(0) invert(1);"/>
           </td>
           <td align="right" style="vertical-align:middle;">
             <span style="display:inline-block;background:${D365_ACCENT};color:#ffffff;font-size:10px;font-weight:700;letter-spacing:0.1em;padding:5px 10px;border-radius:999px;text-transform:uppercase;">NEW ENQUIRY</span>
@@ -216,7 +216,7 @@ function renderHtml(enquiry: any, instructor: any): string {
 
       <!-- Footer -->
       <tr><td style="border-top:1px solid ${D365_BORDER};background:${D365_SOFT};padding:18px 24px;text-align:center;font-size:11px;color:${D365_TEXT_MUTED};line-height:1.5;">
-        <strong style="color:${D365_TEXT};">Automated notification</strong> from Drive365. Reply to this email to respond directly to ${escape(learnerFirst)}.
+        <strong style="color:${D365_TEXT};">Automated notification</strong> from EveryDriver. Reply to this email to respond directly to ${escape(learnerFirst)}.
       </td></tr>
     </table>
   </td></tr>
@@ -227,7 +227,7 @@ function renderHtml(enquiry: any, instructor: any): string {
 function renderText(enquiry: any, instructor: any): string {
   const submitted = formatUkTime(enquiry.created_at);
   return [
-    "NEW ENQUIRY — Drive365",
+    "NEW ENQUIRY — EveryDriver",
     `Submitted: ${submitted}`,
     `Source: ${enquiry.source_page || enquiry.source || "—"}`,
     "",

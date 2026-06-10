@@ -98,7 +98,7 @@ async function sendEmail(instructor: { name?: string | null; email?: string | nu
         </p>
       </div>`;
     await resend.emails.send({
-      from: "Drive 365 <notifications@notifications.drive365.co.uk>",
+      from: "EveryDriver <notifications@notifications.drive365.co.uk>",
       to: [instructor.email],
       subject: title,
       html,

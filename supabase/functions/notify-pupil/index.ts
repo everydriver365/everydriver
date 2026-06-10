@@ -74,7 +74,7 @@ serve(async (req: Request) => {
     const customDomain: string | null = instructorRel?.custom_domain ?? null;
     const customDomainVerified: boolean = !!instructorRel?.custom_domain_verified;
 
-    const appBase = Deno.env.get("PUPIL_APP_URL") ?? "https://drive365.co.uk";
+    const appBase = Deno.env.get("PUPIL_APP_URL") ?? "https://everydriver.co.uk";
 
     const getPupilBaseUrl = (): string => {
       if (customDomain && customDomainVerified) return `https://${customDomain}`;

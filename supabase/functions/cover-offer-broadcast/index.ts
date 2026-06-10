@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
     if (TWILIO_SID && TWILIO_TOKEN && TWILIO_FROM) {
       for (const t of targets.slice(0, 50)) {
         if (!t.phone) continue;
-        const msg = `Cover lesson available: ${lesson.duration ?? 60}min, £${Number(lesson.total_price ?? 0).toFixed(0)}, ${t.distance.toFixed(1)} miles. Tap to claim: https://drive365.co.uk/instructor/cover/${offerId}`;
+        const msg = `Cover lesson available: ${lesson.duration ?? 60}min, £${Number(lesson.total_price ?? 0).toFixed(0)}, ${t.distance.toFixed(1)} miles. Tap to claim: https://everydriver.co.uk/instructor/cover/${offerId}`;
         try {
           const resp = await fetch(
             `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
