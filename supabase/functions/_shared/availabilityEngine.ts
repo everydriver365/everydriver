@@ -50,7 +50,9 @@ export interface EngineInput {
   isToday?: boolean;
   anchorSkipMinutes?: number;
   minNoticeMinutes?: number;
+  preferEarliestSlot?: boolean;
 }
+
 
 export interface EngineResult {
   slots: Slot[];
