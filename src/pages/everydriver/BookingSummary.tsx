@@ -791,6 +791,7 @@ export default function BookingSummary() {
 
       const { data, error } = await supabase.functions.invoke("clearpay-checkout", {
         body: {
+          instructorId: instructor.id,
           amount: totalPrice + upsellTotal,
           currency: "GBP",
           merchantReference,

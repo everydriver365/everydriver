@@ -41,9 +41,9 @@ const aiFeatureToggles: FeatureToggle[] = [
   { key: "ai_waitlist_filling_enabled", label: "Smart Waitlist Filling", description: "Auto-offer cancelled slots to the best-matched replacement pupil", defaultValue: true },
   { key: "ai_auto_invoices_enabled", label: "Auto-Invoice Generation", description: "Automatically create and send invoices after lessons", defaultValue: true },
   { key: "ai_weekly_report_enabled", label: "AI Weekly Report", description: "Receive an AI-generated summary of your week's performance", defaultValue: true },
-  { key: "ai_morning_briefing_enabled", label: "Morning Briefing", description: "Get a daily AI briefing with schedule highlights and reminders", defaultValue: true },
+  { key: "morning_briefing_enabled", label: "Morning Briefing", description: "Get a daily AI briefing with schedule highlights and reminders", defaultValue: true },
   { key: "ai_receptionist_enabled", label: "AI Receptionist", description: "AI handles enquiry responses and initial pupil communications", defaultValue: true },
-  { key: "ai_re_engagement_enabled", label: "Auto Re-engagement", description: "Automatically send SMS to inactive pupils to win them back", defaultValue: true },
+  { key: "auto_reengage_dormant", label: "Auto Re-engagement", description: "Automatically send SMS to inactive pupils to win them back", defaultValue: true },
 ];
 
 interface FeatureTogglesSettingsProps {

@@ -10,6 +10,7 @@ interface KlarnaSessionRequest {
   currency?: string;
   merchantReference: string;
   orderDescription: string;
+  instructorId?: string;
   consumer?: {
     givenName?: string;
     familyName?: string;
@@ -27,6 +28,25 @@ serve(async (req: Request) => {
   try {
     const data: KlarnaSessionRequest = await req.json();
     console.log("Creating Klarna session:", JSON.stringify(data, null, 2));
+
+    // Instructor toggle gate (only enforced if instructorId is supplied)
+    if (data.instructorId) {
+      const supaUrl = Deno.env.get("SUPABASE_URL");
+      const supaKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (supaUrl && supaKey) {
+        const gateRes = await fetch(
+          `${supaUrl}/rest/v1/instructors?id=eq.${data.instructorId}&select=klarna_enabled`,
+          { headers: { apikey: supaKey, Authorization: `Bearer ${supaKey}` } }
+        );
+        const rows = await gateRes.json().catch(() => []);
+        if (Array.isArray(rows) && rows[0] && rows[0].klarna_enabled === false) {
+          return new Response(
+            JSON.stringify({ error: "Klarna is not enabled for this instructor." }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+    }
 
     const username = Deno.env.get("KLARNA_API_USERNAME");
     const password = Deno.env.get("KLARNA_API_PASSWORD");

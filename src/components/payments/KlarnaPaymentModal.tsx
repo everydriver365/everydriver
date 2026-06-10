@@ -97,6 +97,7 @@ export function KlarnaPaymentModal({
             merchantReference,
             orderDescription,
             consumer,
+            instructorId: instructorId ?? undefined,
           },
         });
 

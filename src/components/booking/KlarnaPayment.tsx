@@ -29,6 +29,7 @@ interface KlarnaPaymentProps {
   currency?: string;
   merchantReference: string;
   orderDescription: string;
+  instructorId?: string | null;
   consumer: {
     givenName: string;
     familyName: string;
@@ -54,6 +55,7 @@ export function KlarnaPayment({
   currency = "GBP",
   merchantReference,
   orderDescription,
+  instructorId,
   consumer,
   billing,
   onSuccess,
@@ -128,6 +130,7 @@ export function KlarnaPayment({
           currency,
           merchantReference,
           orderDescription,
+          instructorId: instructorId ?? undefined,
           consumer: {
             givenName: consumer.givenName,
             familyName: consumer.familyName,
