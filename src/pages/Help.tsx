@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { MessageCircle, Book, Video, FileText, Headphones } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +39,10 @@ export default function Help() {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Help & Support | EveryDriver"
+        description="Get help with your EveryDriver account, bookings, payments and lessons. Contact our support team."
+      />
       <div className="container py-8 pb-24">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">

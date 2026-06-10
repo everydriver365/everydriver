@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Zap, Clock, Calendar, Star } from "lucide-react";
 import { useCourseDiscovery } from "@/hooks/useCourseDiscovery";
@@ -33,6 +34,10 @@ export default function Intensives() {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Intensive Driving Courses | Pass in Days | EveryDriver"
+        description="Book an intensive driving course and pass your test in days. Find local intensive instructors with EveryDriver."
+      />
       {/* Hero Section */}
       <div className="bg-primary/5 border-b">
         <div className="container py-8">

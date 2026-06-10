@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { TrendingUp, Clock, Calendar, Users } from "lucide-react";
 import { useCourseDiscovery } from "@/hooks/useCourseDiscovery";
@@ -33,6 +34,10 @@ export default function SemiIntensive() {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Semi-Intensive Driving Courses | EveryDriver"
+        description="Semi-intensive driving courses that fit around your schedule. Pass faster without the full commitment of an intensive course."
+      />
       {/* Hero Section */}
       <div className="bg-amber-500/5 border-b">
         <div className="container py-8">
