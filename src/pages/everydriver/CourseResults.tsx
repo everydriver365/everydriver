@@ -292,16 +292,27 @@ export default function CourseResults({
 
           <div className="flex-1">
             <ErrorBoundary section="results">
-              <CourseGrid
-                selectedDate={selectedDate}
-                filteredCourses={filteredCourses}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                userLocation={userLocation}
-                searchedPostcode={searchedPostcode}
-                searchedAreaName={searchedAreaName}
-                onClearSearch={clearSearch}
-              />
+              {(isSearching || loading) ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                  <div className="flex gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#1A52A0] animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-2 h-2 rounded-full bg-[#1A52A0] animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-2 h-2 rounded-full bg-[#1A52A0] animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                  <p className="text-sm text-muted-foreground">Finding instructors near you...</p>
+                </div>
+              ) : (
+                <CourseGrid
+                  selectedDate={selectedDate}
+                  filteredCourses={filteredCourses}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  userLocation={userLocation}
+                  searchedPostcode={searchedPostcode}
+                  searchedAreaName={searchedAreaName}
+                  onClearSearch={clearSearch}
+                />
+              )}
             </ErrorBoundary>
           </div>
         </div>
