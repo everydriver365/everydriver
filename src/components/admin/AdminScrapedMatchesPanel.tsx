@@ -158,7 +158,7 @@ export function AdminScrapedMatchesPanel() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button size="sm" variant="outline" onClick={() => handleDismiss(slot)} className="h-8 w-8 p-0">
+                  <Button size="sm" variant="outline" onClick={() => setConfirmDismiss(slot)} className="h-8 w-8 p-0">
                     <X className="h-4 w-4" />
                   </Button>
                   <Button size="sm" onClick={() => handleConfirm(slot)} className="h-8 gap-1">
