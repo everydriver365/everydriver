@@ -21,6 +21,20 @@ interface ParsedReview {
   include: boolean;
 }
 
+interface ExistingReview {
+  id: string;
+  reviewer_name: string;
+  reviewer_location: string | null;
+  review_text: string;
+  rating: number;
+  review_date: string | null;
+  passed_first_time: boolean | null;
+  is_visible: boolean;
+  moderation_status: string;
+  _dirty?: boolean;
+  _saving?: boolean;
+}
+
 interface InstructorOpt {
   id: string;
   name: string;
@@ -157,6 +171,101 @@ export default function ReviewImport() {
   const [importing, setImporting] = useState(false);
   const [loadingDoc, setLoadingDoc] = useState(false);
   const [fetchingGoogle, setFetchingGoogle] = useState(false);
+  const [existing, setExisting] = useState<ExistingReview[]>([]);
+  const [loadingExisting, setLoadingExisting] = useState(false);
+
+  async function loadExisting(id: string) {
+    if (!id) {
+      setExisting([]);
+      return;
+    }
+    setLoadingExisting(true);
+    const { data, error } = await supabase
+      .from("course_reviews")
+      .select("id, reviewer_name, reviewer_location, review_text, rating, review_date, passed_first_time, is_visible, moderation_status")
+      .eq("instructor_id", id)
+      .order("review_date", { ascending: false, nullsFirst: false })
+      .limit(200);
+    setLoadingExisting(false);
+    if (error) {
+      toast({ title: "Failed to load reviews", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExisting((data ?? []) as ExistingReview[]);
+  }
+
+  useEffect(() => {
+    loadExisting(instructorId);
+  }, [instructorId]);
+
+  function patchExisting(id: string, patch: Partial<ExistingReview>) {
+    setExisting((rows) =>
+      rows.map((r) => (r.id === id ? { ...r, ...patch, _dirty: true } : r))
+    );
+  }
+
+  async function saveExisting(row: ExistingReview) {
+    setExisting((rows) => rows.map((r) => (r.id === row.id ? { ...r, _saving: true } : r)));
+    const { error } = await supabase
+      .from("course_reviews")
+      .update({
+        reviewer_name: row.reviewer_name || "Anonymous",
+        reviewer_location: row.reviewer_location || null,
+        review_text: row.review_text.trim(),
+        rating: Math.max(1, Math.min(5, row.rating)),
+        review_date: row.review_date || null,
+        passed_first_time: !!row.passed_first_time,
+        is_visible: row.is_visible,
+        moderation_status: row.moderation_status,
+      })
+      .eq("id", row.id);
+    setExisting((rows) =>
+      rows.map((r) => (r.id === row.id ? { ...r, _saving: false, _dirty: !!error } : r))
+    );
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Saved" });
+    }
+  }
+
+  async function deleteExisting(id: string) {
+    if (!confirm("Delete this review?")) return;
+    const { error } = await supabase.from("course_reviews").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExisting((rows) => rows.filter((r) => r.id !== id));
+    toast({ title: "Deleted" });
+  }
+
+  async function addBlankReview() {
+    if (!instructorId) {
+      toast({ title: "Pick an instructor first", variant: "destructive" });
+      return;
+    }
+    const { data, error } = await supabase
+      .from("course_reviews")
+      .insert({
+        instructor_id: instructorId,
+        reviewer_name: "New reviewer",
+        review_text: "Write the review here…",
+        rating: 5,
+        review_date: todayISO(),
+        course_hours: 0,
+        moderation_status: "approved",
+        is_visible: true,
+        is_verified: true,
+      })
+      .select("id, reviewer_name, reviewer_location, review_text, rating, review_date, passed_first_time, is_visible, moderation_status")
+      .single();
+    if (error) {
+      toast({ title: "Create failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExisting((rows) => [data as ExistingReview, ...rows]);
+  }
 
   async function handleFetchFromGoogle() {
     if (!instructorId) {
@@ -290,6 +399,7 @@ export default function ReviewImport() {
     toast({ title: `Imported ${data?.length ?? rows.length} reviews` });
     setParsed([]);
     setRawText("");
+    loadExisting(instructorId);
   }
 
   return (
@@ -450,6 +560,110 @@ export default function ReviewImport() {
             </CardContent>
           </Card>
         )}
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Manual reviews {instructorId ? `(${existing.length})` : ""}
+            </CardTitle>
+            <Button size="sm" onClick={addBlankReview} disabled={!instructorId}>
+              + Add review
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {!instructorId && (
+              <p className="text-sm text-muted-foreground">Pick an instructor above to view and edit their reviews.</p>
+            )}
+            {instructorId && loadingExisting && (
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            )}
+            {instructorId && !loadingExisting && existing.length === 0 && (
+              <p className="text-sm text-muted-foreground">No reviews yet. Click "Add review" to create one.</p>
+            )}
+            {existing.map((r) => (
+              <div key={r.id} className="rounded-lg border bg-card p-3 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    className="h-8 max-w-[180px]"
+                    value={r.reviewer_name}
+                    onChange={(e) => patchExisting(r.id, { reviewer_name: e.target.value })}
+                    placeholder="Name"
+                  />
+                  <Input
+                    className="h-8 max-w-[160px]"
+                    value={r.reviewer_location ?? ""}
+                    onChange={(e) => patchExisting(r.id, { reviewer_location: e.target.value })}
+                    placeholder="Location"
+                  />
+                  <Input
+                    type="date"
+                    className="h-8 max-w-[160px]"
+                    value={r.review_date ?? ""}
+                    onChange={(e) => patchExisting(r.id, { review_date: e.target.value })}
+                  />
+                  <select
+                    className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                    value={r.rating}
+                    onChange={(e) => patchExisting(r.id, { rating: parseInt(e.target.value) })}
+                  >
+                    {[5, 4, 3, 2, 1].map((n) => (
+                      <option key={n} value={n}>{"★".repeat(n)} ({n})</option>
+                    ))}
+                  </select>
+                  <select
+                    className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                    value={r.moderation_status}
+                    onChange={(e) => patchExisting(r.id, { moderation_status: e.target.value })}
+                  >
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                  <label className="inline-flex items-center gap-1 text-xs">
+                    <Checkbox
+                      checked={!!r.passed_first_time}
+                      onCheckedChange={(v) => patchExisting(r.id, { passed_first_time: !!v })}
+                    />
+                    Passed 1st time
+                  </label>
+                  <label className="inline-flex items-center gap-1 text-xs">
+                    <Checkbox
+                      checked={r.is_visible}
+                      onCheckedChange={(v) => patchExisting(r.id, { is_visible: !!v })}
+                    />
+                    Visible
+                  </label>
+                  <div className="ml-auto flex items-center gap-1">
+                    <Button
+                      size="sm"
+                      variant={r._dirty ? "default" : "outline"}
+                      disabled={!r._dirty || r._saving}
+                      onClick={() => saveExisting(r)}
+                    >
+                      {r._saving ? "Saving…" : r._dirty ? "Save" : "Saved"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive"
+                      onClick={() => deleteExisting(r.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <Textarea
+                  rows={3}
+                  value={r.review_text}
+                  onChange={(e) => patchExisting(r.id, { review_text: e.target.value })}
+                  className="text-sm"
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
       </div>
     </div>
   );
