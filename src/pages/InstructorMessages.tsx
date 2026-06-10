@@ -28,7 +28,9 @@ export default function InstructorMessages() {
 
   return (
     <InstructorPortalLayout>
-      <InstructorInbox instructorId={instructor.id} />
+      <ErrorBoundary section="messages">
+        <InstructorInbox instructorId={instructor.id} />
+      </ErrorBoundary>
     </InstructorPortalLayout>
   );
 }
