@@ -124,9 +124,9 @@ export function SectionCard({
             {isDerived && <span style={{ fontSize: 9, color: "#9CA3AF", fontStyle: "italic" }}>(auto)</span>}
           </div>
           {canEdit && hoverRow === row.id && (
-            <div style={{ position: "absolute", right: 8, display: "flex", gap: 4 }}>
-              <button onClick={() => setEditingRow(row)} style={iconBtn} title="Edit">✏</button>
-              <button onClick={() => removeRow(row.id)} style={iconBtn} title="Remove">✕</button>
+            <div style={{ position: "absolute", right: 8, display: "flex", gap: 4 }} onClick={(e) => e.stopPropagation()}>
+              <button onClick={(e) => { e.stopPropagation(); setEditingRow(row); }} style={iconBtn} title="Edit">✏</button>
+              <button onClick={(e) => { e.stopPropagation(); removeRow(row.id); }} style={iconBtn} title="Remove">✕</button>
             </div>
           )}
         </div>
