@@ -155,3 +155,43 @@ serve(async (req) => {
     );
   }
 });
+
+interface GoogleSnapshot {
+  placeId: string | null;
+  rating: number | null;
+  count: number | null;
+  reviews: Array<{ author_name?: string; rating?: number; text?: string }>;
+}
+
+async function writeInstructorGoogleSnapshot(
+  supabase: ReturnType<typeof createClient>,
+  instructorId: string,
+  snap: GoogleSnapshot
+) {
+  // Pick the highest-rated review with text as the snippet; tie-break by length.
+  const top = (snap.reviews || [])
+    .filter((rv) => rv && typeof rv.text === "string" && rv.text!.trim().length > 0)
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || (b.text!.length - a.text!.length))[0];
+
+  const snippetRaw = top?.text?.trim() ?? null;
+  const snippet =
+    snippetRaw && snippetRaw.length > 160
+      ? snippetRaw.slice(0, 157).trimEnd() + "…"
+      : snippetRaw;
+
+  const author = top?.author_name?.trim() || null;
+
+  const { error } = await supabase
+    .from("instructors")
+    .update({
+      google_place_id: snap.placeId,
+      google_rating: snap.rating,
+      google_review_count: snap.count,
+      google_top_review_text: snippet,
+      google_top_review_author: author,
+      google_reviews_fetched_at: new Date().toISOString(),
+    })
+    .eq("id", instructorId);
+  if (error) console.error("writeInstructorGoogleSnapshot:", error.message);
+}
+
