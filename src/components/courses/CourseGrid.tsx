@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useCallback, useMemo, useState } from "react";
+
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown, Clock, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
