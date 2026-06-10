@@ -105,12 +105,8 @@ import { FindAppointmentModal } from "@/components/shared/FindAppointmentModal";
 import type { AvailableSlot } from "@/hooks/useInstructorAvailabilitySearch";
 import { FamulorHub } from "@/components/famulor/FamulorHub";
 
-const stats = [
-  { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
-  { icon: UserPlus, label: "Active Instructors", value: "86", change: "+3 new", trend: "up" },
-  { icon: Calendar, label: "Lessons Today", value: "342", change: "On schedule", trend: "neutral" },
-  { icon: CreditCard, label: "Revenue (Month)", value: "£48,250", change: "+18%", trend: "up" },
-];
+
+
 
 
 interface Instructor {
