@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown, Clock, LayoutGrid, List } from "lucide-react";
@@ -158,114 +158,98 @@ export function CourseGrid({
       </div>
 
 
-      {useMemo(() => {
-        if (filteredCourses.length === 0) {
-          return (
-            <div className="py-16 text-center">
-              <h2 className="text-xl font-semibold">No courses available</h2>
-              <p className="mt-2 text-muted-foreground">
-                Try adjusting your filters or selecting a different date.
-              </p>
+      {filteredCourses.length === 0 ? (
+        <div className="py-16 text-center">
+          <h2 className="text-xl font-semibold">No courses available</h2>
+          <p className="mt-2 text-muted-foreground">
+            Try adjusting your filters or selecting a different date.
+          </p>
+        </div>
+      ) : viewMode === "list" ? (
+        <EDCourseList
+          courses={(isMobile ? filteredCourses.slice(0, mobileVisibleCount) : filteredCourses).map((c) => ({
+            instructor: c.instructor,
+            hours: c.hours,
+            bookableDate: c.bookableDate,
+            isPopular: c.isPopular,
+            isIntensive: c.isIntensive,
+            distance: c.distance,
+            discountedPrice: c.discountedPrice,
+            areaName: searchedAreaName ?? null,
+          }))}
+        />
+      ) : isMobile ? (
+        <div className="flex flex-col gap-4">
+          {filteredCourses.slice(0, mobileVisibleCount).map((course) => (
+            <div
+              key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+            >
+              <DynamicCourseCard
+                instructor={course.instructor}
+                hours={course.hours}
+                nextAvailable={course.bookableDate}
+                courseImageUrl={course.courseImageUrl}
+                isPopular={course.isPopular}
+                availableFrom={course.availableFrom}
+                distance={course.distance}
+                features={course.features}
+                isIntensive={course.isIntensive}
+                discountedPrice={course.discountedPrice}
+                offerActive={course.offerActive}
+                offerLabel={course.offerLabel}
+                offerPercentOff={course.offerPercentOff}
+                offerStartsAt={course.offerStartsAt}
+                offerEndsAt={course.offerEndsAt}
+                customFeatures={course.customFeatures}
+                isPremium={course.isPremium}
+                placementType={course.placementType}
+              />
             </div>
-          );
-        }
-
-        if (viewMode === "list") {
-          return (
-            <EDCourseList
-              courses={(isMobile ? filteredCourses.slice(0, mobileVisibleCount) : filteredCourses).map((c) => ({
-                instructor: c.instructor,
-                hours: c.hours,
-                bookableDate: c.bookableDate,
-                isPopular: c.isPopular,
-                isIntensive: c.isIntensive,
-                distance: c.distance,
-                discountedPrice: c.discountedPrice,
-                areaName: searchedAreaName ?? null,
-              }))}
-            />
-          );
-        }
-
-        if (isMobile) {
-          return (
-            <div className="flex flex-col gap-4">
-              {filteredCourses.slice(0, mobileVisibleCount).map((course) => (
-                <div
-                  key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                >
-                  <DynamicCourseCard
-                    instructor={course.instructor}
-                    hours={course.hours}
-                    nextAvailable={course.bookableDate}
-                    courseImageUrl={course.courseImageUrl}
-                    isPopular={course.isPopular}
-                    availableFrom={course.availableFrom}
-                    distance={course.distance}
-                    features={course.features}
-                    isIntensive={course.isIntensive}
-                    discountedPrice={course.discountedPrice}
-                    offerActive={course.offerActive}
-                    offerLabel={course.offerLabel}
-                    offerPercentOff={course.offerPercentOff}
-                    offerStartsAt={course.offerStartsAt}
-                    offerEndsAt={course.offerEndsAt}
-                    customFeatures={course.customFeatures}
-                    isPremium={course.isPremium}
-                    placementType={course.placementType}
-                  />
-                </div>
-              ))}
-              {mobileVisibleCount < filteredCourses.length && (
-                <div className="mt-4">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={handleLoadMore}
-                    className="w-full gap-2"
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                    Load More ({filteredCourses.length - mobileVisibleCount} remaining)
-                  </Button>
-                </div>
-              )}
-            </div>
-          );
-        }
-
-        return (
-          <div className="grid gap-6 sm:grid-cols-2">
-            {filteredCourses.slice(0, 6).map((course) => (
-              <div
-                key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+          ))}
+          {mobileVisibleCount < filteredCourses.length && (
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleLoadMore}
+                className="w-full gap-2"
               >
-                <DynamicCourseCard
-                  instructor={course.instructor}
-                  hours={course.hours}
-                  nextAvailable={course.bookableDate}
-                  courseImageUrl={course.courseImageUrl}
-                  isPopular={course.isPopular}
-                  availableFrom={course.availableFrom}
-                  distance={course.distance}
-                  features={course.features}
-                  isIntensive={course.isIntensive}
-                  discountedPrice={course.discountedPrice}
-                  offerActive={course.offerActive}
-                  offerLabel={course.offerLabel}
-                  offerPercentOff={course.offerPercentOff}
-                  offerStartsAt={course.offerStartsAt}
-                  offerEndsAt={course.offerEndsAt}
-                  customFeatures={course.customFeatures}
-                  isPremium={course.isPremium}
-                  placementType={course.placementType}
-                />
-              </div>
-            ))}
-          </div>
-        );
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [filteredCourses, viewMode, isMobile, mobileVisibleCount, searchedAreaName])}
+                <ChevronDown className="h-4 w-4" />
+                Load More ({filteredCourses.length - mobileVisibleCount} remaining)
+              </Button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2">
+          {filteredCourses.slice(0, 6).map((course) => (
+            <div
+              key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+            >
+              <DynamicCourseCard
+                instructor={course.instructor}
+                hours={course.hours}
+                nextAvailable={course.bookableDate}
+                courseImageUrl={course.courseImageUrl}
+                isPopular={course.isPopular}
+                availableFrom={course.availableFrom}
+                distance={course.distance}
+                features={course.features}
+                isIntensive={course.isIntensive}
+                discountedPrice={course.discountedPrice}
+                offerActive={course.offerActive}
+                offerLabel={course.offerLabel}
+                offerPercentOff={course.offerPercentOff}
+                offerStartsAt={course.offerStartsAt}
+                offerEndsAt={course.offerEndsAt}
+                customFeatures={course.customFeatures}
+                isPremium={course.isPremium}
+                placementType={course.placementType}
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       {filteredCourses.length > 6 && (
         <div className="mt-6 text-center">
