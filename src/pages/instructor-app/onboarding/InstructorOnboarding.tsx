@@ -414,7 +414,9 @@ export default function InstructorOnboarding() {
           primary_color: data.primary_color,
           wants_featured: data.wantsFeatured,
           lesson_durations: data.lesson_durations,
-        } as any)
+          is_active: true,
+          onboarding_completed: true,
+          onboarding_completed_at: new Date().toISOString(),
         .eq("id", instructorId);
 
       if (error) throw error;
