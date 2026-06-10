@@ -321,7 +321,7 @@ export function DynamicCourseCard({
             
             <div className="mt-3 flex items-center gap-2">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={instructor.profile_image_url || undefined} />
+                <AvatarImage src={instructor.profile_image_url || undefined} loading="lazy" />
                 <AvatarFallback 
                   className="text-sm text-white"
                   style={{ backgroundColor: brandColour }}
