@@ -328,6 +328,15 @@ export default function ReviewImport() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleFetchFromGoogle}
+                disabled={!instructorId || fetchingGoogle}
+              >
+                <Star className="h-4 w-4 mr-2" />
+                {fetchingGoogle ? "Fetching…" : "Import from Google"}
+              </Button>
               <label className="inline-flex items-center gap-2">
                 <input
                   type="file"
