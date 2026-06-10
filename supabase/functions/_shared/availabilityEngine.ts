@@ -277,7 +277,12 @@ export function resolveAvailability(input: EngineInput): EngineResult {
     }
   }
 
+  if (preferEarliestSlot) {
+    slots.sort((a, b) => a.start - b.start);
+  }
+
   return { slots, rejected };
+
 }
 
 export function validateSlot(
