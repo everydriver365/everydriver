@@ -186,6 +186,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <img
                   src={page?.hero_image_url || defaultHeroImage}
                   alt={instructorName}
+                  loading="eager"
+                  fetchPriority="high"
                   className="w-[45vw] h-[45vw] max-w-[220px] max-h-[220px] sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-lg object-cover"
                 />
               </motion.div>
@@ -200,6 +202,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <img
                   src={studentPassPolaroid}
                   alt="Student passing their driving test"
+                  loading="lazy"
                   className="w-[38vw] h-[38vw] max-w-[190px] max-h-[190px] sm:w-40 sm:h-40 lg:w-56 lg:h-56 rounded-lg object-cover"
                 />
                 <div className="text-right mt-1 pr-1">

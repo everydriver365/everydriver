@@ -75,7 +75,7 @@ export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProp
                   src={instructor.profile_image_url}
                   alt={instructor.name}
                   className="w-32 h-32 rounded-xl object-cover"
-                />
+                 loading="lazy" />
               ) : (
                 <div
                   className="w-32 h-32 rounded-xl flex items-center justify-center text-4xl font-bold text-white"
@@ -122,7 +122,7 @@ export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProp
                     src={instructor.car_image_url}
                     alt="Training vehicle"
                     className="w-full sm:w-48 h-32 object-cover rounded-lg"
-                  />
+                   loading="lazy" />
                 )}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
