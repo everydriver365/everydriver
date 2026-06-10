@@ -220,13 +220,13 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
                 {/* Instructor detail row */}
                 <div className="flex items-center gap-3 p-3 mt-3 rounded-xl bg-muted/40">
                   <Avatar className="h-11 w-11 border-2 border-primary/20">
-                    <AvatarImage src={instructor.profile_image_url || undefined} alt={instructor.name} />
+                    <AvatarImage src={instructor.profile_image_url || undefined} alt={displayName} />
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {instructor.name?.split(" ").map(n => n[0]).join("") || "?"}
+                      {displayName?.split(" ").map(n => n[0]).join("") || "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-sm text-foreground">{instructor.name}</h4>
+                    <h4 className="font-semibold text-sm text-foreground">{displayName}</h4>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1 text-amber-500">
                         <Star className="h-3 w-3 fill-current" />5.0
