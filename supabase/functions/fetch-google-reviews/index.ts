@@ -15,7 +15,40 @@ serve(async (req) => {
   }
 
   try {
-    const { query, placeId, cacheKey, instructorId } = await req.json().catch(() => ({}));
+    const { query, placeId, cacheKey, instructorId, mode } = await req.json().catch(() => ({}));
+
+    const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
+    if (!apiKey) throw new Error("GOOGLE_PLACES_API_KEY not configured");
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Cron mode: refresh every active instructor that has a google_place_id.
+    if (mode === "cron") {
+      const { data: rows, error } = await supabase
+        .from("instructors")
+        .select("id, google_place_id")
+        .eq("is_active", true)
+        .not("google_place_id", "is", null);
+      if (error) throw error;
+
+      const results = { total: rows?.length ?? 0, ok: 0, failed: 0, errors: [] as string[] };
+      for (const row of rows ?? []) {
+        try {
+          await refreshOne(supabase, apiKey, row.id, row.google_place_id as string);
+          results.ok += 1;
+        } catch (e) {
+          results.failed += 1;
+          results.errors.push(`${row.id}: ${(e as Error).message}`);
+        }
+      }
+      return new Response(JSON.stringify({ mode: "cron", ...results }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (!query && !placeId) {
       return new Response(
         JSON.stringify({ error: "query or placeId required" }),
