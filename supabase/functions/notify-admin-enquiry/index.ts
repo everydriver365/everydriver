@@ -145,7 +145,7 @@ function renderHtml(enquiry: any, instructor: any): string {
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>New Drive365 enquiry</title>
+<title>New EveryDriver enquiry</title>
 <style>
   @media only screen and (max-width: 480px) {
     .d365-stack td { display:block !important; width:100% !important; padding:4px 0 !important; border:0 !important; }
