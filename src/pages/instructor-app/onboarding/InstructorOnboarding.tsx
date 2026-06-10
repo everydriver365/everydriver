@@ -28,7 +28,7 @@ import { StepQualifications } from "./steps/StepQualifications";
 import { StepServices } from "./steps/StepServices";
 import { StepPlanSelection } from "./steps/StepPlanSelection";
 import { StepWebsite } from "./steps/StepWebsite";
-import { StepDomainHosting } from "./steps/StepDomainHosting";
+
 import { StepPayment } from "./steps/StepPayment";
 import { StepComplete } from "./steps/StepComplete";
 import { formatUKPostcode } from "@/lib/postcode";
