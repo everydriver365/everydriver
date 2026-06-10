@@ -27,8 +27,6 @@ import { InstructorBonusManager } from "@/components/admin/InstructorBonusManage
 import { CMSManager } from "@/components/admin/CMSManager";
 import { InstructorHomepageManager } from "@/components/admin/InstructorHomepageManager";
 import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
-import { BackfillCommuteMileageTile } from "@/components/admin/BackfillCommuteMileageTile";
-import { BackfillTelematicsTile } from "@/components/admin/BackfillTelematicsTile";
 import { DuplicateLessonsTile } from "@/components/admin/DuplicateLessonsTile";
 
 
@@ -88,8 +86,7 @@ import ComparisonEditor from "@/components/admin/ComparisonEditor";
 import { AdminBookingPagesManager } from "@/components/admin/AdminBookingPagesManager";
 import { AccountingPartnersManager } from "@/components/admin/AccountingPartnersManager";
 import { AdminAlerts } from "@/components/admin/AdminAlerts";
-import { GoogleSyncAlertsPanel } from "@/components/admin/GoogleSyncAlertsPanel";
-import { AdminGoogleSyncDashboard } from "@/components/admin/AdminGoogleSyncDashboard";
+
 import { AdminTrackersManager } from "@/components/admin/AdminTrackersManager";
 
 import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
@@ -108,12 +105,8 @@ import { FindAppointmentModal } from "@/components/shared/FindAppointmentModal";
 import type { AvailableSlot } from "@/hooks/useInstructorAvailabilitySearch";
 import { FamulorHub } from "@/components/famulor/FamulorHub";
 
-const stats = [
-  { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
-  { icon: UserPlus, label: "Active Instructors", value: "86", change: "+3 new", trend: "up" },
-  { icon: Calendar, label: "Lessons Today", value: "342", change: "On schedule", trend: "neutral" },
-  { icon: CreditCard, label: "Revenue (Month)", value: "£48,250", change: "+18%", trend: "up" },
-];
+
+
 
 
 interface Instructor {
@@ -414,9 +407,8 @@ export default function AdminPortal() {
                 </Card>
               </Link>
 
-              <BackfillCommuteMileageTile />
-              <BackfillTelematicsTile />
               <DuplicateLessonsTile />
+
 
             </div>
 
@@ -545,18 +537,11 @@ export default function AdminPortal() {
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <AdminBackButton onClick={() => setActiveSection("overview")} />
-            <GoogleSyncAlertsPanel />
             <AdminAlerts />
           </motion.div>
         );
 
-      case "google-sync":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <AdminBackButton onClick={() => setActiveSection("overview")} />
-            <AdminGoogleSyncDashboard />
-          </motion.div>
-        );
+
 
       case "mini-websites":
         return (
