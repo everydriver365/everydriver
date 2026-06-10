@@ -399,6 +399,7 @@ export default function ReviewImport() {
     toast({ title: `Imported ${data?.length ?? rows.length} reviews` });
     setParsed([]);
     setRawText("");
+    loadExisting(instructorId);
   }
 
   return (
