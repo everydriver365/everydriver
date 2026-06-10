@@ -146,7 +146,7 @@ async function buildPdf(stats: PupilStats): Promise<Uint8Array> {
 
   // Footer
   page.drawRectangle({ x: 0, y: 0, width, height: 40, color: BRAND_DARK });
-  page.drawText("drive365.co.uk", { x: 40, y: 16, size: 9, font: helv, color: rgb(1,1,1) });
+  page.drawText("everydriver.co.uk", { x: 40, y: 16, size: 9, font: helv, color: rgb(1,1,1) });
   page.drawText(`Generated ${new Date().toLocaleDateString("en-GB")}`, {
     x: width - 160, y: 16, size: 9, font: helv, color: rgb(1,1,1),
   });
