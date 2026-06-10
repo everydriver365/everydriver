@@ -679,6 +679,10 @@ export function DesktopPupilDetailPanel({
               </div>
             </CollapsibleSection>
 
+            {instructorId && (
+              <TestReadinessCard pupilId={pupil.id} instructorId={instructorId} />
+            )}
+
             <CollapsibleSection title="Lesson Feedback" icon={<Star className="h-4 w-4" />}
               open={expandedSection === "feedback"} onToggle={() => toggle("feedback")}>
               <div className="space-y-3">
