@@ -205,11 +205,11 @@ serve(async (req) => {
             <p style="margin:20px 0 0;color:#6b7280;font-size:13px">
               If you need to reach us in the meantime, just reply to this email.
             </p>
-            <p style="margin:24px 0 0;color:#9ca3af;font-size:12px">Drive 365 · ${escapeHtml(instructor.name)}</p>
+            <p style="margin:24px 0 0;color:#9ca3af;font-size:12px">EveryDriver · ${escapeHtml(instructor.name)}</p>
           </div>`;
 
         const pupilRes = await resend.emails.send({
-          from: "Drive 365 <enquiries@notifications.drive365.co.uk>",
+          from: "EveryDriver <enquiries@notifications.drive365.co.uk>",
           to: [enquiry.pupil_email],
           reply_to: instructor.email || undefined,
           subject: `Thanks — we've passed your enquiry to ${instructor.name}`,
