@@ -11,6 +11,9 @@ export function SyncHealthTile() {
 
   useEffect(() => {
     void (async () => {
+      // Wait for session to hydrate so invoke() attaches the Bearer token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setStale(0); return; }
       const { data, error } = await supabase.functions.invoke("sync-health-stats");
       if (!error && data?.summary) {
         setStale(data.summary.stale ?? 0);
