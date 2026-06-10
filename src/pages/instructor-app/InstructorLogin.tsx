@@ -149,13 +149,7 @@ export default function InstructorLogin() {
     })();
   }, []);
 
-  if (authLoading) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, background: '#0F2044', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img src={dsmLogo} style={{ height: 40, opacity: 0.9 }} />
-      </div>
-    );
-  }
+  const canSubmit = email.trim().length > 0 && password.length > 0;
 
   const canSubmit = email.trim().length > 0 && password.length > 0;
 
