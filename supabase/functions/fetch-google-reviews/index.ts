@@ -78,7 +78,7 @@ serve(async (req) => {
 
 
 
-    const key = cacheKey || placeId || query;
+    const key = cacheKey || effectivePlaceId || effectiveQuery;
 
     // Check cache
     const { data: cached } = await supabase
@@ -115,17 +115,17 @@ serve(async (req) => {
 
 
     // Resolve place_id if not provided
-    let resolvedPlaceId = placeId;
+    let resolvedPlaceId = effectivePlaceId;
     if (!resolvedPlaceId) {
       const findRes = await fetch(
         `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(
-          query
+          effectiveQuery!
         )}&inputtype=textquery&fields=place_id,name&key=${apiKey}`
       );
       const findData = await findRes.json();
       if (findData.status !== "OK" || !findData.candidates?.length) {
         throw new Error(
-          `Place not found: ${findData.status} ${findData.error_message ?? ""}`
+          `Place not found for "${effectiveQuery}": ${findData.status} ${findData.error_message ?? ""}`
         );
       }
       resolvedPlaceId = findData.candidates[0].place_id;
