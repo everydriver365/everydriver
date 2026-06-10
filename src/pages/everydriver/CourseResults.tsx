@@ -85,6 +85,7 @@ export default function CourseResults({
     if (!initialPostcode) return;
     if (loading) return;
     autoSearched.current = true;
+    setPostcode(initialPostcode);
     handleSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, initialPostcode]);
