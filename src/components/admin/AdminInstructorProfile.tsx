@@ -236,7 +236,7 @@ function InlineTrackerDevice({ instructorId, provider }: { instructorId: string;
                 <p className="font-medium truncate">{d.device_name || "Unnamed"}</p>
                 <p className="text-xs text-muted-foreground font-mono">{d.device_identifier}</p>
               </div>
-              <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => removeDevice(d.id)}>
+              <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setConfirmRemoveId(d.id)}>
                 Remove
               </Button>
             </div>
