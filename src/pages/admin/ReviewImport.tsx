@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, Upload, FileText, Sparkles } from "lucide-react";
+import { Trash2, Upload, FileText, Sparkles, Star } from "lucide-react";
 
 interface ParsedReview {
   id: string;
