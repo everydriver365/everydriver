@@ -222,3 +222,51 @@ async function writeInstructorGoogleSnapshot(
   if (error) console.error("writeInstructorGoogleSnapshot:", error.message);
 }
 
+async function refreshOne(
+  supabase: ReturnType<typeof createClient>,
+  apiKey: string,
+  instructorId: string,
+  placeId: string,
+) {
+  const detailsRes = await fetch(
+    `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,user_ratings_total,reviews,photos&reviews_sort=newest&key=${apiKey}`
+  );
+  const detailsData = await detailsRes.json();
+  if (detailsData.status !== "OK") {
+    throw new Error(`Place details failed: ${detailsData.status} ${detailsData.error_message ?? ""}`);
+  }
+  const r = detailsData.result;
+  const reviews = (r.reviews || []).map((rv: any) => ({
+    author_name: rv.author_name,
+    profile_photo_url: rv.profile_photo_url,
+    rating: rv.rating,
+    text: rv.text,
+    relative_time_description: rv.relative_time_description,
+    time: rv.time,
+  }));
+  const photoReference = r.photos?.[0]?.photo_reference ?? null;
+
+  await supabase.from("google_place_reviews").upsert(
+    {
+      cache_key: placeId,
+      place_id: placeId,
+      place_name: r.name,
+      rating: r.rating ?? null,
+      user_ratings_total: r.user_ratings_total ?? null,
+      reviews,
+      photo_reference: photoReference,
+      fetched_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "cache_key" }
+  );
+
+  await writeInstructorGoogleSnapshot(supabase, instructorId, {
+    placeId,
+    rating: r.rating ?? null,
+    count: r.user_ratings_total ?? null,
+    reviews,
+  });
+}
+
+
