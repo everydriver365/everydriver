@@ -389,7 +389,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
       const coursesScope = instructorId ? [instructorId] : realInstructorIds;
       let initialCourses: InstructorCourse[] = [];
       if (coursesScope.length > 0) {
-        console.log("[useCourseDiscovery] step 2 fetching instructor_courses for", coursesScope.length, "instructors");
+        
         const { data: courseRows, error: coursesErr } = await supabase
           .from("instructor_courses")
           .select("*")
