@@ -68,7 +68,7 @@ export function Footer() {
                   { to: "/courses", label: "Find Courses" },
                   { to: "/test-swap", label: "Test Swap" },
                   { to: "/about", label: "About Us" },
-                  { to: "/pricing", label: "Pricing" },
+                  { to: "/courses", label: "Pricing" },
                   { to: "/faq", label: "FAQ" },
                 ].map((l) => (
                   <li key={l.to}>
@@ -87,7 +87,6 @@ export function Footer() {
                   { to: "/", label: "EveryDriver" },
                   { to: "/login", label: "Pupil Sign In" },
                   { to: "/instructor-app/login", label: "Instructor Portal" },
-                  { to: "/admin/login", label: "Admin Portal" },
                 ].map((l) => (
                   <li key={l.label}>
                     <Link to={l.to} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}
@@ -153,12 +152,12 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="mb-4 font-semibold">Quick Links</h3>
+            <h3 className="mb-4 font-semibold text-white">Quick Links</h3>
             <ul className="space-y-2 text-sm text-primary-foreground/70">
               <li><Link to="/courses" className="hover:text-accent">Find Courses</Link></li>
               <li><Link to="/test-swap" className="hover:text-accent">Test Swap</Link></li>
               <li><Link to="/about" className="hover:text-accent">About Us</Link></li>
-              <li><Link to="/pricing" className="hover:text-accent">Pricing</Link></li>
+              <li><Link to="/courses" className="hover:text-accent">Pricing</Link></li>
               <li><Link to="/faq" className="hover:text-accent">FAQ</Link></li>
               <li><Link to="/instructor-app/login" className="hover:text-accent font-medium text-accent">EveryDriver </Link></li>
             </ul>
@@ -166,24 +165,24 @@ export function Footer() {
 
           {/* Portals */}
           <div>
-            <h3 className="mb-4 font-semibold">Portals</h3>
+            <h3 className="mb-4 font-semibold text-white">Portals</h3>
             <ul className="space-y-2 text-sm text-primary-foreground/70">
-              <li><Link to="/drive365" className="hover:text-accent">Drive365</Link></li>
               <li><Link to="/drive365/login" className="hover:text-accent">Pupil Sign In</Link></li>
               <li><Link to="/instructor-app/login" className="hover:text-accent">Instructor Portal</Link></li>
-              <li><Link to="/admin/login" className="hover:text-accent">Admin Portal</Link></li>
               
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="mb-4 font-semibold">Contact Us</h3>
+            <h3 className="mb-4 font-semibold text-white">Contact Us</h3>
             <ul className="space-y-3 text-sm text-primary-foreground/70">
-              <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                <a href={`tel:${contactPhone.replace(/\s/g, "")}`} className="hover:text-accent">{contactPhone}</a>
-              </li>
+              {contactPhone && (
+                <li className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  <a href={`tel:${contactPhone.replace(/\s/g, "")}`} className="hover:text-accent">{contactPhone}</a>
+                </li>
+              )}
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
                 <a href={`mailto:${contactEmail}`} className="hover:text-accent break-all">{contactEmail}</a>
