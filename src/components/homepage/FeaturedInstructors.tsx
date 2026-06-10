@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { cleanInstructorName } from "@/lib/utils";
 import richardPhoto from "@/assets/testimonial-james.jpg";
 import kenPhoto from "@/assets/ken-d-hero.jpg";
 import sarahPhoto from "@/assets/testimonial-sarah-m.jpg";
