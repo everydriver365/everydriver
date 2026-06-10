@@ -130,7 +130,8 @@ export function SectionCard({
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
 
       <button
         onClick={() => setAddingRow(true)}
