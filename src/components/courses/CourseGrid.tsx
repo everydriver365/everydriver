@@ -33,9 +33,10 @@ export function CourseGrid({
   const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     setMobileVisibleCount(prev => Math.min(prev + 6, filteredCourses.length));
-  };
+  }, [filteredCourses.length]);
+
 
   if (!selectedDate) {
     return (
