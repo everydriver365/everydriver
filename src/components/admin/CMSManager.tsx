@@ -1087,6 +1087,7 @@ function IncludedEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => { fetchItems(); }, []);
 
