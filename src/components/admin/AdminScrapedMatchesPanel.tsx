@@ -29,6 +29,7 @@ interface InstructorInfo {
 export function AdminScrapedMatchesPanel() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [confirmDismiss, setConfirmDismiss] = useState<ScrapedMatch | null>(null);
 
   const { data: matches = [], isLoading } = useQuery({
     queryKey: ["admin-scraped-matches"],
