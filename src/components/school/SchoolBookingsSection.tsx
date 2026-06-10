@@ -50,27 +50,29 @@ export default function SchoolBookingsSection({ instructorIds }: Props) {
       </div>
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead><TableHead>Student</TableHead><TableHead>Instructor</TableHead><TableHead>Duration</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No bookings found</TableCell></TableRow>
-              ) : filtered.map(l => (
-                <TableRow key={l.id}>
-                  <TableCell className="text-sm">{new Date(l.start_time).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</TableCell>
-                  <TableCell className="text-sm font-medium">{l.pupils?.name || "—"}</TableCell>
-                  <TableCell className="text-sm">{l.instructors?.name || "—"}</TableCell>
-                  <TableCell className="text-sm">{l.duration_minutes || 60}min</TableCell>
-                  <TableCell className="text-sm">£{l.amount_due || 0}</TableCell>
-                  <TableCell><Badge className={`text-xs ${statusColor(l.status)}`}>{l.status}</Badge></TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead><TableHead>Student</TableHead><TableHead>Instructor</TableHead><TableHead>Duration</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filtered.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No bookings found</TableCell></TableRow>
+                ) : filtered.map(l => (
+                  <TableRow key={l.id}>
+                    <TableCell className="text-sm">{new Date(l.start_time).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</TableCell>
+                    <TableCell className="text-sm font-medium">{l.pupils?.name || "—"}</TableCell>
+                    <TableCell className="text-sm">{l.instructors?.name || "—"}</TableCell>
+                    <TableCell className="text-sm">{l.duration_minutes || 60}min</TableCell>
+                    <TableCell className="text-sm">£{l.amount_due || 0}</TableCell>
+                    <TableCell><Badge className={`text-xs ${statusColor(l.status)}`}>{l.status}</Badge></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

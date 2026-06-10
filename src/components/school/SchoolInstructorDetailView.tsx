@@ -12,23 +12,41 @@ import { format } from "date-fns";
 
 interface Props {
   instructorId: string;
+  schoolId: string;
   onBack: () => void;
 }
 
-export default function SchoolInstructorDetailView({ instructorId, onBack }: Props) {
+export default function SchoolInstructorDetailView({ instructorId, schoolId, onBack }: Props) {
   const [instructor, setInstructor] = useState<any>(null);
   const [pupils, setPupils] = useState<any[]>([]);
   const [lessons, setLessons] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [testResults, setTestResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAllData();
-  }, [instructorId]);
+  }, [instructorId, schoolId]);
 
   const fetchAllData = async () => {
     setLoading(true);
+    setError(null);
+
+    // Verify this instructor belongs to this school before fetching anything else
+    const { data: membership } = await supabase
+      .from("school_instructors")
+      .select("id")
+      .eq("school_id", schoolId)
+      .eq("instructor_id", instructorId)
+      .maybeSingle();
+
+    if (!membership) {
+      setError("Instructor not found");
+      setLoading(false);
+      return;
+    }
+
     const [instrRes, pupilsRes, lessonsRes, paymentsRes, testsRes] = await Promise.all([
       supabase.from("instructors").select("*").eq("id", instructorId).single(),
       supabase.from("pupils").select("id, name, email, phone, course_status, total_hours, created_at").eq("instructor_id", instructorId).is("deleted_at", null).order("created_at", { ascending: false }).limit(100),
@@ -53,10 +71,10 @@ export default function SchoolInstructorDetailView({ instructorId, onBack }: Pro
     );
   }
 
-  if (!instructor) {
+  if (error || !instructor) {
     return (
       <div className="text-center py-20">
-        <p className="text-muted-foreground">Instructor not found</p>
+        <p className="text-muted-foreground">{error || "Instructor not found"}</p>
         <Button variant="outline" onClick={onBack} className="mt-4">Go Back</Button>
       </div>
     );

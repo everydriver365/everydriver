@@ -48,6 +48,7 @@ export default function SchoolInstructorsSection({ schoolId, onRefresh }: Props)
     return (
       <SchoolInstructorDetailView
         instructorId={selectedInstructorId}
+        schoolId={schoolId}
         onBack={() => setSelectedInstructorId(null)}
       />
     );
@@ -79,41 +80,43 @@ export default function SchoolInstructorsSection({ schoolId, onRefresh }: Props)
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Rate</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead className="w-20"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {instructors.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No instructors yet</TableCell></TableRow>
-              ) : instructors.map(m => (
-                <TableRow
-                  key={m.id}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => setSelectedInstructorId(m.instructors?.id || m.instructor_id)}
-                >
-                  <TableCell className="font-medium">{m.instructors?.name || "—"}</TableCell>
-                  <TableCell>{m.instructors?.phone || "—"}</TableCell>
-                  <TableCell>£{m.instructors?.lesson_rate || 0}/hr</TableCell>
-                  <TableCell><Badge variant="outline" className="text-xs">{m.role?.replace("_", " ")}</Badge></TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => removeInstructor(e, m.id)}>
-                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                      </Button>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Rate</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead className="w-20"></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {instructors.length === 0 ? (
+                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No instructors yet</TableCell></TableRow>
+                ) : instructors.map(m => (
+                  <TableRow
+                    key={m.id}
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => setSelectedInstructorId(m.instructors?.id || m.instructor_id)}
+                  >
+                    <TableCell className="font-medium">{m.instructors?.name || "—"}</TableCell>
+                    <TableCell>{m.instructors?.phone || "—"}</TableCell>
+                    <TableCell>£{m.instructors?.lesson_rate || 0}/hr</TableCell>
+                    <TableCell><Badge variant="outline" className="text-xs">{m.role?.replace("_", " ")}</Badge></TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => removeInstructor(e, m.id)}>
+                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                        </Button>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
