@@ -10474,6 +10474,8 @@ export type Database = {
           insurance_provider: string | null
           intake_questions_enabled: boolean | null
           intensive_only: boolean
+          invoice_business_address: string | null
+          invoice_vat_number: string | null
           is_active: boolean
           is_cpd_certified: boolean | null
           is_founding_instructor: boolean
@@ -10704,6 +10706,8 @@ export type Database = {
           insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
           intensive_only?: boolean
+          invoice_business_address?: string | null
+          invoice_vat_number?: string | null
           is_active?: boolean
           is_cpd_certified?: boolean | null
           is_founding_instructor?: boolean
@@ -10934,6 +10938,8 @@ export type Database = {
           insurance_provider?: string | null
           intake_questions_enabled?: boolean | null
           intensive_only?: boolean
+          invoice_business_address?: string | null
+          invoice_vat_number?: string | null
           is_active?: boolean
           is_cpd_certified?: boolean | null
           is_founding_instructor?: boolean
@@ -11040,6 +11046,7 @@ export type Database = {
       }
       invoices: {
         Row: {
+          auto_generated: boolean
           created_at: string
           currency: string | null
           due_date: string
@@ -11056,6 +11063,7 @@ export type Database = {
           pupil_details: Json | null
           pupil_id: string | null
           sent_at: string | null
+          source: string
           status: string
           subtotal: number
           tax_amount: number | null
@@ -11064,6 +11072,7 @@ export type Database = {
           viewed_at: string | null
         }
         Insert: {
+          auto_generated?: boolean
           created_at?: string
           currency?: string | null
           due_date: string
@@ -11080,6 +11089,7 @@ export type Database = {
           pupil_details?: Json | null
           pupil_id?: string | null
           sent_at?: string | null
+          source?: string
           status?: string
           subtotal?: number
           tax_amount?: number | null
@@ -11088,6 +11098,7 @@ export type Database = {
           viewed_at?: string | null
         }
         Update: {
+          auto_generated?: boolean
           created_at?: string
           currency?: string | null
           due_date?: string
@@ -11104,6 +11115,7 @@ export type Database = {
           pupil_details?: Json | null
           pupil_id?: string | null
           sent_at?: string | null
+          source?: string
           status?: string
           subtotal?: number
           tax_amount?: number | null

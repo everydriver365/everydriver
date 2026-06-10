@@ -9,6 +9,7 @@ import { IOSSegmentedControl } from "@/components/ui/IOSSegmentedControl";
 import Tile from "@/components/instructor/ui/Tile";
 import TileCard from "@/components/instructor/ui/TileCard";
 import TileDivider from "@/components/instructor/ui/TileDivider";
+import { AutoInvoicingSettings } from "@/components/instructor/AutoInvoicingSettings";
 interface FeatureToggle {
   key: string;
   label: string;
@@ -186,6 +187,7 @@ export function FeatureTogglesSettings({ instructorId }: FeatureTogglesSettingsP
         </div>
         <ToggleList toggles={aiFeatureToggles} instructorId={instructorId} />
       </div>
+      <AutoInvoicingSettings instructorId={instructorId} />
     </div>
   );
 }

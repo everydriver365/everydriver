@@ -32,6 +32,7 @@ import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentRe
 import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
 import { TestReadinessCard } from "@/components/instructor/TestReadinessCard";
+import { InvoiceHistoryCard } from "@/components/instructor/InvoiceHistoryCard";
 import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
 import { EmergencyContactEditor } from "@/components/instructor/EmergencyContactEditor";
 import { supabase } from "@/integrations/supabase/client";
@@ -682,6 +683,10 @@ export function DesktopPupilDetailPanel({
 
             {instructorId && (
               <TestReadinessCard pupilId={pupil.id} instructorId={instructorId} />
+            )}
+
+            {instructorId && (
+              <InvoiceHistoryCard pupilId={pupil.id} instructorId={instructorId} />
             )}
 
             <CollapsibleSection title="Lesson Feedback" icon={<Star className="h-4 w-4" />}
