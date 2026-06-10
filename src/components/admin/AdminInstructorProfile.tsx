@@ -813,7 +813,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
                 variant="outline"
                 size="sm"
                 onClick={async () => {
-                  const placeIdOrQuery = (instructor as any).google_place_id || instructor.google_review_url || instructor.business_name || instructor.name;
+                  const placeIdOrQuery = (instructor as any).google_place_id || instructor.google_review_url || instructor.name;
                   if (!placeIdOrQuery) { toast.error("Add a Google Review URL or Place ID first"); return; }
                   const body: Record<string, unknown> = { instructorId: instructor.id };
                   if ((instructor as any).google_place_id) body.placeId = (instructor as any).google_place_id;
