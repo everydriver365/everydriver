@@ -48,6 +48,7 @@ serve(async (req: Request) => {
       startTime,
       endTime,
       durationMins,
+      originalLessonId,
     }: ProcessRequest = await req.json();
 
     // Toggle gate
@@ -64,13 +65,6 @@ serve(async (req: Request) => {
       );
     }
 
-    const {
-      lessonDate: _ld,
-      startTime: _st,
-      endTime: _et,
-      durationMins: _dm,
-      originalLessonId,
-    }: ProcessRequest = await req.json();
 
     // Get the day of week from the lesson date
     const date = new Date(lessonDate);
