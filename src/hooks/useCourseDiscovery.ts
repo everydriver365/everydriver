@@ -798,6 +798,22 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   }, [coursesForSelectedDate, userLocation, geoCache]);
 
   const filteredCourses = useMemo(() => {
+    if (typeof window !== "undefined") {
+      // eslint-disable-next-line no-console
+      console.log("[CourseDiscovery]", {
+        userLocation,
+        searchedPostcode,
+        radius,
+        selectedDate: selectedDate?.toISOString() ?? null,
+        instructorsTotal: instructors.length,
+        instructorsInArea: instructorsInArea.length,
+        instructorsInAreaReal: instructorsInArea.filter(i => !i.is_network_placeholder).map(i => ({ id: i.id, name: i.name, lat: i.lat, lng: i.lng })),
+        nextAvailableDates: nextAvailableDates.slice(0, 3).map(d => d.toISOString()),
+        coursesForSelectedDate: coursesForSelectedDate.length,
+        coursesWithDistance: coursesWithDistance.map(c => ({ id: c.instructor.id, name: c.instructor.name, hours: c.hours, distance: c.distance, isPlaceholder: c.instructor.is_network_placeholder })),
+      });
+    }
+
     const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
 
     const passesTransmission = (course: CourseWithInstructor) => {
