@@ -93,7 +93,7 @@ export default function InstructorLogin() {
   const [faceIdState, setFaceIdState] = useState<"idle" | "scanning" | "success">("idle");
   const activeAuthAttemptRef = useRef(0);
 
-  const { signIn, resetPassword, user, loading: authLoading } = useInstructorAuth();
+  const { signIn, resetPassword } = useInstructorAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const showVerifyBanner = searchParams.get("verify") === "1";
@@ -119,12 +119,6 @@ export default function InstructorLogin() {
   const isActiveAuthAttempt = (attemptId: number) => activeAuthAttemptRef.current === attemptId;
 
   useClearOnDeepLink(clearAuthTransientState);
-
-  useEffect(() => {
-    if (!authLoading && user) {
-      navigate('/instructor', { replace: true });
-    }
-  }, [user, authLoading, navigate]);
 
   const switchMobileView = (toForgot: boolean) => {
     clearAuthTransientState();
