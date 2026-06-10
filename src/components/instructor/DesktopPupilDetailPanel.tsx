@@ -31,6 +31,7 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
 import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
+import { TestReadinessCard } from "@/components/instructor/TestReadinessCard";
 import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
 import { EmergencyContactEditor } from "@/components/instructor/EmergencyContactEditor";
 import { supabase } from "@/integrations/supabase/client";
@@ -678,6 +679,10 @@ export function DesktopPupilDetailPanel({
                 </Button>
               </div>
             </CollapsibleSection>
+
+            {instructorId && (
+              <TestReadinessCard pupilId={pupil.id} instructorId={instructorId} />
+            )}
 
             <CollapsibleSection title="Lesson Feedback" icon={<Star className="h-4 w-4" />}
               open={expandedSection === "feedback"} onToggle={() => toggle("feedback")}>
