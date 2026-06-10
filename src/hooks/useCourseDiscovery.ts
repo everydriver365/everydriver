@@ -467,7 +467,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         variant: "destructive",
       });
     } finally {
-      console.log("[useCourseDiscovery] fetchData finally — setLoading(false)");
+      
       setLoading(false);
     }
   }, [findFirstAvailableDate, geocodePostcodes, instructorId]);
