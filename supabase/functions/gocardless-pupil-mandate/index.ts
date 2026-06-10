@@ -57,6 +57,22 @@ serve(async (req) => {
       );
     }
 
+    // Server-side gate: verify instructor has Direct Debit enabled
+    if (subscription.instructor_id) {
+      const { data: instructorRow } = await supabase
+        .from("instructors")
+        .select("direct_debit_enabled")
+        .eq("id", subscription.instructor_id)
+        .maybeSingle();
+      if (!instructorRow?.direct_debit_enabled) {
+        return new Response(
+          JSON.stringify({ error: "Direct Debit is not enabled for this instructor." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+
     const nameParts = (pupilName || subscription.pupils?.name || "").split(" ");
     const givenName = nameParts[0] || "Pupil";
     const familyName = nameParts.slice(1).join(" ") || givenName;

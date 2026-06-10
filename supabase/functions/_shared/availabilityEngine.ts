@@ -50,7 +50,9 @@ export interface EngineInput {
   isToday?: boolean;
   anchorSkipMinutes?: number;
   minNoticeMinutes?: number;
+  preferEarliestSlot?: boolean;
 }
+
 
 export interface EngineResult {
   slots: Slot[];
@@ -222,8 +224,9 @@ export function resolveAvailability(input: EngineInput): EngineResult {
   const {
     dateStr, dayStartMin, dayEndMin, bufferMinutes, durationMinutes,
     conflicts, timeOfDay = "any", isToday, anchorSkipMinutes,
-    minNoticeMinutes = 0,
+    minNoticeMinutes = 0, preferEarliestSlot = false,
   } = input;
+
 
   const padMin = Math.max(0, bufferMinutes);
   // Guard against stale `isToday=true` by also confirming dateStr === today.
@@ -274,7 +277,12 @@ export function resolveAvailability(input: EngineInput): EngineResult {
     }
   }
 
+  if (preferEarliestSlot) {
+    slots.sort((a, b) => a.start - b.start);
+  }
+
   return { slots, rejected };
+
 }
 
 export function validateSlot(

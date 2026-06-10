@@ -79,6 +79,21 @@ Deno.serve(async (req) => {
       return json({ error: "Pupil not found for this instructor" }, 404);
     }
 
+    // Server-side gate: verify instructor accepts this payment method
+    if (body.method === "cash" || body.method === "bank") {
+      const { data: instructorRow } = await admin
+        .from("instructors")
+        .select("cash_payments_enabled")
+        .eq("id", instructorId)
+        .maybeSingle();
+      if (body.method === "cash" && !instructorRow?.cash_payments_enabled) {
+        return json({ error: "This instructor does not accept cash payments." }, 403);
+      }
+      // NOTE: no dedicated `accepts_bank_transfer` column exists on `instructors`;
+      // bank transfers are not gated by a per-instructor toggle at this time.
+    }
+
+
     const positive = Math.abs(Number(body.amount));
     const signed = body.isRefund ? -positive : positive;
     const methodLabel = body.method === "card" ? "Square" : body.method === "cash" ? "Cash" : "Bank Transfer";
