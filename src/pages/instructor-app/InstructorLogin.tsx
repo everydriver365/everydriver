@@ -151,8 +151,6 @@ export default function InstructorLogin() {
 
   const canSubmit = email.trim().length > 0 && password.length > 0;
 
-  const canSubmit = email.trim().length > 0 && password.length > 0;
-
   const handleBiometricLogin = async () => {
     if (faceIdState === "scanning") return;
     const attemptId = startAuthAttempt();
