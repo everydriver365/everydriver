@@ -125,7 +125,7 @@ async function maybeSendAutoFallback(admin: any, row: any, status: string) {
     }
 
     const bookingLink = instructor?.mini_website_slug
-      ? `https://drive365.co.uk/${instructor.mini_website_slug}`
+      ? `https://everydriver.co.uk/${instructor.mini_website_slug}`
       : null;
     const tpl = settings.fallback_template?.trim() || DEFAULT_FALLBACK_TEMPLATE;
     const message = renderTemplate(tpl, {
