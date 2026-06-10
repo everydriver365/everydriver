@@ -73,7 +73,7 @@ export default function News() {
                       {article.category || "DVSA News"}
                     </Badge>
                     <h2 className="font-bold text-lg mb-1 group-hover:text-amber-600 transition-colors">
-                      {article.title}
+                      {decodeHtml(article.title)}
                     </h2>
                     <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
                       {article.description}
