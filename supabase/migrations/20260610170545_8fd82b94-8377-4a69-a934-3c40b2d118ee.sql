@@ -1,0 +1,1 @@
+ALTER VIEW public.public_instructors SET (security_invoker = false);

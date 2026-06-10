@@ -798,6 +798,8 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   }, [coursesForSelectedDate, userLocation, geoCache]);
 
   const filteredCourses = useMemo(() => {
+
+
     const searchedDistrict = extractPostcodeDistrict(searchedPostcode);
 
     const passesTransmission = (course: CourseWithInstructor) => {
