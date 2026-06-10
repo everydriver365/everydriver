@@ -182,7 +182,10 @@ export function InstructorFAQsManager() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deleteFAQ(faq.id)}
+                        onClick={() => {
+                          if (faq.id.startsWith("temp-")) deleteFAQ(faq.id);
+                          else setConfirmDeleteId(faq.id);
+                        }}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
