@@ -27,8 +27,6 @@ import { InstructorBonusManager } from "@/components/admin/InstructorBonusManage
 import { CMSManager } from "@/components/admin/CMSManager";
 import { InstructorHomepageManager } from "@/components/admin/InstructorHomepageManager";
 import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
-import { BackfillCommuteMileageTile } from "@/components/admin/BackfillCommuteMileageTile";
-import { BackfillTelematicsTile } from "@/components/admin/BackfillTelematicsTile";
 import { DuplicateLessonsTile } from "@/components/admin/DuplicateLessonsTile";
 
 
