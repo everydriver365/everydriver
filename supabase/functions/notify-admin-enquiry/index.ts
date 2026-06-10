@@ -227,7 +227,7 @@ function renderHtml(enquiry: any, instructor: any): string {
 function renderText(enquiry: any, instructor: any): string {
   const submitted = formatUkTime(enquiry.created_at);
   return [
-    "NEW ENQUIRY — Drive365",
+    "NEW ENQUIRY — EveryDriver",
     `Submitted: ${submitted}`,
     `Source: ${enquiry.source_page || enquiry.source || "—"}`,
     "",
