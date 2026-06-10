@@ -131,10 +131,7 @@ export default function MiniWebsiteCourses({ subdomainSlug }: MiniWebsiteCourses
     );
   }
 
-  const STYLE_OVERRIDES: Record<string, { primaryColor?: string }> = {
-    "ken-d": { primaryColor: "#142040" },
-  };
-  const primaryColor = STYLE_OVERRIDES[slug]?.primaryColor || instructor.brand_colour || "#1e3a5f";
+  const primaryColor = instructor.brand_colour || "#1e3a5f";
 
   return (
     <MiniWebsiteLayout instructor={instructor} pageTitle="Courses" pageDescription={`Browse and book driving courses with ${instructor.business_name || instructor.name}. Intensive and weekly courses available.`} metaTitle={page?.meta_title} metaDescription={page?.meta_description}>
