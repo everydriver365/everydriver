@@ -21,6 +21,20 @@ interface ParsedReview {
   include: boolean;
 }
 
+interface ExistingReview {
+  id: string;
+  reviewer_name: string;
+  reviewer_location: string | null;
+  review_text: string;
+  rating: number;
+  review_date: string | null;
+  passed_first_time: boolean | null;
+  is_visible: boolean;
+  moderation_status: string;
+  _dirty?: boolean;
+  _saving?: boolean;
+}
+
 interface InstructorOpt {
   id: string;
   name: string;
