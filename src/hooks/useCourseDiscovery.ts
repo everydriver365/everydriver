@@ -410,7 +410,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         fromDate,
         toDate,
       );
-      console.log("[useCourseDiscovery] step 3 done");
+      
       setSources(newSources);
 
       // Store premium placements (filter expired)
