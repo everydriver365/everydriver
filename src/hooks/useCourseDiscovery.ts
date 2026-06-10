@@ -397,7 +397,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
           .in("instructor_id", coursesScope);
         if (coursesErr) throw coursesErr;
         initialCourses = (courseRows || []) as InstructorCourse[];
-        console.log("[useCourseDiscovery] step 2 done", { courses: initialCourses.length });
+        
       }
       setInstructorCourses(initialCourses);
 
