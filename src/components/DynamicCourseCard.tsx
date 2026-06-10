@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEmbed } from "@/context/EmbedContext";
 import { MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
@@ -55,7 +55,7 @@ interface DynamicCourseCardProps {
   learnerPostcode?: string | null;
 }
 
-export function DynamicCourseCard({ 
+function DynamicCourseCardImpl({ 
   instructor, 
   hours, 
   nextAvailable,
@@ -399,3 +399,5 @@ export function DynamicCourseCard({
     </div>
   );
 }
+
+export const DynamicCourseCard = memo(DynamicCourseCardImpl);
