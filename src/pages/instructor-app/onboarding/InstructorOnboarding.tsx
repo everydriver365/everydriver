@@ -537,6 +537,37 @@ export default function InstructorOnboarding() {
         }
       }
 
+      // Ensure every instructor has a subscription row (fallback for non-PDI without selectedPlanId)
+      {
+        const { data: existingSub } = await supabase
+          .from("instructor_subscriptions")
+          .select("id")
+          .eq("instructor_id", instructorId)
+          .maybeSingle();
+
+        if (!existingSub) {
+          const { data: freePlan } = await supabase
+            .from("subscription_plans")
+            .select("id")
+            .eq("price_monthly", 0)
+            .limit(1)
+            .maybeSingle();
+
+          if (freePlan) {
+            await supabase.from("instructor_subscriptions").insert({
+              instructor_id: instructorId,
+              plan_id: freePlan.id,
+              status: "active",
+              billing_cycle: "monthly",
+              current_period_start: new Date().toISOString(),
+              current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+            } as any);
+          }
+        }
+      }
+
+
+
       // Save domain order if a domain was selected during onboarding
       if (data.selectedDomain) {
         // Parse domain into name and TLD
