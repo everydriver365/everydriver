@@ -172,7 +172,7 @@ serve(async (req) => {
           </div>`;
 
         const emailRes = await resend.emails.send({
-          from: "Drive 365 <enquiries@notifications.drive365.co.uk>",
+          from: "EveryDriver <enquiries@notifications.drive365.co.uk>",
           to: [instructor.email],
           reply_to: enquiry.pupil_email,
           subject: `New enquiry — ${enquiry.pupil_name}`,
