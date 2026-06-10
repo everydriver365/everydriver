@@ -15,8 +15,8 @@ const STEP_TO_EVENT: Record<number, FunnelEvent | undefined> = {
   6: "onboarding_services",
   7: "onboarding_plan_selected",
   8: "onboarding_website",
-  9: "onboarding_domain_hosting",
-  10: "onboarding_payment",
+  9: "onboarding_payment",
+  10: "onboarding_completed",
 };
 
 // Step components
