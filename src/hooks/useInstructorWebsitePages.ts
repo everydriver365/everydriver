@@ -105,7 +105,9 @@ export function useWebsitePage(slug: string | undefined, pageType: string) {
           .from("public_instructors")
           .select("*")
           .eq("app_slug", slug)
+          .eq("is_active", true)
           .maybeSingle();
+
 
         if (instructorError || !instructorData) {
           setNotFound(true);

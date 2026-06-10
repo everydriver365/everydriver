@@ -42,10 +42,7 @@ export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProp
     );
   }
 
-  const STYLE_OVERRIDES: Record<string, { primaryColor?: string }> = {
-    "ken-d": { primaryColor: "#142040" },
-  };
-  const primaryColor = STYLE_OVERRIDES[slug]?.primaryColor || instructor.brand_colour || "#1e3a5f";
+  const primaryColor = instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#d4a574";
   const headingColor = (instructor.website_heading_color === "#ffffff" || instructor.website_heading_color === "#FFFFFF") ? undefined : instructor.website_heading_color;
   const textColor = (instructor.website_text_color === "#ffffff" || instructor.website_text_color === "#FFFFFF") ? undefined : instructor.website_text_color;
@@ -78,7 +75,7 @@ export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProp
                   src={instructor.profile_image_url}
                   alt={instructor.name}
                   className="w-32 h-32 rounded-xl object-cover"
-                />
+                 loading="lazy" />
               ) : (
                 <div
                   className="w-32 h-32 rounded-xl flex items-center justify-center text-4xl font-bold text-white"
@@ -125,7 +122,7 @@ export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProp
                     src={instructor.car_image_url}
                     alt="Training vehicle"
                     className="w-full sm:w-48 h-32 object-cover rounded-lg"
-                  />
+                   loading="lazy" />
                 )}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">

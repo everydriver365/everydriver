@@ -91,7 +91,7 @@ export function MiniWebsiteCourseCard({
           src={courseImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop"}
           alt={courseName}
           className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+         loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
           <div className="text-white">

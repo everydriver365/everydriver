@@ -32,6 +32,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -42,16 +43,32 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
 
   const handleCallbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot — silently reject bot submissions
+    if (honeypot) {
+      setIsSubmitted(true);
+      return;
+    }
+
+    // Rate limit — 60 seconds between submissions per session
+    const lastSubmit = sessionStorage.getItem("last_enquiry");
+    if (lastSubmit && Date.now() - parseInt(lastSubmit) < 60000) {
+      toast.error("Please wait before submitting another enquiry.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const { error } = await supabase.functions.invoke("create-enquiry", {
         body: {
           name: `${formData.firstName} ${formData.lastName}`.trim(),
-          address: formData.email || "No email provided",
-          postcode: formData.phone || "No phone provided",
+          email: formData.email || null,
+          phone: formData.phone || null,
+          address: "Callback request",
+          postcode: "N/A",
           courseType: "callback",
-          requestedHours: 0,
+          requestedHours: 1,
           preferredTiming: "flexible",
           additionalNotes: formData.message || null,
           assignedInstructorId: instructor?.id || null,
@@ -59,6 +76,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
       });
 
       if (error) throw error;
+      sessionStorage.setItem("last_enquiry", Date.now().toString());
       setIsSubmitted(true);
       toast.success("Callback request submitted! We'll be in touch soon.");
     } catch (error) {
@@ -68,6 +86,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
       setIsSubmitting(false);
     }
   };
+
 
   if (loading) {
     return (
@@ -91,10 +110,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
     );
   }
 
-  const STYLE_OVERRIDES: Record<string, { primaryColor?: string }> = {
-    "ken-d": { primaryColor: "#142040" },
-  };
-  const primaryColor = STYLE_OVERRIDES[slug]?.primaryColor || instructor.brand_colour || "#1e3a5f";
+  const primaryColor = instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#d4a574";
   const headingColor = (instructor.website_heading_color === "#ffffff" || instructor.website_heading_color === "#FFFFFF") ? undefined : instructor.website_heading_color;
   const textColor = (instructor.website_text_color === "#ffffff" || instructor.website_text_color === "#FFFFFF") ? undefined : instructor.website_text_color;
@@ -172,7 +188,19 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
                     Request a Callback
                   </h2>
                   <form className="space-y-4" onSubmit={handleCallbackSubmit}>
+                    {/* Honeypot — hidden from real users, bots fill it */}
+                    <input
+                      type="text"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={honeypot}
+                      onChange={(e) => setHoneypot(e.target.value)}
+                      style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+                      aria-hidden="true"
+                    />
                     <div className="grid gap-4 sm:grid-cols-2">
+
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First name *</Label>
                         <Input

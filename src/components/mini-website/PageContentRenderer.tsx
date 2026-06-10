@@ -93,7 +93,7 @@ export function PageContentRenderer({
                   src={block.image_url}
                   alt={block.title || "Image"}
                   className="w-full h-64 object-cover"
-                />
+                loading="lazy" />
                 {block.title && (
                   <CardContent className="p-4">
                     <p 
@@ -125,7 +125,7 @@ export function PageContentRenderer({
                       src={img}
                       alt={`Gallery image ${i + 1}`}
                       className="w-full h-40 object-cover rounded-lg"
-                    />
+                    loading="lazy" />
                   ))}
                 </div>
               </div>

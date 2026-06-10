@@ -105,10 +105,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
     );
   }
 
-  const STYLE_OVERRIDES: Record<string, { primaryColor?: string }> = {
-    "ken-d": { primaryColor: "#142040" },
-  };
-  const primaryColor = STYLE_OVERRIDES[slug]?.primaryColor || instructor.brand_colour || "#1e3a5f";
+  const primaryColor = instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#d4a574";
   const headingColor = (instructor.website_heading_color === "#ffffff" || instructor.website_heading_color === "#FFFFFF") ? undefined : instructor.website_heading_color;
   const textColor = (instructor.website_text_color === "#ffffff" || instructor.website_text_color === "#FFFFFF") ? undefined : instructor.website_text_color;
@@ -192,7 +189,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
                         src={course.course_image_url}
                         alt={course.course_name}
                         className="w-full h-40 object-cover"
-                      />
+                       loading="lazy" />
                     )}
                     <CardContent className="p-5">
                       <h3 className="font-semibold text-lg mb-2">{course.course_name}</h3>
@@ -214,7 +211,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
                       </div>
                       {course.discounted_price && (instructor as any).klarna_enabled && (
                         <div className="flex items-center gap-2 mb-1">
-                          <img src={klarnaLogo} alt="Klarna" className="h-4 w-4" />
+                          <img src={klarnaLogo} alt="Klarna" className="h-4 w-4"  loading="lazy" />
                           <span className="text-xs text-gray-600">
                             3 × £{(course.discounted_price / 3).toFixed(2)}
                           </span>
