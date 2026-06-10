@@ -81,7 +81,7 @@ async function buildPdf(stats: PupilStats): Promise<Uint8Array> {
 
   // Header band
   page.drawRectangle({ x: 0, y: height - 140, width, height: 140, color: BRAND_BLUE });
-  page.drawText("DRIVE365", { x: 40, y: height - 60, size: 18, font: helvBold, color: rgb(1,1,1) });
+  page.drawText("EVERYDRIVER", { x: 40, y: height - 60, size: 18, font: helvBold, color: rgb(1,1,1) });
   page.drawText("Driver Report", { x: 40, y: height - 90, size: 28, font: helvBold, color: rgb(1,1,1) });
   page.drawText(`Congratulations, ${stats.pupil_name}!`, {
     x: 40, y: height - 120, size: 14, font: helv, color: rgb(1,1,1),
