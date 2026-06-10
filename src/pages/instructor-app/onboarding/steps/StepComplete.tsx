@@ -51,9 +51,9 @@ export function StepComplete({ data }: StepCompleteProps) {
     {
       icon: Globe,
       label: "Your Website",
-      desc: `${data.slug}.everydriver.co.uk`,
-      action: () => {},
-      disabled: true,
+      desc: `everydriver.co.uk/i/${data.slug}`,
+      action: () => window.open(`https://everydriver.co.uk/i/${data.slug}`, "_blank"),
+      disabled: !data.slug,
     },
   ];
 
