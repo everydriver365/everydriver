@@ -83,6 +83,8 @@ function DynamicCourseCardImpl({
   const navigate = useNavigate();
   const { bookNavigate } = useEmbed();
 
+  const displayName = cleanInstructorName(instructor.name);
+
   const defaultRate = instructor.hourly_rate || 40;
   const hourlyRate = (effectiveHourlyRate != null && effectiveHourlyRate > 0) ? effectiveHourlyRate : defaultRate;
   const schoolSkim = instructor.school_skim_amount || 0;
