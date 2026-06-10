@@ -1236,7 +1236,9 @@ export default function AdminPortal() {
         onFindSlot={() => setFindOpen(true)}
         tabCounts={tabCounts}
       >
-        {renderContent()}
+        <ErrorBoundary section="admin">
+          {renderContent()}
+        </ErrorBoundary>
         <WhatsNewModal portalType="admin" />
       </AdminLayout>
 
