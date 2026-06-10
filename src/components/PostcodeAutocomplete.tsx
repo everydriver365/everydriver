@@ -45,10 +45,10 @@ export function PostcodeAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const skipNextFetchRef = useRef(false);
-  // If the input is pre-filled (e.g. postcode came in via URL params), the
-  // first effect run would otherwise auto-open the dropdown on page load.
-  // Treat the initial mount as a no-op fetch when a value is already present.
-  const isInitialMountRef = useRef(true);
+  // Only show the dropdown after the user has actually interacted with the
+  // input. Prevents auto-opening when value is pre-filled from URL params.
+  const userInteractedRef = useRef(false);
+
   const [isLocating, setIsLocating] = useState(false);
 
   // Fetch suggestions from edge function. Keeps any previous suggestions
