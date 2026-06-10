@@ -257,7 +257,7 @@ serve(async (req) => {
       content: m.content,
     }));
 
-    const systemPrompt = `You are a friendly, helpful receptionist for EveryDriver (Drive365), an online platform that connects learner drivers with qualified driving instructors across the UK.
+    const systemPrompt = `You are a friendly, helpful receptionist for EveryDriver, an online platform that connects learner drivers with qualified driving instructors across the UK.
 
 Key information:
 - EveryDriver helps learners find local driving instructors and book courses
