@@ -553,7 +553,7 @@ function FeaturesEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
               <div className="flex gap-2 pt-4">
                 <Button onClick={handleSave} className="flex-1">Save</Button>
                 {editingFeature.id && (
-                  <Button variant="destructive" onClick={() => { handleDelete(editingFeature.id); setDialogOpen(false); }}>
+                  <Button variant="destructive" onClick={() => setConfirmDeleteId(editingFeature.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
@@ -562,9 +562,36 @@ function FeaturesEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete this feature? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDeleteId) {
+                  handleDelete(confirmDeleteId);
+                  setDialogOpen(false);
+                }
+                setConfirmDeleteId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
 
 // Testimonials Editor (Table View)
 function TestimonialsEditor({ searchQuery, onSearchChange }: { searchQuery: string; onSearchChange: (q: string) => void }) {
