@@ -91,7 +91,12 @@ export function SectionCard({
       {section.rows.length === 0 && (
         <div style={{ padding: "10px 12px", fontSize: 10, color: "#9CA3AF" }}>No data</div>
       )}
-      {section.rows.map((row) => (
+      {section.rows.map((row) => {
+        // A row is editable if it maps to a DB column (field) OR was added locally (no field, no badge marker).
+        // Aggregate/derived rows (e.g. counts) are marked with `derived` via missing field + presence of a badge or numeric-only label.
+        const isDerived = !row.field && /^(Active pupils|Total all time|Passes this year|Pupil pts total|Open complaints)$/i.test(row.label);
+        const canEdit = !isDerived;
+        return (
         <div
           key={row.id}
           onMouseEnter={() => setHoverRow(row.id)}
@@ -102,7 +107,9 @@ export function SectionCard({
             padding: "7px 12px",
             borderBottom: "1px solid #F3F4F6",
             position: "relative",
+            cursor: canEdit ? "pointer" : "default",
           }}
+          onClick={() => canEdit && setEditingRow(row)}
         >
           <div style={{ width: 110, fontSize: 10, color: "#9CA3AF", fontWeight: 500 }}>{row.label}</div>
           <div
@@ -114,8 +121,9 @@ export function SectionCard({
           >
             <span>{row.value || "—"}</span>
             {row.badge && <Badge tone={row.badge.tone}>{row.badge.text}</Badge>}
+            {isDerived && <span style={{ fontSize: 9, color: "#9CA3AF", fontStyle: "italic" }}>(auto)</span>}
           </div>
-          {hoverRow === row.id && (
+          {canEdit && hoverRow === row.id && (
             <div style={{ position: "absolute", right: 8, display: "flex", gap: 4 }}>
               <button onClick={() => setEditingRow(row)} style={iconBtn} title="Edit">✏</button>
               <button onClick={() => removeRow(row.id)} style={iconBtn} title="Remove">✕</button>
