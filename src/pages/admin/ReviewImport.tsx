@@ -560,6 +560,110 @@ export default function ReviewImport() {
             </CardContent>
           </Card>
         )}
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Manual reviews {instructorId ? `(${existing.length})` : ""}
+            </CardTitle>
+            <Button size="sm" onClick={addBlankReview} disabled={!instructorId}>
+              + Add review
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {!instructorId && (
+              <p className="text-sm text-muted-foreground">Pick an instructor above to view and edit their reviews.</p>
+            )}
+            {instructorId && loadingExisting && (
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            )}
+            {instructorId && !loadingExisting && existing.length === 0 && (
+              <p className="text-sm text-muted-foreground">No reviews yet. Click "Add review" to create one.</p>
+            )}
+            {existing.map((r) => (
+              <div key={r.id} className="rounded-lg border bg-card p-3 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    className="h-8 max-w-[180px]"
+                    value={r.reviewer_name}
+                    onChange={(e) => patchExisting(r.id, { reviewer_name: e.target.value })}
+                    placeholder="Name"
+                  />
+                  <Input
+                    className="h-8 max-w-[160px]"
+                    value={r.reviewer_location ?? ""}
+                    onChange={(e) => patchExisting(r.id, { reviewer_location: e.target.value })}
+                    placeholder="Location"
+                  />
+                  <Input
+                    type="date"
+                    className="h-8 max-w-[160px]"
+                    value={r.review_date ?? ""}
+                    onChange={(e) => patchExisting(r.id, { review_date: e.target.value })}
+                  />
+                  <select
+                    className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                    value={r.rating}
+                    onChange={(e) => patchExisting(r.id, { rating: parseInt(e.target.value) })}
+                  >
+                    {[5, 4, 3, 2, 1].map((n) => (
+                      <option key={n} value={n}>{"★".repeat(n)} ({n})</option>
+                    ))}
+                  </select>
+                  <select
+                    className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                    value={r.moderation_status}
+                    onChange={(e) => patchExisting(r.id, { moderation_status: e.target.value })}
+                  >
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                  <label className="inline-flex items-center gap-1 text-xs">
+                    <Checkbox
+                      checked={!!r.passed_first_time}
+                      onCheckedChange={(v) => patchExisting(r.id, { passed_first_time: !!v })}
+                    />
+                    Passed 1st time
+                  </label>
+                  <label className="inline-flex items-center gap-1 text-xs">
+                    <Checkbox
+                      checked={r.is_visible}
+                      onCheckedChange={(v) => patchExisting(r.id, { is_visible: !!v })}
+                    />
+                    Visible
+                  </label>
+                  <div className="ml-auto flex items-center gap-1">
+                    <Button
+                      size="sm"
+                      variant={r._dirty ? "default" : "outline"}
+                      disabled={!r._dirty || r._saving}
+                      onClick={() => saveExisting(r)}
+                    >
+                      {r._saving ? "Saving…" : r._dirty ? "Save" : "Saved"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive"
+                      onClick={() => deleteExisting(r.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <Textarea
+                  rows={3}
+                  value={r.review_text}
+                  onChange={(e) => patchExisting(r.id, { review_text: e.target.value })}
+                  className="text-sm"
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
       </div>
     </div>
   );
