@@ -99,10 +99,12 @@ export function Footer() {
             </div>
             <div>
               <h3 className="font-bold" style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 10 }}>Contact Us</h3>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <Phone style={{ width: 11, height: 11, color: "rgba(255,255,255,0.4)" }} />
-                <a href={`tel:${contactPhone.replace(/\s/g, "")}`} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactPhone}</a>
-              </div>
+              {contactPhone && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <Phone style={{ width: 11, height: 11, color: "rgba(255,255,255,0.4)" }} />
+                  <a href={`tel:${contactPhone.replace(/\s/g, "")}`} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactPhone}</a>
+                </div>
+              )}
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <Mail style={{ width: 11, height: 11, color: "rgba(255,255,255,0.4)" }} />
                 <a href={`mailto:${contactEmail}`} className="font-medium" style={{ color: "rgba(255,255,255,0.55)", fontSize: 10 }}>{contactEmail}</a>
