@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
-import { cn } from "@/lib/utils";
+import { cn, cleanInstructorName } from "@/lib/utils";
 import { computeOfferStatus } from "@/lib/courseOffer";
 import tenHoursBadge from "@/assets/10-hours-badge.png";
 import twentyHoursBadge from "@/assets/20-hours-badge.png";
