@@ -717,7 +717,12 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
   }, [loading, availableDatesInMonth, nextAvailableDates, selectedMonth, instructors, instructorsInArea, userLocation]);
 
   const coursesForSelectedDate = useMemo(() => {
-    if (!selectedDate) return [];
+    // Fall back to the first available date so courses always render even
+    // before the user explicitly picks a date in the calendar.
+    const effectiveDate = selectedDate ?? nextAvailableDates[0] ?? null;
+    if (!effectiveDate) return [];
+
+
 
     const courses: CourseWithInstructor[] = [];
 
