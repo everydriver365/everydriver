@@ -24,7 +24,7 @@ const DSM = lazy(() => import("@/pages/instructor-app/DSM"));
 
 export const instructorAppRoutes = (
   <>
-    <Route path="/instructor-app" element={<Navigate to="/" replace />} />
+    <Route path="/instructor-app" element={<Navigate to="/instructor" replace />} />
     <Route path="/instructor-app/features" element={<InstructorFeatures />} />
     <Route path="/instructor-app/telematics" element={<InstructorTelematics />} />
     <Route path="/instructor-app/dashcam" element={<InstructorDashcam />} />
