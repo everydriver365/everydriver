@@ -70,6 +70,7 @@ export function AdminSectionNotes({ sectionKey, className }: AdminSectionNotesPr
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingNote, setEditingNote] = useState<SectionNote | null>(null);
+  const [confirmDeleteNote, setConfirmDeleteNote] = useState<SectionNote | null>(null);
   
   // Form state
   const [title, setTitle] = useState("");
