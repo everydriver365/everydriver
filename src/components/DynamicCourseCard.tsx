@@ -280,8 +280,7 @@ function DynamicCourseCardImpl({
                   showSnippet={
                     !(
                       instructor.google_rating != null &&
-                      (instructor.google_review_count ?? 0) > 0 &&
-                      !!instructor.google_top_review_text
+                      (instructor.google_review_count ?? 0) > 0
                     )
                   }
                   snippetClamp={1}
