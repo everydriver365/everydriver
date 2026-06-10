@@ -175,7 +175,6 @@ export function AdminSectionNotes({ sectionKey, className }: AdminSectionNotesPr
   };
 
   const deleteNote = async (note: SectionNote) => {
-    if (!confirm("Delete this note?")) return;
 
     try {
       const { error } = await supabase
