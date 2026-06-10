@@ -40,7 +40,7 @@ function TyreTrackPattern() {
 export function Footer() {
   const { logo, logoAlt, logoText, homeLink } = useRouteLogo();
   const whitelabel = getWhitelabelConfig();
-  const contactPhone = whitelabel?.phone ?? "0800 123 4567";
+  const contactPhone = whitelabel?.phone;
   const contactEmail = whitelabel?.email ?? "info@everydriver.co.uk";
   const contactArea = whitelabel?.address ?? "Covering all UK postcodes";
   const copyrightName = whitelabel?.brandName ?? "EveryDriver";
