@@ -541,18 +541,11 @@ export default function AdminPortal() {
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <AdminBackButton onClick={() => setActiveSection("overview")} />
-            <GoogleSyncAlertsPanel />
             <AdminAlerts />
           </motion.div>
         );
 
-      case "google-sync":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <AdminBackButton onClick={() => setActiveSection("overview")} />
-            <AdminGoogleSyncDashboard />
-          </motion.div>
-        );
+
 
       case "mini-websites":
         return (
