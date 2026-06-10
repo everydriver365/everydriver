@@ -218,6 +218,7 @@ export default function InstructorPortal() {
       <InstructorPortalLayout>
         <div className="space-y-0">
         <DemoModeBanner />
+        <div className="px-4 pt-3"><GettingStartedChecklist instructorId={instructorId} /></div>
         {layoutStyle === "settings-v2" ? (
           <SettingsV2HomeView instructorId={instructorId} instructor={instructorData as any} />
         ) : (
