@@ -7,6 +7,8 @@ const corsHeaders = {
 
 interface ClearpayCheckoutRequest {
   amount: number;
+  instructorId?: string;
+
   currency?: string;
   merchantReference: string;
   consumer: {
@@ -60,6 +62,26 @@ serve(async (req: Request) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Instructor toggle gate (only enforced if instructorId is supplied)
+    if (data.instructorId) {
+      const supaUrl = Deno.env.get("SUPABASE_URL");
+      const supaKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (supaUrl && supaKey) {
+        const gateRes = await fetch(
+          `${supaUrl}/rest/v1/instructors?id=eq.${data.instructorId}&select=clearpay_enabled`,
+          { headers: { apikey: supaKey, Authorization: `Bearer ${supaKey}` } }
+        );
+        const rows = await gateRes.json().catch(() => []);
+        if (Array.isArray(rows) && rows[0] && rows[0].clearpay_enabled === false) {
+          return new Response(
+            JSON.stringify({ error: "Clearpay is not enabled for this instructor." }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+    }
+
 
     // Clearpay API - Create checkout
     // UK/EU uses api.eu.afterpay.com, sandbox uses global.api-sandbox.afterpay.com

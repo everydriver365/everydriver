@@ -25,6 +25,19 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Toggle gate
+    const { data: instructorToggle } = await supabase
+      .from("instructors")
+      .select("ai_lesson_plans_enabled")
+      .eq("id", instructorId)
+      .maybeSingle();
+    if (instructorToggle && instructorToggle.ai_lesson_plans_enabled === false) {
+      return new Response(
+        JSON.stringify({ error: "AI lesson plans are not enabled for this instructor." }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Fetch all data in parallel
     const [progressRes, historyRes, telematicsRes, updatesRes, pupilRes] = await Promise.all([
       supabase

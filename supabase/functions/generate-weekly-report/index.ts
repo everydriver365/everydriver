@@ -41,12 +41,21 @@ serve(async (req) => {
       .gte("lesson_date", prevWeekStart)
       .lte("lesson_date", prevWeekEnd);
 
-    // Instructor rate
+    // Instructor rate + toggle
     const { data: instructor } = await supabase
       .from("instructors")
-      .select("hourly_rate, name")
+      .select("hourly_rate, name, ai_weekly_report_enabled")
       .eq("id", instructor_id)
       .maybeSingle();
+
+    if (instructor && instructor.ai_weekly_report_enabled === false) {
+      console.log(`Weekly report disabled for instructor ${instructor_id} — skipping`);
+      return new Response(JSON.stringify({ skipped: true, reason: "ai_weekly_report_enabled is false" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
 
     // This week's expenses
     const { data: expenses } = await supabase

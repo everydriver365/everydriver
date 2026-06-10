@@ -37,8 +37,6 @@ const featureToggles: FeatureToggle[] = [
 const aiFeatureToggles: FeatureToggle[] = [
   { key: "ai_lesson_plans_enabled", label: "AI Lesson Plans", description: "Auto-generate lesson plans from your notes and voice feedback", defaultValue: true },
   { key: "ai_test_readiness_enabled", label: "Test Readiness Predictor", description: "AI predicts when a pupil is ready for their test based on progress data", defaultValue: true },
-  { key: "ai_pricing_suggestions_enabled", label: "Smart Pricing", description: "Get AI pricing suggestions based on local demand and your schedule", defaultValue: true },
-  { key: "ai_cancellation_risk_enabled", label: "Cancellation Risk Alerts", description: "Get warned when a pupil is likely to cancel based on patterns", defaultValue: true },
   { key: "ai_parent_reports_enabled", label: "AI Parent Reports", description: "Automatically generate weekly progress summaries for parents", defaultValue: true },
   { key: "ai_waitlist_filling_enabled", label: "Smart Waitlist Filling", description: "Auto-offer cancelled slots to the best-matched replacement pupil", defaultValue: true },
   { key: "ai_auto_invoices_enabled", label: "Auto-Invoice Generation", description: "Automatically create and send invoices after lessons", defaultValue: true },

@@ -51,6 +51,21 @@ serve(async (req: Request) => {
       originalLessonId,
     }: ProcessRequest = await req.json();
 
+    // Toggle gate
+    const { data: instructorToggle } = await supabase
+      .from("instructors")
+      .select("ai_waitlist_filling_enabled")
+      .eq("id", instructorId)
+      .maybeSingle();
+    if (instructorToggle && instructorToggle.ai_waitlist_filling_enabled === false) {
+      console.log(`Waitlist filling disabled for instructor ${instructorId} — skipping`);
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, offersCreated: 0, reason: "ai_waitlist_filling_enabled is false" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+
     // Get the day of week from the lesson date
     const date = new Date(lessonDate);
     const dayOfWeek = DAY_MAP[date.getDay()];
