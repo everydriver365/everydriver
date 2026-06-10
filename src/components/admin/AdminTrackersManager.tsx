@@ -73,6 +73,7 @@ export function AdminTrackersManager() {
   const [selectedProvider, setSelectedProvider] = useState<string>("radius");
   const [isAdding, setIsAdding] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
