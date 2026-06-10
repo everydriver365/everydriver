@@ -39,7 +39,7 @@ export function StepComplete({ data }: StepCompleteProps) {
       icon: LayoutDashboard,
       label: "Go to Dashboard",
       desc: "Start managing your diary",
-      action: () => navigate("/instructor"),
+      action: () => navigate("/instructor-app"),
       primary: true,
     },
     {
