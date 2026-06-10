@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -49,6 +50,10 @@ export default function Benefits() {
 
   return (
     <div className="learner-app min-h-screen bg-background pb-20">
+      <SEOHead
+        title="Why Choose EveryDriver | Benefits of Booking with Us"
+        description="Discover the benefits of booking your driving lessons through EveryDriver. Transparent pricing, verified instructors, first-time pass guarantee."
+      />
       {/* Header with hamburger */}
       <div className="sticky top-0 z-50 bg-primary">
         <div className="px-4 flex items-center justify-between h-16">
