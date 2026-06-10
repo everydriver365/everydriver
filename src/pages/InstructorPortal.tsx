@@ -358,6 +358,7 @@ function DesktopDashboardV2(props: DesktopDashboardV2Props) {
           />
         }
       >
+        <GettingStartedChecklist instructorId={instructorId} />
         <HybridDashboard
           instructorId={instructorId}
           instructorName={instructorData?.name}
