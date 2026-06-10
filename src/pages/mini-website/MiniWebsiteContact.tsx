@@ -32,6 +32,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -42,16 +43,32 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
 
   const handleCallbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot — silently reject bot submissions
+    if (honeypot) {
+      setIsSubmitted(true);
+      return;
+    }
+
+    // Rate limit — 60 seconds between submissions per session
+    const lastSubmit = sessionStorage.getItem("last_enquiry");
+    if (lastSubmit && Date.now() - parseInt(lastSubmit) < 60000) {
+      toast.error("Please wait before submitting another enquiry.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const { error } = await supabase.functions.invoke("create-enquiry", {
         body: {
           name: `${formData.firstName} ${formData.lastName}`.trim(),
-          address: formData.email || "No email provided",
-          postcode: formData.phone || "No phone provided",
+          email: formData.email || null,
+          phone: formData.phone || null,
+          address: "Callback request",
+          postcode: "N/A",
           courseType: "callback",
-          requestedHours: 0,
+          requestedHours: 1,
           preferredTiming: "flexible",
           additionalNotes: formData.message || null,
           assignedInstructorId: instructor?.id || null,
@@ -59,6 +76,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
       });
 
       if (error) throw error;
+      sessionStorage.setItem("last_enquiry", Date.now().toString());
       setIsSubmitted(true);
       toast.success("Callback request submitted! We'll be in touch soon.");
     } catch (error) {
@@ -68,6 +86,7 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
       setIsSubmitting(false);
     }
   };
+
 
   if (loading) {
     return (
