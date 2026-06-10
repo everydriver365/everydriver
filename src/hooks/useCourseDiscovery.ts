@@ -752,7 +752,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
           courses.push({
             instructor,
             hours,
-            bookableDate: selectedDate,
+            bookableDate: effectiveDate,
             courseImageUrl: courseData.course_image_url || template?.default_image_url || null,
             isPopular: template?.is_popular || false,
             availableFrom: instructor.available_from,
