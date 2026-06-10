@@ -72,6 +72,7 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
   const price = offer.isLive ? offer.finalPrice : totalPrice;
   const formattedDate = format(bookableDate, "d MMM");
   const transmissionType = instructor.car_type || "Manual";
+  const displayName = cleanInstructorName(instructor.name);
 
   const handleLearnMore = () => {
     const params = new URLSearchParams({
