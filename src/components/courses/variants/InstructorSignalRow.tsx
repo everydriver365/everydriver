@@ -37,7 +37,9 @@ export function InstructorSignalRow({
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       <div className="flex items-center gap-2 flex-wrap">
-        {enough && (
+        {/* When we have a review snippet, skip the rating count row to avoid showing
+            two review signals on the same card. Keep the Verified Pro chip. */}
+        {enough && !(showSnippet && review) && (
           <span className="inline-flex items-center gap-1 text-xs">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
             <span className="font-semibold">{rating!.avgRating?.toFixed(1)}</span>
