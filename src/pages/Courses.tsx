@@ -736,6 +736,36 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
       let instructorsNearby = computeNearby(coursesForSearch);
       const hasRealMatch = instructorsNearby.some((i) => !i.is_network_placeholder);
 
+      // Diagnostic — remove once "no instructors nearby" is resolved.
+      const courseIdsSet = new Set(coursesForSearch.filter((c) => c.is_active).map((c) => c.instructor_id));
+      const districtInstructors = instructors.filter(
+        (i) =>
+          (!i.is_network_placeholder && i.home_postcode?.replace(/\s+/g, "").toUpperCase().startsWith(district || "ZZZZ")) ||
+          (i.is_network_placeholder && i.placeholder_district === district),
+      );
+      console.log("[Courses search]", {
+        cleanPostcode,
+        district,
+        radiusMiles,
+        location,
+        totalInstructors: instructors.length,
+        totalCourses: coursesForSearch.length,
+        districtInstructors: districtInstructors.map((i) => ({
+          id: i.id,
+          name: i.name,
+          home_postcode: i.home_postcode,
+          placeholder: i.is_network_placeholder,
+          lat: (i as any).lat,
+          lng: (i as any).lng,
+          hasActiveCourse: courseIdsSet.has(i.id),
+          distance: location && (i as any).lat != null && (i as any).lng != null
+            ? calculateDistance(location.lat, location.lng, Number((i as any).lat), Number((i as any).lng))
+            : null,
+        })),
+        matched: instructorsNearby.length,
+        matchedReal: instructorsNearby.filter((i) => !i.is_network_placeholder).length,
+      });
+
       // Step 2: lazily fall back to network placeholders only when no real
       // instructor covers the searched area.
       if (!hasRealMatch && district && !loadedPlaceholderDistrictsRef.current.has(district)) {
