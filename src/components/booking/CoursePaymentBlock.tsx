@@ -98,7 +98,8 @@ export function CoursePaymentBlock({
   const [selected, setSelected] = useState<PaymentMethodId>("card");
   const [showBreakdown, setShowBreakdown] = useState(false);
 
-  const firstName = instructorName.split(" ")[0] || instructorName;
+  const displayName = instructorName?.replace(/\s*\(.*?\)\s*/g, "").trim();
+  const firstName = displayName.split(" ")[0] || displayName;
   const isDepositSelected = paymentOption === "deposit" && depositEnabled;
   const cardAmount = isDepositSelected ? depositAmount : grandTotal;
   const balanceLater = grandTotal - depositAmount;
@@ -201,7 +202,7 @@ export function CoursePaymentBlock({
                 {courseName.toLowerCase().includes("intensive") ? "" : ""} · {courseName}
               </div>
               <div className="text-[12px] text-muted-foreground truncate mt-0.5">
-                With {instructorName}
+                With {displayName}
                 {locationName ? ` · ${locationName}` : ""}
               </div>
             </div>
