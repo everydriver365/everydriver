@@ -188,7 +188,19 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
                     Request a Callback
                   </h2>
                   <form className="space-y-4" onSubmit={handleCallbackSubmit}>
+                    {/* Honeypot — hidden from real users, bots fill it */}
+                    <input
+                      type="text"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={honeypot}
+                      onChange={(e) => setHoneypot(e.target.value)}
+                      style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+                      aria-hidden="true"
+                    />
                     <div className="grid gap-4 sm:grid-cols-2">
+
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First name *</Label>
                         <Input

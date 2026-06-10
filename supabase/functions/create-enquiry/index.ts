@@ -16,6 +16,9 @@ const enquirySchema = z.object({
   requestedHours: z.number().int().min(1).max(200),
   preferredTiming: z.string().trim().min(1).max(100),
   additionalNotes: z.string().trim().max(2000).optional(),
+  email: z.string().trim().email().max(255).optional().nullable(),
+  phone: z.string().trim().max(40).optional().nullable(),
+  assignedInstructorId: z.string().uuid().optional().nullable(),
 });
 
 serve(async (req) => {
@@ -51,6 +54,9 @@ serve(async (req) => {
         requested_hours: enquiry.requestedHours,
         preferred_timing: enquiry.preferredTiming,
         additional_notes: enquiry.additionalNotes || null,
+        email: enquiry.email || null,
+        phone: enquiry.phone || null,
+        assigned_instructor_id: enquiry.assignedInstructorId || null,
         status: "pending",
       })
       .select()
