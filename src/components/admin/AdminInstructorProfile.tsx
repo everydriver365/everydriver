@@ -807,6 +807,25 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
           <div className="space-y-1">
             <InlineEditField value={instructor.personal_website_url || ""} onSave={(v) => updateField("personal_website_url", v)} icon={<Globe className="h-4 w-4 text-muted-foreground" />} label="Personal Website" emptyText="Add URL" />
             <InlineEditField value={instructor.google_review_url || ""} onSave={(v) => updateField("google_review_url", v)} icon={<Star className="h-4 w-4 text-muted-foreground" />} label="Google Review URL" emptyText="Add URL" />
+            <div className="flex items-center justify-between px-2 py-1.5">
+              <span className="text-xs text-muted-foreground">Refresh cached Google rating, count &amp; snippet</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const placeIdOrQuery = (instructor as any).google_place_id || instructor.google_review_url || instructor.business_name || instructor.name;
+                  if (!placeIdOrQuery) { toast.error("Add a Google Review URL or Place ID first"); return; }
+                  const body: Record<string, unknown> = { instructorId: instructor.id };
+                  if ((instructor as any).google_place_id) body.placeId = (instructor as any).google_place_id;
+                  else body.query = placeIdOrQuery;
+                  const { error } = await supabase.functions.invoke("fetch-google-reviews", { body });
+                  if (error) { toast.error("Refresh failed: " + error.message); return; }
+                  toast.success("Google reviews refreshed");
+                }}
+              >
+                Refresh Google Reviews
+              </Button>
+            </div>
             <InlineEditField value={instructor.facebook_url || ""} onSave={(v) => updateField("facebook_url", v)} icon={<Facebook className="h-4 w-4 text-muted-foreground" />} label="Facebook" emptyText="Add URL" />
             <InlineEditField value={instructor.instagram_url || ""} onSave={(v) => updateField("instagram_url", v)} icon={<Instagram className="h-4 w-4 text-muted-foreground" />} label="Instagram" emptyText="Add URL" />
             <InlineEditField value={instructor.twitter_url || ""} onSave={(v) => updateField("twitter_url", v)} icon={<Twitter className="h-4 w-4 text-muted-foreground" />} label="Twitter / X" emptyText="Add URL" />
