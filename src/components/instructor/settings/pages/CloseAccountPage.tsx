@@ -45,7 +45,7 @@ export function CloseAccountPage() {
             <div className="sv2-section-sub">You can also email support if you'd prefer a person to walk you through it.</div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <a className="sv2-btn" href="mailto:support@drive365.co.uk?subject=Close%20my%20account">Email support</a>
+            <a className="sv2-btn" href="mailto:support@everydriver.co.uk?subject=Close%20my%20account">Email support</a>
             <RequestClosureDialog />
           </div>
         </div>
@@ -87,7 +87,7 @@ function RequestClosureDialog() {
                 title: "Closure request received",
                 description: "We've emailed support with your request. They'll confirm within one working day.",
               });
-              window.location.href = "mailto:support@drive365.co.uk?subject=Close%20my%20account";
+              window.location.href = "mailto:support@everydriver.co.uk?subject=Close%20my%20account";
             }}
           >
             Start closure

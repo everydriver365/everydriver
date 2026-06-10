@@ -12,19 +12,19 @@ export function HelpSupportPage() {
         icon={<IconBook2 size={16} stroke={1.5} />}
         name="Help centre"
         meta="Guides, tutorials and answers to common questions"
-        onClick={() => window.open("https://drive365.co.uk/help", "_blank", "noopener")}
+        onClick={() => window.open("https://everydriver.co.uk/help", "_blank", "noopener")}
       />
       <SettingsListRow
         icon={<IconMail size={16} stroke={1.5} />}
         name="Email support"
         meta="Reply within one working day"
-        onClick={() => { window.location.href = "mailto:support@drive365.co.uk"; }}
+        onClick={() => { window.location.href = "mailto:support@everydriver.co.uk"; }}
       />
       <SettingsListRow
         icon={<IconLifebuoy size={16} stroke={1.5} />}
         name="System status"
         meta="Check for current incidents"
-        onClick={() => window.open("https://status.drive365.co.uk", "_blank", "noopener")}
+        onClick={() => window.open("https://status.everydriver.co.uk", "_blank", "noopener")}
       />
     </section>
   );

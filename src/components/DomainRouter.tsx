@@ -3,16 +3,16 @@ import { useLocation } from "react-router-dom";
 import { isWhitelabelDomain } from "@/lib/whitelabel";
 
 // Domain configurations - SWAPPED
-// drive365.co.uk = Learner site
+// everydriver.co.uk = Learner site
 // everydriver.co.uk = Instructor site
-const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
+const DRIVE365_DOMAINS = ["everydriver.co.uk", "www.everydriver.co.uk"];
 const EVERYDRIVER_DOMAINS = ["everydriver.co.uk", "www.everydriver.co.uk", "everydriver.lovable.app"];
 const ACCESSIBLE_DOMAINS = ["driveforall.co.uk", "www.driveforall.co.uk", "drivingforall.co.uk", "www.drivingforall.co.uk"];
 const EVERYDRIVER_BASE_DOMAIN = "everydriver.co.uk";
-const DRIVE365_BASE_DOMAIN = "drive365.co.uk";
+const DRIVE365_BASE_DOMAIN = "everydriver.co.uk";
 const ACCESSIBLE_BASE_DOMAIN = "driveforall.co.uk";
 const ACCESSIBLE_BASE_DOMAIN_ALT = "drivingforall.co.uk";
-const BOOKING_SUBDOMAIN = "bookings.drive365.co.uk";
+const BOOKING_SUBDOMAIN = "bookings.everydriver.co.uk";
 
 // Routes that belong to instructors (hosted on everydriver.co.uk)
 const INSTRUCTOR_ROUTE_PREFIXES = [
@@ -21,7 +21,7 @@ const INSTRUCTOR_ROUTE_PREFIXES = [
   "/install-instructor",
 ];
 
-// Routes explicitly allowed on drive365.co.uk (learner site)
+// Routes explicitly allowed on everydriver.co.uk (learner site)
 const LEARNER_ALLOWED_ROUTES = [
   "/courses",
   "/pupil",
@@ -85,7 +85,7 @@ export function getInstructorSubdomain(): string | null {
     return CUSTOM_DOMAIN_SLUGS[hostname];
   }
   
-  // Check if it's a drive365 subdomain (e.g. jane-smith.drive365.co.uk)
+  // Check if it's a drive365 subdomain (e.g. jane-smith.everydriver.co.uk)
   if (hostname.endsWith(`.${DRIVE365_BASE_DOMAIN}`)) {
     const subdomain = hostname.replace(`.${DRIVE365_BASE_DOMAIN}`, "");
     if (subdomain && subdomain !== "www" && subdomain !== "bookings") {
@@ -183,7 +183,7 @@ function isLearnerOnlyRoute(pathname: string): boolean {
  * DomainRouter component handles cross-domain redirects
  * 
  * SWAPPED CONFIGURATION:
- * - drive365.co.uk serves LEARNER routes only
+ * - everydriver.co.uk serves LEARNER routes only
  * - everydriver.co.uk serves INSTRUCTOR routes only
  * - localhost allows all routes (no redirects)
  */
@@ -233,7 +233,7 @@ export function DomainRouter() {
       const isShared = SHARED_ROUTES.some(route => pathname === route || pathname.startsWith(route + "/"));
       const isAuthRoute = pathname.startsWith("/pupil/login") || pathname.startsWith("/admin/login");
       if (!isAccessibleRoute && !isShared && !isAuthRoute) {
-        window.location.href = `https://drive365.co.uk${fullPath}`;
+        window.location.href = `https://everydriver.co.uk${fullPath}`;
         return;
       }
       return;
@@ -260,7 +260,7 @@ export function DomainRouter() {
         return;
       }
       if (isLearnerOnlyRoute(pathname)) {
-        window.location.href = `https://drive365.co.uk${fullPath}`;
+        window.location.href = `https://everydriver.co.uk${fullPath}`;
         return;
       }
     }

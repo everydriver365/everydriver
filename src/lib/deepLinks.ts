@@ -2,7 +2,7 @@
  * Native deep-link handling for iOS and Android.
  *
  * Supabase reset-password and signup-confirmation emails embed a URL that
- * points at our web origin (`https://drive365.co.uk/reset-password?...` or
+ * points at our web origin (`https://everydriver.co.uk/reset-password?...` or
  * `/auth/redirect?...`). When that URL is opened on a device that has the
  * Drive365 / DSM app installed via Universal Links (iOS) or App Links
  * (Android), the OS hands the URL to the app instead of the browser.

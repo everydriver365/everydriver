@@ -99,7 +99,7 @@ export default function InstructorMiniWebsiteSettings() {
                     <p className="font-medium">Your Drive365 Website</p>
                     {authInstructor?.app_slug ? (
                       <p className="text-sm text-primary font-mono">
-                        {authInstructor.app_slug}.drive365.co.uk
+                        {authInstructor.app_slug}.everydriver.co.uk
                       </p>
                     ) : (
                       <p className="text-sm text-muted-foreground">Setting up...</p>
@@ -123,7 +123,7 @@ export default function InstructorMiniWebsiteSettings() {
               </div>
 
               {/* Custom Domain (if set and not the drive365 subdomain) */}
-              {authInstructor?.custom_domain && !authInstructor.custom_domain.endsWith('.drive365.co.uk') && (
+              {authInstructor?.custom_domain && !authInstructor.custom_domain.endsWith('.everydriver.co.uk') && (
                 <div className="flex items-center gap-3 pt-3 border-t border-primary/10">
                   <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
                     <Globe className="h-5 w-5 text-accent-foreground" />
@@ -320,7 +320,7 @@ export default function InstructorMiniWebsiteSettings() {
                   </p>
                   {authInstructor?.app_slug && (
                     <code className="block bg-background p-2 rounded text-sm font-mono text-primary">
-                      {authInstructor.app_slug}.drive365.co.uk
+                      {authInstructor.app_slug}.everydriver.co.uk
                     </code>
                   )}
                 </div>
@@ -329,7 +329,7 @@ export default function InstructorMiniWebsiteSettings() {
                   <h4 className="font-medium mb-2">
                     Custom Domain
                   </h4>
-                  {authInstructor?.custom_domain && !authInstructor.custom_domain.endsWith('.drive365.co.uk') ? (
+                  {authInstructor?.custom_domain && !authInstructor.custom_domain.endsWith('.everydriver.co.uk') ? (
                     <div className="space-y-2">
                       <code className="block bg-background p-2 rounded text-sm font-mono">
                         {authInstructor.custom_domain}

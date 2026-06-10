@@ -5,7 +5,7 @@
  * Three sources, in priority order:
  *
  *   1. Verified custom domain   →  matches `instructors.custom_domain`
- *   2. Subdomain                →  `{slug}.everydriver.co.uk` / `.drive365.co.uk`
+ *   2. Subdomain                →  `{slug}.everydriver.co.uk` / `.everydriver.co.uk`
  *   3. Path-based               →  `/i/{slug}/...`
  *
  * The actual DB query lives in `useInstructorBranding`; this file is
@@ -26,16 +26,16 @@ export interface BrandingDescriptor {
 }
 
 const EVERYDRIVER_SUFFIX = ".everydriver.co.uk";
-const DRIVE365_SUFFIX = ".drive365.co.uk";
+const DRIVE365_SUFFIX = ".everydriver.co.uk";
 
 const BARE_MARKETING_HOSTS = new Set([
-  "drive365.co.uk",
+  "everydriver.co.uk",
   "everydriver.co.uk",
   "everydriver.co",
   "drivingschoolmanager.co.uk",
   "driveforall.co.uk",
   "drivingforall.co.uk",
-  "bookings.drive365.co.uk",
+  "bookings.everydriver.co.uk",
   "everydriver.lovable.app",
   "localhost",
   "127.0.0.1",

@@ -90,7 +90,7 @@ export function UpgradePlanSheet({ open, onOpenChange, currentPlanSlug }: Upgrad
 
     if (plan.price_monthly > 0 && currentPlanSlug === "free") {
       toast.success(`To upgrade to ${plan.name}, please contact us`, {
-        description: "Email hello@drive365.co.uk or call us to upgrade your plan.",
+        description: "Email hello@everydriver.co.uk or call us to upgrade your plan.",
         duration: 5000,
       });
       return;

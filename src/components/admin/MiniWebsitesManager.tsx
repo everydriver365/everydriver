@@ -145,11 +145,11 @@ export function MiniWebsitesManager() {
   const getWebsiteUrl = (slug: string | null, customDomain: string | null) => {
     if (customDomain) return `https://${customDomain}`;
     if (!slug) return null;
-    return `https://${slug}.drive365.co.uk`;
+    return `https://${slug}.everydriver.co.uk`;
   };
 
   const getDrive365Subdomain = (slug: string | null) => {
-    return slug ? `${slug}.drive365.co.uk` : null;
+    return slug ? `${slug}.everydriver.co.uk` : null;
   };
 
   const handleEditWebsite = (website: MiniWebsite) => {
@@ -273,7 +273,7 @@ export function MiniWebsitesManager() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {site.custom_domain && !site.custom_domain.endsWith('.drive365.co.uk') ? (
+                    {site.custom_domain && !site.custom_domain.endsWith('.everydriver.co.uk') ? (
                       <div className="flex items-center gap-2">
                         <Globe className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">{site.custom_domain}</span>

@@ -226,8 +226,8 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
     return "wildcard";
   });
   
-  // Generate the wildcard subdomain URL (drive365.co.uk for instructor mini-websites)
-  const wildcardSubdomain = editData.app_slug ? `${editData.app_slug}.drive365.co.uk` : null;
+  // Generate the wildcard subdomain URL (everydriver.co.uk for instructor mini-websites)
+  const wildcardSubdomain = editData.app_slug ? `${editData.app_slug}.everydriver.co.uk` : null;
 
   const handleApplyPreset = (preset: typeof presetThemes[0]) => {
     setEditData({
@@ -296,7 +296,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
 
       if (domainMode === "wildcard" && editData.app_slug) {
         // Use the auto-generated drive365 subdomain
-        finalCustomDomain = `${editData.app_slug}.drive365.co.uk`;
+        finalCustomDomain = `${editData.app_slug}.everydriver.co.uk`;
       } else if (domainMode === "manual" && manualDomain.trim()) {
         // Clean domain: remove protocol and trailing slashes
         finalCustomDomain = manualDomain
@@ -385,8 +385,8 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
   };
 
   const getWebsiteUrl = () => {
-    if (editData.custom_domain && !editData.custom_domain.endsWith('.drive365.co.uk')) return `https://${editData.custom_domain}`;
-    if (editData.app_slug) return `https://${editData.app_slug}.drive365.co.uk`;
+    if (editData.custom_domain && !editData.custom_domain.endsWith('.everydriver.co.uk')) return `https://${editData.custom_domain}`;
+    if (editData.app_slug) return `https://${editData.app_slug}.everydriver.co.uk`;
     return null;
   };
 
@@ -1033,7 +1033,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                               {getSeoValue(p.id, "meta_title", p.meta_title) || defaultTitle}
                             </p>
                             <p className="text-green-700 text-xs truncate">
-                              {editData.app_slug || "slug"}.drive365.co.uk{p.page_type === "home" ? "" : `/${p.page_type}`}
+                              {editData.app_slug || "slug"}.everydriver.co.uk{p.page_type === "home" ? "" : `/${p.page_type}`}
                             </p>
                             <p className="text-muted-foreground text-xs line-clamp-2">
                               {getSeoValue(p.id, "meta_description", p.meta_description) || `${businessName} - Professional driving lessons. Book your driving course today with Drive365.`}
@@ -1098,7 +1098,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      URL: {editData.app_slug || "slug"}.drive365.co.uk
+                      URL: {editData.app_slug || "slug"}.everydriver.co.uk
                     </p>
                   </div>
 

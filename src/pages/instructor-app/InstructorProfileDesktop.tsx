@@ -24,7 +24,7 @@ const initialProfile = {
   personal: {
     firstName: "Ken",
     lastName: "Drinkwater",
-    email: "info@drive365.co.uk",
+    email: "info@everydriver.co.uk",
     emailVerified: true,
     phone: "07000 000 000",
     phoneVerified: true,

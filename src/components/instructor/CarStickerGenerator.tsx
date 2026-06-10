@@ -65,11 +65,11 @@ export function CarStickerGenerator({
   const bookingUrl = customDomain
     ? `https://${customDomain}`
     : instructorSlug
-      ? `https://${instructorSlug}.drive365.co.uk`
+      ? `https://${instructorSlug}.everydriver.co.uk`
       : null;
 
   const displayDomain = customDomain
-    || (instructorSlug ? `${instructorSlug}.drive365.co.uk` : null);
+    || (instructorSlug ? `${instructorSlug}.everydriver.co.uk` : null);
 
   const generateSticker = async () => {
     setGenerating(true);

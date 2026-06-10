@@ -326,7 +326,7 @@ export default function DemoAdminDesigns() {
                 </div>
                 <div className="flex-1 mx-4">
                   <div className="h-4 rounded bg-white/10 flex items-center justify-center">
-                    <span className="text-[9px] text-white/50">admin.drive365.co.uk</span>
+                    <span className="text-[9px] text-white/50">admin.everydriver.co.uk</span>
                   </div>
                 </div>
                 <div className="w-8" />

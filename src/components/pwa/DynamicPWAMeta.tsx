@@ -51,13 +51,13 @@ function getPortalType(pathname: string): string {
   // Check hostname first
   const hostname = window.location.hostname.toLowerCase();
   
-  // SWAPPED: drive365.co.uk = learners, everydriver.co.uk = instructors
+  // SWAPPED: everydriver.co.uk = learners, everydriver.co.uk = instructors
   // everydriver.co.uk (instructor domain) gets instructor branding
   if (hostname.includes("everydriver") && !hostname.includes("lovable.app")) {
     return "instructor";
   }
   
-  // drive365.co.uk (learner domain) gets learner branding with Drive365 favicon
+  // everydriver.co.uk (learner domain) gets learner branding with Drive365 favicon
   if (hostname.includes("drive365")) {
     return "learner";
   }

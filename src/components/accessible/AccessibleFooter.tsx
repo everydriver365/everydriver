@@ -31,7 +31,7 @@ export function AccessibleFooter() {
             <ul className="space-y-2 text-sm">
               <li><Link to="/contact" className="acc-footer-link">Contact us</Link></li>
               <li><Link to="/help" className="acc-footer-link">Help centre</Link></li>
-              <li><a href="mailto:hello@drive365.co.uk" className="acc-footer-link">hello@drive365.co.uk</a></li>
+              <li><a href="mailto:hello@everydriver.co.uk" className="acc-footer-link">hello@everydriver.co.uk</a></li>
             </ul>
           </div>
 

@@ -383,7 +383,7 @@ export default function InstructorOnboarding() {
       const normalizedExternal = hasOwnSite && data.personal_website_url
         ? (data.personal_website_url.startsWith("http") ? data.personal_website_url : `https://${data.personal_website_url}`)
         : null;
-      const drive365Subdomain = hasOwnSite ? null : `${slug}.drive365.co.uk`;
+      const drive365Subdomain = hasOwnSite ? null : `${slug}.everydriver.co.uk`;
 
       // Final save with onboarding complete timestamp + auto-generated subdomain (skipped if they have their own site)
       const formattedPostcode = formatUKPostcode(data.home_postcode) || data.home_postcode;

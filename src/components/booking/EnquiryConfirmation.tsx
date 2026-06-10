@@ -146,7 +146,7 @@ export function EnquiryConfirmation({ instructor, submittedEmail }: Props) {
       <p style={{ fontSize: 11.5, color: D365_TEXT_MUTED, marginTop: 16, textAlign: "center", lineHeight: 1.5 }}>
         Haven't heard back after 48 hours?{" "}
         <a
-          href="mailto:enquiries@drive365.co.uk"
+          href="mailto:enquiries@everydriver.co.uk"
           style={{ color: D365_PRIMARY, fontWeight: 600, textDecoration: "underline" }}
         >
           Let us know
