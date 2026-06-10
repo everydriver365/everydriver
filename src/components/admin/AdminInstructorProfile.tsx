@@ -306,6 +306,7 @@ export function AdminInstructorProfile({ instructorId, onBack, onNavigateToPupil
 
   // Dialog states
   const [showDelete, setShowDelete] = useState(false);
+  const [showToggleActive, setShowToggleActive] = useState(false);
   const [showReassign, setShowReassign] = useState(false);
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState("");
