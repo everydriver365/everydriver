@@ -381,7 +381,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         lineHeight: 1,
                       }}
                     >
-                      <img src={klarnaLogo} alt="Klarna" style={{ height: 14, width: 14 }} />
+                      <img src={klarnaLogo} alt="Klarna" loading="lazy" style={{ height: 14, width: 14 }} />
                       3 × £{klarnaPer}
                     </span>
                   )}
@@ -399,7 +399,7 @@ export function EDCourseList({ courses }: EDCourseListProps) {
                         lineHeight: 1,
                       }}
                     >
-                      <img src={clearpayLogo} alt="Clearpay" style={{ height: 14, width: 14 }} />
+                      <img src={clearpayLogo} alt="Clearpay" loading="lazy" style={{ height: 14, width: 14 }} />
                       4 × £{clearpayPer}
                     </span>
                   )}

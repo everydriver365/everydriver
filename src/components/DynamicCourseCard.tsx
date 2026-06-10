@@ -260,7 +260,7 @@ export function DynamicCourseCard({
               {/* Trust strip — live rating, Verified Pro chip, top review */}
               <div className="flex items-start gap-2 rounded-lg border border-border/60 bg-muted/30 px-2.5 py-2">
                 <Avatar className="h-7 w-7 flex-shrink-0">
-                  <AvatarImage src={instructor.profile_image_url || undefined} alt={instructor.name} />
+                  <AvatarImage src={instructor.profile_image_url || undefined} alt={instructor.name} loading="lazy" />
                   <AvatarFallback className="text-[10px] font-semibold">
                     {instructor.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                   </AvatarFallback>
@@ -321,7 +321,7 @@ export function DynamicCourseCard({
             
             <div className="mt-3 flex items-center gap-2">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={instructor.profile_image_url || undefined} />
+                <AvatarImage src={instructor.profile_image_url || undefined} loading="lazy" />
                 <AvatarFallback 
                   className="text-sm text-white"
                   style={{ backgroundColor: brandColour }}
