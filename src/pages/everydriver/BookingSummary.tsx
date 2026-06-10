@@ -2039,77 +2039,79 @@ export default function BookingSummary() {
         )}
 
         {/* Step 3: Payment — Drive365 redesigned block */}
-        <div ref={paymentBlockRef}>
-        <div className="flex justify-end mb-2">
-          <button
-            type="button"
-            onClick={handleRefreshAvailability}
-            disabled={isRefreshingAvailability}
-            className="inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshingAvailability ? "animate-spin" : ""}`} />
-            {isRefreshingAvailability ? "Refreshing…" : "Refresh availability"}
-          </button>
-        </div>
+        <ErrorBoundary section="payment">
+          <div ref={paymentBlockRef}>
+            <div className="flex justify-end mb-2">
+              <button
+                type="button"
+                onClick={handleRefreshAvailability}
+                disabled={isRefreshingAvailability}
+                className="inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isRefreshingAvailability ? "animate-spin" : ""}`} />
+                {isRefreshingAvailability ? "Refreshing…" : "Refresh availability"}
+              </button>
+            </div>
 
-        {/* Step 4 (Optional): Test Swap opt-in — sits between Payment and confirmation */}
-        {canSubmit && (
-          <TestSwapOptInCard
-            swapOptIn={swapOptIn}
-            setSwapOptIn={setSwapOptIn}
-            swapTestDate={swapTestDate}
-            setSwapTestDate={setSwapTestDate}
-            swapTestTime={swapTestTime}
-            setSwapTestTime={setSwapTestTime}
-            swapTestCentre={swapTestCentre}
-            setSwapTestCentre={setSwapTestCentre}
-            swapPreference={swapPreference}
-            setSwapPreference={setSwapPreference}
-            swapConsent={swapConsent}
-            onConsentChange={handleSwapConsentChange}
-          />
-        )}
+            {/* Step 4 (Optional): Test Swap opt-in — sits between Payment and confirmation */}
+            {canSubmit && (
+              <TestSwapOptInCard
+                swapOptIn={swapOptIn}
+                setSwapOptIn={setSwapOptIn}
+                swapTestDate={swapTestDate}
+                setSwapTestDate={setSwapTestDate}
+                swapTestTime={swapTestTime}
+                setSwapTestTime={setSwapTestTime}
+                swapTestCentre={swapTestCentre}
+                setSwapTestCentre={setSwapTestCentre}
+                swapPreference={swapPreference}
+                setSwapPreference={setSwapPreference}
+                swapConsent={swapConsent}
+                onConsentChange={handleSwapConsentChange}
+              />
+            )}
 
-        <CoursePaymentBlock
-          courseName={courseName}
-          hours={hours}
-          instructorName={instructor.name}
-          locationName={locationName || instructor.home_postcode || ""}
-          totalPrice={totalPrice}
-          upsellTotal={upsellTotal}
-          depositEnabled={depositEnabled}
-          depositAmount={depositAmount}
-          depositDeadlineDays={depositDeadlineDays}
-          paymentOption={paymentOption}
-          setPaymentOption={setPaymentOption}
-          canSubmit={canSubmit}
-          isPupilDetailsComplete={isPupilDetailsComplete}
-          isFullyScheduled={isFullyScheduled}
-          requiresSlotSelection={requiresSlotSelection}
-          hoursRemaining={Math.max(0, hours - scheduledHours)}
-          klarnaEnabled={klarnaEnabled}
-          clearpayEnabled={clearpayEnabled}
-          instantBankPayEnabled={instantBankPayEnabled}
-          cashPaymentsEnabled={cashPaymentsEnabled}
-          squareAvailable={gatewayHealth.square.available}
-          clearpayAvailable={gatewayHealth.clearpay.available}
-          
-          isKlarnaLoading={isKlarnaLoading}
-          isClearpayLoading={isClearpayLoading}
-          isInstantBankPayLoading={isInstantBankPayLoading}
-          isCashProcessing={isCashProcessing}
-          onCardCheckout={handleElavonCheckout}
-          onKlarnaCheckout={handleKlarnaCheckout}
-          onClearpayCheckout={handleClearpayCheckout}
-          onBankCheckout={handleInstantBankPay}
-          onCashCheckout={handleCashPayment}
-          disabledReason={
-            swapOptIn && !swapConsent
-              ? "Tick the swap consent box or turn off the swap toggle to continue."
-              : null
-          }
-        />
-        </div>
+            <CoursePaymentBlock
+              courseName={courseName}
+              hours={hours}
+              instructorName={instructor.name}
+              locationName={locationName || instructor.home_postcode || ""}
+              totalPrice={totalPrice}
+              upsellTotal={upsellTotal}
+              depositEnabled={depositEnabled}
+              depositAmount={depositAmount}
+              depositDeadlineDays={depositDeadlineDays}
+              paymentOption={paymentOption}
+              setPaymentOption={setPaymentOption}
+              canSubmit={canSubmit}
+              isPupilDetailsComplete={isPupilDetailsComplete}
+              isFullyScheduled={isFullyScheduled}
+              requiresSlotSelection={requiresSlotSelection}
+              hoursRemaining={Math.max(0, hours - scheduledHours)}
+              klarnaEnabled={klarnaEnabled}
+              clearpayEnabled={clearpayEnabled}
+              instantBankPayEnabled={instantBankPayEnabled}
+              cashPaymentsEnabled={cashPaymentsEnabled}
+              squareAvailable={gatewayHealth.square.available}
+              clearpayAvailable={gatewayHealth.clearpay.available}
+              
+              isKlarnaLoading={isKlarnaLoading}
+              isClearpayLoading={isClearpayLoading}
+              isInstantBankPayLoading={isInstantBankPayLoading}
+              isCashProcessing={isCashProcessing}
+              onCardCheckout={handleElavonCheckout}
+              onKlarnaCheckout={handleKlarnaCheckout}
+              onClearpayCheckout={handleClearpayCheckout}
+              onBankCheckout={handleInstantBankPay}
+              onCashCheckout={handleCashPayment}
+              disabledReason={
+                swapOptIn && !swapConsent
+                  ? "Tick the swap consent box or turn off the swap toggle to continue."
+                  : null
+              }
+            />
+          </div>
+        </ErrorBoundary>
 
         {/* Square hosted card form (revealed after card checkout) */}
         {showHostedFields && courseDetails && (
