@@ -471,7 +471,7 @@ function FeaturesEditor({ searchQuery, onSearchChange }: { searchQuery: string; 
                         <DropdownMenuItem onClick={() => handleToggleActive(feature)}>
                           {feature.is_active ? "Hide" : "Show"}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(feature.id)} className="text-destructive">
+                        <DropdownMenuItem onClick={() => setConfirmDeleteId(feature.id)} className="text-destructive">
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
