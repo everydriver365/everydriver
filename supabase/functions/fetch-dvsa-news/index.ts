@@ -173,23 +173,35 @@ serve(async (req) => {
     console.log('Fetching DVSA news from despatch.blog.gov.uk...');
     
     const feedUrl = 'https://despatch.blog.gov.uk/feed/';
+    // Proxies used as fallback when gov.uk resets the connection from edge IPs.
+    const proxied = [
+      feedUrl,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`,
+      `https://r.jina.ai/${feedUrl}`,
+    ];
 
     let response: Response | null = null;
     let lastErr: unknown = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        response = await fetch(feedUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (compatible; DrivingSchoolApp/1.0)',
-            'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-          },
-        });
-        if (response.ok) break;
-        lastErr = new Error(`Failed to fetch RSS feed: ${response.status}`);
-      } catch (e) {
-        lastErr = e;
+    outer: for (const url of proxied) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 15000);
+          const r = await fetch(url, {
+            signal: ctrl.signal,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (compatible; DrivingSchoolApp/1.0)',
+              'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+            },
+          });
+          clearTimeout(t);
+          if (r.ok) { response = r; break outer; }
+          lastErr = new Error(`Fetch ${url} -> ${r.status}`);
+        } catch (e) {
+          lastErr = e;
+        }
+        await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
       }
-      await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
     }
 
     if (!response || !response.ok) {
