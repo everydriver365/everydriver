@@ -93,7 +93,7 @@ export default function InstructorLogin() {
   const [faceIdState, setFaceIdState] = useState<"idle" | "scanning" | "success">("idle");
   const activeAuthAttemptRef = useRef(0);
 
-  const { signIn, resetPassword } = useInstructorAuth();
+  const { signIn, resetPassword, user, loading: authLoading } = useInstructorAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const showVerifyBanner = searchParams.get("verify") === "1";
@@ -119,6 +119,12 @@ export default function InstructorLogin() {
   const isActiveAuthAttempt = (attemptId: number) => activeAuthAttemptRef.current === attemptId;
 
   useClearOnDeepLink(clearAuthTransientState);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/instructor', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   const switchMobileView = (toForgot: boolean) => {
     clearAuthTransientState();
@@ -148,6 +154,14 @@ export default function InstructorLogin() {
       }
     })();
   }, []);
+
+  if (authLoading) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: '#0F2044', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img src={dsmLogo} style={{ height: 40, opacity: 0.9 }} />
+      </div>
+    );
+  }
 
   const canSubmit = email.trim().length > 0 && password.length > 0;
 

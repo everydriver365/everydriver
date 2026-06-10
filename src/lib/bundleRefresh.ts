@@ -81,7 +81,13 @@ async function hardReload(): Promise<void> {
 
   const url = new URL(window.location.href);
   url.searchParams.set("v", String(Date.now()));
-  window.location.replace(url.toString());
+  document.body.innerHTML = `
+    <div style="position:fixed;inset:0;background:#0F2044;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+      <img src="/dsm-logo.png" style="height:48px;opacity:0.9;" />
+      <div style="color:rgba(255,255,255,0.6);font-size:13px;font-family:Poppins,sans-serif;">Updating...</div>
+    </div>
+  `;
+  setTimeout(() => window.location.replace(url.toString()), 100);
 }
 
 async function checkForNewBundle(reason: string, bypassThrottle = false): Promise<void> {
