@@ -81,8 +81,8 @@ export function TakePaymentModal({
   const qrParsedAmount = parseFloat(qrAmount) || 0;
   const qrFee = useAdminFee(qrParsedAmount, splitPct, tierConfig);
 
-  // Realtime: auto-flip to "received" when a Square payment lands while
-  // the modal is open. Filter by external_payment_ref prefix + open timestamp
+  // Realtime: auto-flip to "received" when a Ryft card payment lands while
+  // the modal is open. Filter by payment_method = 'ryft_card' + open timestamp
   // so unrelated (e.g. cash) inserts don't trigger.
   useEffect(() => {
     if (!open || !instructorId) return;
@@ -102,8 +102,8 @@ export function TakePaymentModal({
           const row: any = payload.new;
           const amt = Number(row?.amount || 0);
           if (!amt || amt <= 0) return;
-          const ref = String(row?.external_payment_ref || "");
-          if (!ref.startsWith("square:")) return;
+          const method = String(row?.payment_method || "").toLowerCase();
+          if (method !== "ryft_card") return;
           const createdAt = row?.created_at ? new Date(row.created_at).getTime() : Date.now();
           if (createdAt < openedAt) return;
           setView("received");
@@ -162,7 +162,7 @@ export function TakePaymentModal({
     }
   };
 
-  // Generate Square payment link then send via SMS (email is admin-only)
+  // Generate a card payment link via Ryft then send via SMS (email is admin-only)
   const handleSendLink = async () => {
     if (!instructorId) return;
     if (!manualPhone) return;
@@ -172,7 +172,7 @@ export function TakePaymentModal({
       const isManualOnly = selectedPupilId === "_manual" || !selectedPupilId;
       let paymentLink: string;
 
-      // If amount is set, generate a Square payment link with the total (including admin fee)
+      // If amount is set, generate a card payment link with the total (including admin fee)
       if (parsedAmount > 0) {
         const chargeAmount = hasFee ? totalCharge : parsedAmount;
         const recipientName = isManualOnly ? "Payment" : (selectedPupil?.name || "Payment");

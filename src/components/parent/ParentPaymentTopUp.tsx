@@ -44,15 +44,18 @@ export function ParentPaymentTopUp({ childId, childName, instructorId, currentBa
     if (!selectedAmount) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("pupil-payment-checkout", {
+      const orderReference = `PARENT-${childId.slice(0, 8)}-${Date.now()}`;
+      const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
         body: {
-          pupilId: childId,
-          instructorId,
-          amount: selectedAmount,
-          adminFee: hasFee ? adminFee : 0,
-          paymentMethod: "square",
+          amount: totalCharge,
+          orderReference,
+          customerName: childName,
+          description: `Top up ${childName}'s lesson account`,
           returnUrl: `${window.location.origin}/parent?payment=success&amount=${selectedAmount}`,
           cancelUrl: `${window.location.origin}/parent?payment=cancelled`,
+          instructorId,
+          pupilId: childId,
+          serviceFeePence: hasFee ? Math.round(adminFee * 100) : 0,
         },
       });
 
