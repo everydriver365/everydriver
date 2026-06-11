@@ -22,7 +22,7 @@ interface Props {
   /** @deprecated */ heroAlt?: string;
   title: string;
   subtitle: string;
-  hideAt?: "md" | "lg";
+  hideAt?: "md" | "lg" | "never";
 
   email: string;
   setEmail: (v: string) => void;
@@ -118,7 +118,7 @@ export function DarkMobileAuthForm({
   return (
     <div
       className={cn(
-        hideAt === "lg" ? "lg:hidden" : "md:hidden",
+        hideAt === "never" ? "" : hideAt === "lg" ? "lg:hidden" : "md:hidden",
         "fixed inset-0 z-40 flex flex-col overflow-hidden",
       )}
       style={{
