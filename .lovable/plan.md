@@ -1,53 +1,65 @@
-# Card payments → Ryft only (platform-wide)
+# What the "card details" section is
 
-Audit complete. Most card flows already go through `ryft-create-checkout`, but **several user-facing surfaces still mount Square components**. The biggest one is `/pay/:instructorId` — every "Share payment link" and QR link lands there and currently renders Square.
+At the bottom of the booking flow, the **CoursePaymentBlock** renders a list of payment-method tiles (Card / Klarna / Clearpay / Bank / Cash). The "Card" tile is the section you're seeing — it's the entry point for paying by Visa / Mastercard / Amex.
 
-Klarna, Clearpay, Cash, Bank, GoCardless, SumUp are out of scope (intentional).
+# Is it wired in?
 
-## What stays as-is (already correct)
-- Pupil portal modal + drawer card button → Ryft
-- Parent top-up → Ryft
-- Instructor "Take Payment" modal → Ryft
-- PupilPaymentsManager link generation → Ryft
-- Both BookingSummary "Pay by Card" buttons → Ryft
-- `public-start-payment` dispatch → Ryft (just misleadingly named)
+**On mobile** (`MobileBookingView`): Yes. Tapping "Pay by Card" calls `ryft-create-checkout` and redirects to the Ryft hosted page. ✅
 
-## Changes
+**On desktop** (`src/pages/BookingSummary.tsx` and `src/pages/everydriver/BookingSummary.tsx`): **No — it's broken.** The Card tile's handler is `handleElavonCheckout`, which only sets a `showHostedFields` flag. That flag is then passed into `MobileBookingView` (which never renders on desktop) and into a deleted Square embedded checkout — so on desktop the button does nothing.
 
-### 1. `src/pages/PublicPaymentPage.tsx` — highest priority
-Every shared payment link and QR (`/pay/:instructorId`) lands here and currently renders `SquareWalletButtons` + `SquarePaymentForm`. Replace the Square section with a single "Pay by Card" button that calls `ryft-create-checkout` and redirects to the hosted checkout URL (same pattern as `PupilPaymentModal`). Keep amount input, BNPL options, and branding untouched.
+There are also dozens of lingering Square references (state, handlers, props, gateway-health checks, query-param keys, the Square card logo image, stale comments) even though the Square card form itself was removed earlier.
 
-### 2. `src/components/pupil-portal/PupilPaymentDrawer.tsx`
-Remove the `<SquareWalletButtons>` mount at line ~388 (Express Checkout block). Apple Pay / Google Pay on Ryft will come through the hosted checkout when the user taps the existing Ryft "Pay by Card" button — no separate wallet button needed. Leave the `isNativeWrapper` → `PayInSafariButton` branch (already Ryft).
+# Plan
 
-### 3. `src/pages/BookingSummary.tsx` and `src/pages/everydriver/BookingSummary.tsx`
-Remove the `SquarePaymentForm` / `SquareWalletButtons` mounts (lines ~2113 / ~2136, ~2164). The Ryft "Pay by Card" button already exists in both files — Square is now duplicate/dead UI underneath it.
+## 1. Make the desktop Card tile actually pay (via Ryft)
 
-### 4. `src/components/instructor/AddLessonSheet.tsx`
-No code change needed — once `PublicPaymentPage` is Ryft (step 1), the `/pay/${slug}` link this opens is automatically correct.
+In both `src/pages/BookingSummary.tsx` and `src/pages/everydriver/BookingSummary.tsx`:
 
-### 5. `supabase/functions/public-start-payment/index.ts`
-Accept `method: "card"` as the preferred name and keep `"square"` as a deprecated alias (so old QR/links keep working). Both dispatch to `ryft-create-checkout`.
+- Replace `handleElavonCheckout` with a new `handleCardCheckout` that:
+  - Validates pupil details + schedule (same gate as today).
+  - Calls `ensureBookingCreated(paymentOption === 'deposit' ? 'deposit' : 'full', amount)` to create the pending booking.
+  - Invokes `supabase.functions.invoke("ryft-create-checkout", { … serviceFeePence, returnUrl `…?ryft=success`, cancelUrl `…?ryft=cancelled` })`.
+  - Redirects via `window.location.href = data.url`.
+  - Mirrors the implementation already used in `MobileBookingView` and `PupilPaymentModal`.
+- Pass `handleCardCheckout` to `CoursePaymentBlock` as `onCardCheckout` (replacing the dead Elavon handler).
 
-### 6. `supabase/functions/pupil-payment-checkout/index.ts`
-Remove the dead `gateway: "npi"` / Cardstream branch (no UI caller passes it; Cardstream is on the forbidden-gateways list).
+## 2. Remove dead "hosted fields" / embedded Square plumbing
 
-### 7. Cleanup (delete dead files, no behaviour change)
-- `src/components/booking/BookingWalletButtons.tsx` — no mount points
-- After steps 1–3, the following are no longer imported anywhere and are safe to delete:
-  - `src/components/payments/SquareWalletButtons.tsx`
-  - `src/components/payments/SquarePaymentForm.tsx`
-  - `src/components/pupil-portal/SquareWalletButtons.tsx`
-- Keep `square-invoice-manage` and `SquareInvoicesPage.tsx` (invoice management, not checkout). Keep `square-webhook` for historic settlement.
+- Delete `showHostedFields` state, the auto-`setShowHostedFields(true)` effect, and every `setShowHostedFields(true)` call site.
+- Remove `showEmbeddedCheckout`, `embeddedCheckoutPupilId`, `onEmbeddedCheckoutSuccess`, `onEmbeddedCheckoutCancel` props on the `MobileBookingView` render and from `MobileBookingView`'s prop type. The mobile flow already does its own Ryft redirect.
 
-## Out of scope
-- QR URL values stored in `instructors.payment_qr_url*` — these are just raw URLs admins paste in. Once `PublicPaymentPage` is Ryft-only, existing links that point to `/pay/<slug>` automatically use Ryft. Any QR pointing at a Square-hosted URL (rare) is an admin data fix, not code.
-- Klarna / Clearpay branches in `pupil-payment-checkout` — intentional BNPL.
-- Square invoices page — historic data view, not a card processor.
+## 3. Remove every remaining Square reference (booking surfaces)
 
-## Technical detail
-- New Ryft button payload mirrors `PupilPaymentModal.tsx:284`: `{ amount, orderReference, customerName, customerEmail, customerPhone, description, returnUrl, cancelUrl, instructorId, pupilId, serviceFeePence }`.
-- `orderReference` format: keep existing prefix per surface (`PUPIL-…`, `PARENT-…`, `PUBLIC-…`).
-- No DB migrations. No edge-function secret changes. `ryft-create-checkout` already deployed.
+Files: `src/pages/BookingSummary.tsx`, `src/pages/everydriver/BookingSummary.tsx`, `src/components/booking/MobileBookingView.tsx`, `src/components/booking/CoursePaymentBlock.tsx`.
 
-Shall I proceed?
+- Drop `isSquareLoading`, `handleSquareCheckout`, `squareAvailable` prop on `CoursePaymentBlock` (and the `disabledExtra: !squareAvailable` gate — replace with `false` since Ryft availability is assumed).
+- Drop `square` from the `gatewayHealth` type/initialiser and from the `cancelKeys` array used to clear stale query params (keep `gocardless`, `clearpay`, `npi`, add `ryft`).
+- Drop `onNPICheckout={handleElavonCheckout}` plumbing (legacy alias).
+- Replace `squareCardsLogo` (`@/assets/square-cards-3.jpg`) usages with a neutral "Visa · Mastercard · Amex" text row, or with an existing card-network logo asset if available. Remove the import. (We will not delete the asset file itself in this pass.)
+- Rewrite stale comments (`// SquarePaymentForm import removed`, `{/* Square card form removed */}`, etc.) — just delete them.
+- Rename `?square=success` / `?square=cancelled` return/cancel URL params to `?ryft=...` everywhere they remain.
+
+## 4. Out of scope (intentionally untouched)
+
+- `src/pages/instructor/SquareInvoicesPage.tsx` and the `square-invoice-manage` / `square-webhook` edge functions — these are historic invoice/settlement views, not card processors. Per existing memory they stay.
+- All `MessageSquare`, `Iconn`, etc. lucide-icon names — unrelated to Square payments.
+- Ryft edge functions and `pupil-payment-checkout` (already migrated).
+
+## Technical notes
+
+- The new `handleCardCheckout` payload mirrors `PupilPaymentModal` / `MobileBookingView`:
+  ```ts
+  await supabase.functions.invoke("ryft-create-checkout", {
+    body: {
+      instructorId: instructor.id,
+      pupilId,
+      amountPence: Math.round(amount * 100),
+      serviceFeePence: Math.round(effectiveAdminFee * 100),
+      description: `${courseName} - ${hours}h`,
+      returnUrl: `${origin}/booking-confirmation?pupilId=${pupilId}&ryft=success`,
+      cancelUrl: `${origin}/book/${instructor.id}?hours=${hours}&ryft=cancelled`,
+    },
+  });
+  ```
+- After the edit, the only card processor reachable from any booking surface is Ryft. Square remains only in the (separate) historic invoice page.
