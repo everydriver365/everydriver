@@ -20,6 +20,7 @@ interface Body {
   pupilId?: string;
   serviceFeePence?: number;
   platformFeePence?: number;
+  reservationId?: string;        // links the checkout to a course_reservations row
 }
 
 function ryftBase(env: string): string {
