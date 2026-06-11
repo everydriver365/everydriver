@@ -105,99 +105,141 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   const navigate = useNavigate();
 
   const hasInitialised = useRef(false);
+  // Tracks the auth user we've already hydrated (or are hydrating) so
+  // overlapping events (getSession + SIGNED_IN + manual signIn) cannot
+  // schedule duplicate backend round-trips.
+  const hydratedUserIdRef = useRef<string | null>(null);
+  const hydrationInFlightRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
+
+  // Defined later — refs let the auth-state callback dispatch hydration
+  // WITHOUT awaiting anything inside the Supabase auth lock (deadlock fix).
+  const hydrateRef = useRef<(userId: string) => void>(() => {});
 
   useEffect(() => {
     if (hasInitialised.current) return;
     hasInitialised.current = true;
-    let mounted = true;
+    mountedRef.current = true;
     const isInstructorPortalPath = () => window.location.pathname.startsWith('/instructor');
-    const loadInstructorProfile = (userId: string) => {
-      // Fast path: indexed RPC bundle gets the shell rendered + redirect off
-      // the login screen. Wide 70-col fetch runs in the background so it can
-      // never block sign-in even when the DB is slow.
-      void loadInstructorSessionBundle();
-      window.setTimeout(() => {
-        if (mounted) void fetchInstructorProfile(userId);
-      }, 0);
-    };
 
     const initialSessionTimeout = window.setTimeout(() => {
-      if (!mounted) return;
+      if (!mountedRef.current) return;
       // Non-destructive: stop the spinner but DO NOT null an existing
-      // persisted session. If getSession() eventually resolves, the .then
-      // handler still wins. This avoids logging out valid users on a slow
-      // cold-start network.
+      // persisted session.
       console.warn(`${AUTH_LOG_PREFIX} initial session check slow — releasing spinner`);
       setLoading(false);
     }, INITIAL_SESSION_TIMEOUT_MS);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      window.clearTimeout(initialSessionTimeout);
-      console.info(`${AUTH_LOG_PREFIX} initial session checked`, {
-        hasSession: Boolean(session),
-      });
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      const userId = session?.user?.id;
-      if (userId) {
-        setLoading(false);
-        loadInstructorProfile(userId);
-      } else {
-        setInstructor(null);
-        setSubscription(null);
-        setLoading(false);
-      }
-    }).catch((error) => {
-      if (!mounted) return;
-      window.clearTimeout(initialSessionTimeout);
-      console.warn(`${AUTH_LOG_PREFIX} initial session check failed`, error);
-      setSession(null);
-      setUser(null);
-      setInstructor(null);
-      setSubscription(null);
-      setLoading(false);
-      if (isInstructorPortalPath()) {
-        navigate('/instructor-app/login', { replace: true });
-      }
-    });
-
+    // CRITICAL: onAuthStateChange must NEVER await Supabase calls inline —
+    // doing so deadlocks the auth lock and causes subsequent signIn/getSession
+    // to hang forever (known supabase-js issue). We update local React state
+    // synchronously and defer ALL backend hydration via setTimeout.
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!mounted) return;
-        if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT') return;
-
+      (event, nextSession) => {
+        if (!mountedRef.current) return;
         console.info(`${AUTH_LOG_PREFIX} auth state changed`, {
           event,
-          hasSession: Boolean(session),
+          hasSession: Boolean(nextSession),
         });
-        setSession(session);
-        setUser(session?.user ?? null);
 
-        const userId = session?.user?.id;
-        if (event === 'SIGNED_IN' && userId) {
-          setLoading(false);
-          loadInstructorProfile(userId);
-        }
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
 
         if (event === 'SIGNED_OUT') {
+          hydratedUserIdRef.current = null;
+          hydrationInFlightRef.current = null;
           setInstructor(null);
           setSubscription(null);
           setLoading(false);
           if (isInstructorPortalPath()) {
             navigate('/instructor-app/login', { replace: true });
           }
+          return;
+        }
+
+        const userId = nextSession?.user?.id;
+        if (userId) {
+          window.setTimeout(() => {
+            if (!mountedRef.current) return;
+            hydrateRef.current(userId);
+          }, 0);
         }
       }
     );
 
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      if (!mountedRef.current) return;
+      window.clearTimeout(initialSessionTimeout);
+      console.info(`${AUTH_LOG_PREFIX} initial session checked`, {
+        hasSession: Boolean(initialSession),
+      });
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
+
+      const userId = initialSession?.user?.id;
+      if (userId) {
+        window.setTimeout(() => {
+          if (!mountedRef.current) return;
+          hydrateRef.current(userId);
+        }, 0);
+      } else {
+        setInstructor(null);
+        setSubscription(null);
+        setLoading(false);
+      }
+    }).catch((error) => {
+      if (!mountedRef.current) return;
+      window.clearTimeout(initialSessionTimeout);
+      console.warn(`${AUTH_LOG_PREFIX} initial session check failed`, error);
+      setLoading(false);
+      if (isInstructorPortalPath()) {
+        navigate('/instructor-app/login', { replace: true });
+      }
+    });
+
     return () => {
-      mounted = false;
+      mountedRef.current = false;
       window.clearTimeout(initialSessionTimeout);
       authSubscription.unsubscribe();
     };
   }, []);
+
+  // Single hydration entry point. Safe to call from anywhere OUTSIDE the
+  // Supabase auth lock. De-duplicates concurrent calls per user id.
+  const hydrateInstructorForUser = (userId: string) => {
+    if (!mountedRef.current) return;
+    if (hydrationInFlightRef.current === userId) return;
+    if (hydratedUserIdRef.current === userId) {
+      // Already hydrated; ensure spinner is released and we leave login.
+      setLoading(false);
+      if (
+        window.location.pathname === '/instructor-app/login' ||
+        window.location.pathname === '/instructor/login'
+      ) {
+        navigate('/instructor', { replace: true });
+      }
+      return;
+    }
+    hydrationInFlightRef.current = userId;
+    void loadInstructorSessionBundle()
+      .catch((err) => {
+        console.warn(`${AUTH_LOG_PREFIX} session bundle dispatch failed`, err);
+      })
+      .finally(() => {
+        if (!mountedRef.current) return;
+        // Mark hydrated even on soft errors so we don't thrash; bundle
+        // function manages its own error/loading state.
+        hydratedUserIdRef.current = userId;
+        hydrationInFlightRef.current = null;
+        // Wide background fetch — never blocks redirect.
+        window.setTimeout(() => {
+          if (mountedRef.current) void fetchInstructorProfile(userId);
+        }, 0);
+      });
+  };
+
+  // Wire the ref so the auth callback can dispatch without closing over state.
+  hydrateRef.current = hydrateInstructorForUser;
 
   const fetchInstructorProfile = async (userId: string) => {
     const startedAt = performance.now();
@@ -495,20 +537,19 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       setUser(data.session.user ?? null);
     }
 
-    // Load the minimal session bundle (RPC: indexed, one round-trip). The
-    // pending-deletion check now lives inside that RPC, so we don't need a
-    // second blocking SELECT here.
+    // Dispatch hydration through the shared, deduplicated path. The
+    // onAuthStateChange SIGNED_IN event will also schedule hydration, but
+    // hydrationInFlightRef/hydratedUserIdRef ensure exactly one runs.
     const authUserId = data.session?.user?.id ?? data.user?.id;
     if (authUserId) {
       setLoading(true);
-      const bundleErr = await loadInstructorSessionBundle();
-      if (bundleErr) {
-        // Surface the real reason; the login screen will show it.
-        return { error: bundleErr, session: null };
+      // Reset hydration markers in case of re-login as the same user after
+      // sign-out within the same page session.
+      if (hydratedUserIdRef.current !== authUserId) {
+        hydratedUserIdRef.current = null;
+        hydrationInFlightRef.current = null;
       }
-      // Background-load the wide profile so dashboards have rich data, but
-      // don't block the redirect on it.
-      void fetchInstructorProfile(authUserId);
+      window.setTimeout(() => hydrateRef.current(authUserId), 0);
     }
 
     return { error: null, session: data.session };
