@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
 
-import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
+// SquarePaymentForm import removed — card payments go through Ryft
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
@@ -22,7 +22,7 @@ import { MobileBookingView } from "@/components/booking/MobileBookingView";
 import { EnquiryFlow } from "@/components/booking/EnquiryFlow";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { CoursePaymentBlock } from "@/components/booking/CoursePaymentBlock";
-import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
+// SquareWalletButtons import removed — card payments go through Ryft
 import { KlarnaPaymentModal } from "@/components/payments/KlarnaPaymentModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -2092,48 +2092,8 @@ export default function BookingSummary() {
         />
         </div>
 
-        {showHostedFields && courseDetails && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6 rounded-2xl border bg-card p-4 sm:p-6 shadow-sm"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-primary" />
-                Enter card details
-              </h3>
-              <button
-                onClick={() => setShowHostedFields(false)}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-            <SquarePaymentForm
-              amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-              pupilId={bookingPupilId || undefined}
-              instructorId={instructor.id}
-              customerName={pupilName.trim()}
-              customerEmail={pupilEmail.trim()}
-              onCancel={() => setShowHostedFields(false)}
-              onPaid={async () => {
-                const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
-                const fullPaymentAmount = totalPrice + upsellTotal;
-                const pupilId = await ensureBookingCreated(
-                  isDepositPayment ? 'deposit' : 'full',
-                  isDepositPayment ? depositAmount : fullPaymentAmount
-                );
-                toast.success("Payment successful!");
-                if (pupilId) {
-                  await triggerConfirmBooking(pupilId);
-                  clearDraft();
-                  navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
-                }
-              }}
-            />
-          </motion.div>
-        )}
+        {/* Square card form removed — card payments now use Ryft via the embedded checkout in the refactored summary component */}
+
 
         {/* Cancellation Policy */}
         {cancellationPolicyText && (

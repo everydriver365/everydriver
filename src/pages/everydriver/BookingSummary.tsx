@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
 
-import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
+// SquarePaymentForm import removed — card payments go through Ryft
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
@@ -24,7 +24,7 @@ import { EnquiryFlow } from "@/components/booking/EnquiryFlow";
 import { CoursePaymentBlock } from "@/components/booking/CoursePaymentBlock";
 import { TestSwapOptInCard, type SwapPreference } from "@/components/everydriver/TestSwapOptInCard";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
-import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
+// SquareWalletButtons import removed — card payments go through Ryft
 import { KlarnaPaymentModal } from "@/components/payments/KlarnaPaymentModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -2115,74 +2115,8 @@ export default function BookingSummary() {
         </ErrorBoundary>
 
         {/* Square hosted card form (revealed after card checkout) */}
-        {showHostedFields && courseDetails && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6 rounded-2xl border bg-card p-4 sm:p-6 shadow-sm"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-[#142040]" />
-                Enter Card Details
-              </h3>
-              <button
-                onClick={() => setShowHostedFields(false)}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-            <SquarePaymentForm
-              amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-              pupilId={bookingPupilId || undefined}
-              instructorId={instructor.id}
-              customerName={pupilName.trim()}
-              customerEmail={pupilEmail.trim()}
-              onCancel={() => setShowHostedFields(false)}
-              onPaid={async () => {
-                const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
-                const fullPaymentAmount = totalPrice + upsellTotal;
-                const pupilId = await ensureBookingCreated(
-                  isDepositPayment ? 'deposit' : 'full',
-                  isDepositPayment ? depositAmount : fullPaymentAmount
-                );
-                toast.success("Payment successful!");
-                if (pupilId) {
-                  await triggerConfirmBooking(pupilId);
-                  clearDraft();
-                  navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
-                }
-              }}
-            />
-          </motion.div>
-        )}
+        {/* Square card form + Apple/Google Pay express checkout removed — card payments now use Ryft via the embedded checkout above */}
 
-        {/* Express Checkout - Apple/Google Pay */}
-        {canSubmit && (
-          <div className="mt-4">
-            <SquareWalletButtons
-              amount={totalPrice + upsellTotal}
-              instructorId={instructor.id}
-              customerName={pupilName}
-              customerEmail={pupilEmail}
-              onPaid={async () => {
-                const pupilId = bookingPupilId;
-                if (pupilId) {
-                  await triggerConfirmBooking(pupilId);
-                  clearDraft();
-                  navigate(`/booking-confirmation?pupilId=${pupilId}`);
-                }
-              }}
-              onProcessing={(p) => setIsSubmitting(p)}
-              disabled={isSubmitting || isElavonLoading || isClearpayLoading}
-              ensureBookingCreated={async () => {
-                const id = await ensureBookingCreated();
-                return id;
-              }}
-            />
-          </div>
-        )}
 
         {/* Cancellation Policy */}
         {cancellationPolicyText && (
