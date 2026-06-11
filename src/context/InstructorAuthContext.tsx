@@ -180,9 +180,6 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
 
   useEffect(() => {
     let mounted = true;
-    const isInstructorLoginPath = () =>
-      window.location.pathname === '/instructor-app/login' ||
-      window.location.pathname === '/instructor/login';
     const isInstructorPortalPath = () => window.location.pathname.startsWith('/instructor');
     const loadInstructorProfile = (userId: string) => {
       window.setTimeout(() => {
@@ -202,9 +199,6 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       if (userId) {
         setLoading(false);
         loadInstructorProfile(userId);
-        if (isInstructorLoginPath()) {
-          navigate('/instructor', { replace: true });
-        }
       } else {
         setInstructor(null);
         setSubscription(null);
@@ -228,9 +222,6 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         if (event === 'SIGNED_IN' && userId) {
           setLoading(false);
           loadInstructorProfile(userId);
-          if (isInstructorLoginPath()) {
-            navigate('/instructor', { replace: true });
-          }
         }
 
         if (event === 'SIGNED_OUT') {
@@ -274,6 +265,12 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
 
       if (instructorData) {
         setInstructor(instructorData);
+        if (
+          window.location.pathname === '/instructor-app/login' ||
+          window.location.pathname === '/instructor/login'
+        ) {
+          navigate('/instructor', { replace: true });
+        }
 
         // Fetch subscription
         const subscriptionStartedAt = performance.now();
