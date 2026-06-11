@@ -273,6 +273,44 @@ export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSetting
         />
       </div>
 
+      {/* Start-date-only booking */}
+      <div className="flex items-center justify-between rounded-2xl border p-4">
+        <div className="flex items-center gap-3">
+          <CalendarDays className="h-5 w-5 text-indigo-500" />
+          <div>
+            <Label className="text-base">Reserve start date only</Label>
+            <p className="text-sm text-muted-foreground">
+              Let pupils book a course by picking only a start date and their availability windows. You arrange exact lesson times together afterwards.
+            </p>
+          </div>
+        </div>
+        <Switch
+          checked={current.allow_start_date_only_booking}
+          onCheckedChange={(v) => updateField('allow_start_date_only_booking', v)}
+        />
+      </div>
+
+      {current.allow_start_date_only_booking && (
+        <div className="ml-4 pl-4 border-l-2">
+          <Label className="text-sm">Maximum hours per week the pupil can request</Label>
+          <Input
+            type="number"
+            min={1}
+            max={60}
+            placeholder="e.g. 10 (leave blank for no cap)"
+            value={current.start_date_only_max_hours_per_week ?? ''}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              updateField('start_date_only_max_hours_per_week', Number.isFinite(n) && n > 0 ? n : null);
+            }}
+            className="mt-1 max-w-[260px]"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Caps the "hours per week" slider on the pupil's booking form so capacity checks stay realistic.
+          </p>
+        </div>
+      )}
+
       {/* Save handled by the sticky settings save bar */}
     </div>
   );
