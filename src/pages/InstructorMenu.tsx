@@ -13,7 +13,7 @@ import {
   Clock, Bell, FileText, Palette, Layout, Sparkles, PoundSterling,
   BookOpen, Trash2, Database, FileSignature, Banknote, Shield, CalendarClock,
   ImageIcon, Video, ImagePlus, Paintbrush, Tag, ClipboardList, AlertTriangle,
-  Gift, LayoutGrid, Satellite, Phone, Plug,
+  Gift, LayoutGrid, Satellite, Phone, Plug, CalendarDays,
 } from "lucide-react";
 
 // Custom PNG icons (only Square logo still used for branded tile)
@@ -49,6 +49,7 @@ import { PushNotificationSettings } from "@/components/instructor/PushNotificati
 import NotificationPreferencesPanel from "@/components/instructor/notifications/NotificationPreferencesPanel";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { PupilBookingSettingsEditor } from "@/components/instructor/PupilBookingSettingsEditor";
+import { StartDateOnlyBookingEditor } from "@/components/instructor/StartDateOnlyBookingEditor";
 import { IcsCalendarSync } from "@/components/instructor/IcsCalendarSync";
 import { DataExportManager } from "@/components/instructor/DataExportManager";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
@@ -156,6 +157,7 @@ const allTiles: TileDef[] = [
   { id: "branding", title: "Pupil App Branding", description: "Customise your pupil portal", icon: Palette, tintBg: "#FFE4E6", tintColor: "#BE123C", category: "website" },
   { id: "pupil-self-service", title: "Pupil Self-Service Booking", description: "Let pupils book, cancel & reschedule", icon: CalendarClock, tintBg: "#ECFDF5", tintColor: "#059669", category: "scheduling" },
   { id: "working-hours", title: "Working Hours", description: "Set your availability", icon: Clock, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "scheduling" },
+  { id: "first-lesson-only", title: "Book First Lesson Only", description: "Let pupils reserve a start date and arrange times later", icon: CalendarDays, tintBg: "#EDE9FE", tintColor: "#5B21B6", category: "scheduling" },
   { id: "calendar", title: "Calendar Sync", description: "Sync lessons to your calendar", icon: Calendar, tintBg: "#DBEAFE", tintColor: "#1E40AF", category: "scheduling" },
   { id: "cancellation", title: "Cancellation Policy", description: "Set notice period & charges", icon: FileText, tintBg: "#F4F4F5", tintColor: "#52525B", category: "scheduling" },
   { id: "no-show-policy", title: "No-Show Policy", description: "Set fees for no-shows & late cancellations", icon: AlertTriangle, tintBg: "#FEF3C7", tintColor: "#92400E", category: "scheduling" },
@@ -595,6 +597,8 @@ export default function InstructorMenu() {
         return <PupilBookingSettingsEditor instructorId={instructorId} />;
       case "working-hours":
         return <WorkingHoursEditor instructorId={instructorId} />;
+      case "first-lesson-only":
+        return <StartDateOnlyBookingEditor instructorId={instructorId} />;
       case "calendar":
         return <IcsCalendarSync instructorId={instructorId} />;
       case "cancellation":

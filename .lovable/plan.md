@@ -1,44 +1,25 @@
-## Goal
+### Where the setting lives today
+The "Reserve start date only" toggle (plus its `max hours per week` input) is currently buried inside **Settings → Pupil Self-Service Booking** (`PupilBookingSettingsEditor`). It writes to `instructor_booking_settings.allow_start_date_only_booking` and `start_date_only_max_hours_per_week`.
 
-Surface paid `course_reservations` to the instructor so they know which pupils have reserved a start date and need lessons added to the calendar.
+### Goal
+Surface it as its own top-level link in the instructor settings menu, positioned **directly under "Working Hours"** in the Scheduling category.
 
-## Where it lives
+### Changes
+1. **New component** `src/components/instructor/StartDateOnlyBookingEditor.tsx`
+   - Reads/writes only `allow_start_date_only_booking` and `start_date_only_max_hours_per_week` on `instructor_booking_settings` (upsert on `instructor_id`).
+   - Same UI pattern as the existing section (toggle + conditional max-hours input).
+   - Hooks into `useOptionalSettingsDirty` so the sticky save bar works.
 
-Mount on the existing **`/instructor/pending-scheduling`** page (already used for prepaid pupils awaiting scheduling — the perfect home). Render the new card directly under the info banner, above the existing pupils list. No new route required.
+2. **`src/pages/InstructorMenu.tsx`**
+   - Add new item just after `working-hours` (line 158):
+     ```
+     { id: "first-lesson-only", title: "Book First Lesson Only", description: "Let pupils reserve a start date and arrange times later", icon: CalendarDays, tintBg: "#EDE9FE", tintColor: "#5B21B6", category: "scheduling" }
+     ```
+   - Add `case "first-lesson-only": return <StartDateOnlyBookingEditor instructorId={instructorId} />;` in the renderer switch.
 
-## New component
+3. **`src/components/instructor/settings/categories.tsx`**
+   - Add the same entry under the scheduling category right after `hours` (Working hours), pointing to the new component, so the desktop settings shell also lists it.
 
-`src/components/instructor/ReservationsAwaitingSchedulingCard.tsx`
-
-- Query `course_reservations` filtered by `instructor_id`, `payment_status = 'paid'`, `status IN ('awaiting_scheduling','partially_scheduled')`, ordered by `start_date asc`.
-- Joins `pupils` for name/phone/email.
-- Renders nothing if the list is empty (zero noise for instructors not using the feature).
-- Per row shows:
-  - Pupil name
-  - Hours remaining (`total_hours − hours_scheduled`) with a "partially scheduled" tag when applicable
-  - Start date + computed "Finish by" date (`start_date + completion_window_weeks`)
-  - Allowed days (Mon, Wed, Fri…) and time windows (Mornings/Afternoons/Evenings)
-  - Hours-per-week cap
-  - Action buttons: **Call**, **WhatsApp**, **Email** (using `pupils.phone` / `pupils.email`)
-  - **Add lesson** button → `/instructor/schedule?action=add&pupilId=…&reservationId=…`
-- Uses existing shadcn primitives (Card, Button, Badge) and follows portal radii (rounded-2xl rows).
-
-## Page edit
-
-`src/pages/InstructorPendingScheduling.tsx`
-
-- Import the new card.
-- Mount `<ReservationsAwaitingSchedulingCard instructorId={instructorId} />` immediately below the existing info banner (around line ~150).
-
-## Out of scope
-
-- Pre-filling the scheduler's day/time pickers from the reservation — for now the link just carries `reservationId` so a later iteration can pre-filter inside the scheduler.
-- Linking each created `scheduled_lessons` row to `reservation_id` from the scheduler UI (the DB column + trigger already exist; the scheduler write-path edit is a follow-up).
-- New dashboard tile/quick-action entry. Pupils with paid reservations already route instructors here via the existing "Pending Scheduling" surface.
-
-## Verification
-
-1. With no paid reservations, the card is invisible (returns null).
-2. After a successful Ryft reservation payment, the row appears with correct hours remaining, days, time windows, finish-by date, and contact buttons.
-3. "Add lesson" navigates to the scheduler with the pupil + reservation in the URL.
-4. Once enough `scheduled_lessons` are linked to the reservation, the existing trigger flips `status` to `completed` and the row drops off.
+### Out of scope
+- Leave the existing toggle inside `PupilBookingSettingsEditor` untouched so nothing breaks; both surfaces write to the same row.
+- No DB or mobile-layout changes.
