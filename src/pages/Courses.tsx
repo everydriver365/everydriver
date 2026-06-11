@@ -876,9 +876,17 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
     try {
       const whitelabelSlug = getWhitelabelInstructorSlug();
 
-      const [instructorsRes, templatesRes] = await Promise.all([
+      // PHASE 1 — load REAL instructors only (small set). Placeholders
+      // (~5,800 rows on `public_instructors`) are fetched in the background
+      // after the calendar renders so the page doesn't sit in a skeleton
+      // state for 10–20s on slow connections.
+      const [realInstructorsRes, templatesRes] = await Promise.all([
         fetchAllRows<any>(() => {
-          const q = supabase.from("public_instructors").select("*").eq("is_active", true);
+          const q = supabase
+            .from("public_instructors")
+            .select("*")
+            .eq("is_active", true)
+            .eq("is_network_placeholder", false);
           return whitelabelSlug ? q.eq("app_slug", whitelabelSlug) : q;
         }),
         supabase
@@ -887,19 +895,16 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
           .eq("is_active", true),
       ]);
 
-      if (instructorsRes.error) throw instructorsRes.error;
+      if (realInstructorsRes.error) throw realInstructorsRes.error;
       if (templatesRes.error) throw templatesRes.error;
 
-      const loadedInstructors = restrictSet
-        ? (instructorsRes.data || []).filter((i: any) => restrictSet.has(i.id))
-        : (instructorsRes.data || []);
-      const realInstructorIds = loadedInstructors
-        .filter((i: any) => !i.is_network_placeholder)
+      const loadedRealInstructors = restrictSet
+        ? (realInstructorsRes.data || []).filter((i: any) => restrictSet.has(i.id))
+        : (realInstructorsRes.data || []);
+      const realInstructorIds = loadedRealInstructors
         .map((i: any) => i.id)
         .filter(Boolean);
 
-      // Initial load must stay scoped to real instructors only. Placeholder
-      // courses are fetched lazily per searched postcode district.
       const coursesAll = await fetchCoursesForInstructorIds(realInstructorIds);
       const firstMonth = startOfDay(new Date());
       const lastMonthOption = monthOptions[monthOptions.length - 1];
@@ -913,24 +918,18 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
         rangeEnd,
       );
 
-      const loadedWorkingHourRows = loadedAvailabilitySources.workingHours;
-      const loadedAvailabilityWindowRows = loadedAvailabilitySources.availabilityWindows;
-      const loadedOverrides = loadedAvailabilitySources.overrides;
-      const loadedCalendarEvents = loadedAvailabilitySources.calendarEvents;
-      const loadedManualBlocks = loadedAvailabilitySources.manualBlocks;
-
-      setInstructors(loadedInstructors);
+      setInstructors(loadedRealInstructors);
       setInstructorCourses(coursesAll || []);
       setCourseTemplates(templatesRes.data || []);
-      setWorkingHourRows(loadedWorkingHourRows);
-      setAvailabilityWindowRows(loadedAvailabilityWindowRows);
-      setOverrideRows(loadedOverrides);
-      setCalendarEvents(loadedCalendarEvents);
-      setManualBlocks(loadedManualBlocks);
+      setWorkingHourRows(loadedAvailabilitySources.workingHours);
+      setAvailabilityWindowRows(loadedAvailabilitySources.availabilityWindows);
+      setOverrideRows(loadedAvailabilitySources.overrides);
+      setCalendarEvents(loadedAvailabilitySources.calendarEvents);
+      setManualBlocks(loadedAvailabilitySources.manualBlocks);
       setBookedLessonGeo(loadedAvailabilitySources.bookedLessonGeo || []);
 
       // Auto-advance to first available date (fallback to today so courses always render)
-      const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedAvailabilitySources);
+      const firstAvailable = findFirstAvailableDate(loadedRealInstructors, loadedAvailabilitySources);
       if (firstAvailable) {
         setSelectedMonth(firstAvailable.month);
         setSelectedDate(firstAvailable.date);
@@ -938,14 +937,11 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
         setSelectedDate(startOfDay(new Date()));
       }
 
-      // Geocode all instructor postcodes
-      const allPostcodes = (instructorsRes.data || [])
-        .filter((i: any) => !i.is_network_placeholder)
+      const allPostcodes = loadedRealInstructors
         .map((i: any) => (i.home_postcode || "").replace(/\s+/g, "").toUpperCase())
         .filter(Boolean);
       await geocodePostcodes(allPostcodes);
 
-      // Load postcode rate overrides for all visible instructors (single batched query)
       if (realInstructorIds.length) {
         const { data: rateRows } = await supabase
           .from("instructor_postcode_rates")
@@ -961,6 +957,35 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
+    }
+
+    // PHASE 2 — background load of network placeholder instructors with a
+    // slim column set. These are only needed so handleSearch() can resolve
+    // placeholder ids for the searched district when no real instructor
+    // covers it.
+    try {
+      const whitelabelSlug = getWhitelabelInstructorSlug();
+      if (whitelabelSlug) return;
+      const placeholdersRes = await fetchAllRows<any>(() =>
+        supabase
+          .from("public_instructors")
+          .select("id,name,home_postcode,placeholder_district,is_network_placeholder,is_active,lat,lng,profile_image_url,brand_colour,app_slug,hourly_rate,car_type")
+          .eq("is_active", true)
+          .eq("is_network_placeholder", true),
+      );
+      if (placeholdersRes.error) return;
+      const placeholders = restrictSet
+        ? (placeholdersRes.data || []).filter((i: any) => restrictSet.has(i.id))
+        : (placeholdersRes.data || []);
+      if (!placeholders.length) return;
+      setInstructors((prev) => {
+        const seen = new Set(prev.map((i: any) => i.id));
+        const merged = [...prev];
+        for (const p of placeholders) if (!seen.has(p.id)) merged.push(p);
+        return merged;
+      });
+    } catch (error) {
+      console.error("Error loading placeholder instructors:", error);
     }
   };
 
