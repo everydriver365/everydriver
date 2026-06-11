@@ -10,6 +10,8 @@ import { Calendar, Clock, User, MapPin, Phone, Mail, AlertCircle, CheckCircle, L
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { ScheduleLessonsDialog } from "@/components/instructor/ScheduleLessonsDialog";
+import { ReservationsAwaitingSchedulingCard } from "@/components/instructor/ReservationsAwaitingSchedulingCard";
+
 
 interface PendingPupil {
   id: string;
@@ -146,6 +148,9 @@ export default function InstructorPendingScheduling() {
             </div>
           </CardContent>
         </Card>
+
+        <ReservationsAwaitingSchedulingCard instructorId={instructorId} />
+
 
         {/* Loading State */}
         {isLoading && (
