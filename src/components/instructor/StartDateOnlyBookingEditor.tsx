@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Loader2, CalendarDays } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useOptionalSettingsDirty } from "@/components/instructor/settings/useOptionalSettingsDirty";
+import { SettingsDirtyContextRaw } from "@/components/instructor/settings/SettingsDirtyContext";
 
 interface Props {
   instructorId: string;
@@ -24,6 +26,10 @@ const DEFAULT: Row = {
 
 export function StartDateOnlyBookingEditor({ instructorId }: Props) {
   const queryClient = useQueryClient();
+  // Detect whether we're inside a SettingsDirtyProvider (desktop V3 shell)
+  // or rendered standalone (mobile sheet). When standalone, render our own
+  // Save button so the user's changes actually persist.
+  const hasProvider = useContext(SettingsDirtyContextRaw) !== null;
 
   const { data, isLoading } = useQuery({
     queryKey: ["instructor-booking-settings", instructorId],
@@ -42,6 +48,7 @@ export function StartDateOnlyBookingEditor({ instructorId }: Props) {
   const current = local ?? data ?? DEFAULT;
   const { register, setDirty } = useOptionalSettingsDirty();
   const dirty = local !== null;
+  const [saving, setSaving] = useState(false);
 
   const update = <K extends keyof Row>(key: K, value: Row[K]) =>
     setLocal((prev) => ({ ...(prev ?? current), [key]: value }));
@@ -60,6 +67,18 @@ export function StartDateOnlyBookingEditor({ instructorId }: Props) {
     }
     queryClient.invalidateQueries({ queryKey: ["instructor-booking-settings"] });
     setLocal(null);
+  };
+
+  const handleSaveClick = async () => {
+    setSaving(true);
+    try {
+      await save();
+      toast({ title: "Settings saved" });
+    } catch {
+      // toast already shown in save()
+    } finally {
+      setSaving(false);
+    }
   };
 
   useEffect(() => {
@@ -122,6 +141,17 @@ export function StartDateOnlyBookingEditor({ instructorId }: Props) {
             Caps the "hours per week" slider on the pupil's booking form so capacity checks stay realistic.
           </p>
         </div>
+      )}
+
+      {!hasProvider && (
+        <Button
+          type="button"
+          onClick={() => void handleSaveClick()}
+          disabled={!dirty || saving}
+          className="w-full"
+        >
+          {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving…</> : "Save changes"}
+        </Button>
       )}
     </div>
   );
