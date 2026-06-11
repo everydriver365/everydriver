@@ -21,6 +21,7 @@ export function BookingBottomBar({
   isPupilDetailsComplete = false,
   isFullyScheduled = false,
   requiresSlotSelection = true,
+  disabledReason = null,
 }: BookingBottomBarProps) {
   // Determine contextual button text
   let buttonText = "Fill Your Details";
