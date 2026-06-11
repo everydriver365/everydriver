@@ -271,6 +271,11 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
 
   const fetchInstructorProfile = async (userId: string) => {
     const startedAt = performance.now();
+    // Hard safety: never leave the spinner up forever if the query hangs.
+    const safetyTimeout = window.setTimeout(() => {
+      console.warn(`${AUTH_LOG_PREFIX} instructor profile fetch timed out`);
+      setLoading(false);
+    }, 8000);
     try {
       console.info(`${AUTH_LOG_PREFIX} instructor profile fetch started`);
       // Fetch instructor profile linked to this auth user
@@ -335,13 +340,21 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
             features: planData?.features || [],
           });
         }
+      } else {
+        // Authenticated but no linked instructor row — clear any stale data and
+        // let the UI surface a "no profile linked" state instead of spinning.
+        console.warn(`${AUTH_LOG_PREFIX} no instructor profile linked to auth user`, { userId });
+        setInstructor(null);
+        setSubscription(null);
       }
     } catch (error) {
       console.error(`${AUTH_LOG_PREFIX} profile loading failed`, error);
     } finally {
+      window.clearTimeout(safetyTimeout);
       setLoading(false);
     }
   };
+
 
   const signUp = async (email: string, password: string, name: string) => {
     const redirectUrl = `${window.location.origin}/instructor-app/login`;
@@ -469,6 +482,18 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
               error: errMsg,
             });
           }
+        }
+
+        // Eagerly hydrate context state and load the instructor profile so the
+        // redirect to /instructor doesn't depend on the onAuthStateChange event
+        // firing (which can be missed or delayed in some browsers).
+        if (data.session) {
+          setSession(data.session);
+          setUser(data.session.user ?? null);
+        }
+        if (authUserId) {
+          setLoading(true);
+          void fetchInstructorProfile(authUserId);
         }
 
         return { error: null, session: data.session };

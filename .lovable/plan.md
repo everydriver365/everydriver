@@ -1,24 +1,30 @@
-## Why the Profile page is blank
-Your `kenneth@dufosse.co.uk` login is correctly linked to the "Ken D" instructor record and all profile fields are populated in the database. The page is blank because the Settings hub renders before the auth context finishes loading your instructor row, so it passes an empty `instructorId` down to the Profile editor. The editor's data fetch is guarded by `if (!instructorId) return`, so nothing loads and the form keeps its empty defaults.
+## What I found
 
-## Fix
-Gate the Settings hub on the auth context's `loading` flag and on having a real `instructor.id` before mounting any child that takes `instructorId` as a prop.
+- Kenneth’s password login is accepted by the backend.
+- His account is linked to an instructor profile: **Ken D**.
+- The profile email is **info@drive365.co.uk**, but it is linked to the login account ID for **kenneth@dufosse.co.uk**, so the email mismatch is not the blocker.
+- The likely failure is in the app after login: the login screen waits for an auth state event to load the instructor profile and redirect to `/instructor`. If that event is delayed or missed, the button can stay spinning or the user remains on `/instructor-app/login` even though authentication succeeded.
 
-### Changes
-1. **`src/pages/instructor/InstructorSettingsHub.tsx`**
-   - Pull `loading` from `useInstructorAuth()` alongside `instructor`.
-   - While `loading` is true, render a centered spinner inside `InstructorPortalLayout` instead of `SettingsShellV3` / `SettingsLayout`.
-   - After loading, if `instructor?.id` is missing (auth user with no linked instructor row), show a clear "No instructor profile linked to this account" message with a contact-support note — never render the editors with an empty id.
-   - Only when `instructor?.id` exists, render `SettingsShellV3 instructorId={instructor.id}` (desktop) or the mobile `SettingsLayout`.
+## Plan
 
-2. **`src/components/instructor/settings/profile-v2/ProfileSettingsDesktop.tsx`** (defensive)
-   - Keep the existing `if (!instructorId) return;` guard but, when `instructorId` is falsy on mount, leave `loading=true` (already true) so a spinner shows rather than the empty form. No behavioural change when an id is present.
+1. **Make sign-in deterministic**
+   - After `signInWithPassword` succeeds, immediately set the local session/user state inside `InstructorAuthContext`.
+   - Immediately load the linked instructor profile using the returned auth user ID instead of relying only on `onAuthStateChange`.
 
-### What this will not change
-- No DB / RLS / auth changes — the data and policies are already correct.
-- No edits to mobile layouts beyond the empty-id guard above (per project rule).
-- No change to the login flow that was fixed earlier.
+2. **Redirect only after profile lookup completes**
+   - If a linked instructor profile is found, redirect to `/instructor`.
+   - If no instructor profile is found, show a clear account-linking message instead of spinning.
 
-### How we'll verify
-- Reload `/instructor/settings` while logged in as kenneth@dufosse.co.uk → spinner briefly, then the Profile tab shows name "Ken D", email `info@drive365.co.uk`, phone `07944671881`, bio, postcode `SO30 2TD`, vehicle Toyota Yaris Automatic, etc.
-- Console shows `[InstructorAuth] instructor profile fetch finished found: true` once, no loops.
+3. **Add a safety timeout around profile loading**
+   - If the instructor profile query hangs, stop the spinner and show a retry/error message.
+   - Do not silently leave the login form in `Signing in…` state.
+
+4. **Keep sign-out/session fixes intact**
+   - Preserve the recent local sign-out hardening.
+   - Avoid changing mobile layout or unrelated auth flows.
+
+## Technical details
+
+- Update `src/context/InstructorAuthContext.tsx` so successful `signIn()` calls `setSession`, `setUser`, and `fetchInstructorProfile(authUserId)` directly.
+- Make `fetchInstructorProfile` return whether a profile was found, so login can resolve cleanly.
+- Keep the auth listener for page refreshes and sign-out, but stop using it as the only post-login redirect path.
