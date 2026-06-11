@@ -19,14 +19,15 @@ import { PreferenceSelector } from "@/components/booking/PreferenceSelector";
 import { AutoSchedulePreview } from "@/components/booking/AutoSchedulePreview";
 import { InstructorAssignsView } from "@/components/booking/InstructorAssignsView";
 
-import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { BookingBottomBar } from "@/components/booking/BookingBottomBar";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
+// SquarePaymentForm import removed — card payments go through Ryft hosted checkout
 import { BookingFormField } from "@/components/booking/BookingFormField";
 import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanner";
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
@@ -909,26 +910,12 @@ export function MobileBookingView({
 
           {/* Payment Options */}
           <div className="space-y-2">
-            {/* Express Checkout - Apple/Google Pay */}
-            {canSubmit && (
-              <SquareWalletButtons
-                amount={totalPrice + upsellTotal}
-                instructorId={instructor.id}
-                customerName={pupilName}
-                customerEmail={pupilEmail}
-                onPaid={() => onWalletSuccess(embeddedCheckoutPupilId || "")}
-                onProcessing={setIsWalletProcessing}
-                disabled={isWalletProcessing || isSubmitting || isNPILoading || isClearpayLoading}
-                ensureBookingCreated={ensureBookingCreated}
-              />
-            )}
-
-            {/* NPI Card Payment - Recommended */}
+            {/* Card Payment — Ryft hosted checkout (Recommended) */}
             <div className="rounded-lg border-2 border-primary p-3 bg-primary/5 relative">
               <div className="absolute -top-2 right-3 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
                 Recommended
               </div>
-              
+
               {/* Deposit Toggle */}
               {depositEnabled && (
                 <div className="mb-3 p-2 rounded-lg bg-background/60 border space-y-2">
@@ -936,8 +923,8 @@ export function MobileBookingView({
                     <button
                       onClick={() => setPaymentOption('full')}
                       className={`flex-1 p-2 rounded-lg border text-center text-xs transition-all ${
-                        paymentOption === 'full' 
-                          ? 'border-primary bg-primary/10 font-semibold' 
+                        paymentOption === 'full'
+                          ? 'border-primary bg-primary/10 font-semibold'
                           : 'border-border hover:border-primary/50'
                       }`}
                     >
@@ -947,8 +934,8 @@ export function MobileBookingView({
                     <button
                       onClick={() => setPaymentOption('deposit')}
                       className={`flex-1 p-2 rounded-lg border text-center text-xs transition-all ${
-                        paymentOption === 'deposit' 
-                          ? 'border-primary bg-primary/10 font-semibold' 
+                        paymentOption === 'deposit'
+                          ? 'border-primary bg-primary/10 font-semibold'
                           : 'border-border hover:border-primary/50'
                       }`}
                     >
@@ -965,18 +952,45 @@ export function MobileBookingView({
                     <span className="rounded bg-green-600 px-2 py-0.5 text-xs font-bold text-white">💳 Pay by Card</span>
                     <img src={squareCardsLogo} alt="Visa, Mastercard, Amex" className="h-5 object-contain" />
                   </div>
-                  <SquarePaymentForm
-                    amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-                    pupilId={embeddedCheckoutPupilId || undefined}
-                    instructorId={instructor.id}
-                    customerName={pupilName.trim()}
-                    customerEmail={pupilEmail.trim()}
-                    onPaid={onEmbeddedCheckoutSuccess}
-                    onCancel={onEmbeddedCheckoutCancel}
-                  />
+                  <Button
+                    className="w-full"
+                    disabled={isSubmitting || isWalletProcessing}
+                    onClick={async () => {
+                      const payAmount = paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal;
+                      setIsWalletProcessing(true);
+                      try {
+                        const pid = embeddedCheckoutPupilId || (await ensureBookingCreated?.());
+                        const orderReference = `BOOK-${(pid || 'anon').toString().slice(0, 8)}-${Date.now()}`;
+                        const baseUrl = window.location.origin;
+                        const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
+                          body: {
+                            amount: payAmount,
+                            orderReference,
+                            customerName: pupilName.trim() || undefined,
+                            customerEmail: pupilEmail.trim() || undefined,
+                            description: "Driving lesson booking",
+                            returnUrl: `${baseUrl}/booking-confirmation?pupilId=${pid || ''}&ryft=success`,
+                            cancelUrl: `${baseUrl}/booking-confirmation?pupilId=${pid || ''}&ryft=cancelled`,
+                            instructorId: instructor.id,
+                            pupilId: pid || undefined,
+                          },
+                        });
+                        if (error) throw error;
+                        if (!data?.checkoutUrl) throw new Error(data?.userMessage || data?.error || "Could not start checkout");
+                        window.location.href = data.checkoutUrl;
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Could not start checkout");
+                        setIsWalletProcessing(false);
+                      }
+                    }}
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount.toFixed(2) : (totalPrice + upsellTotal).toFixed(2)} by Card
+                  </Button>
                 </div>
               )}
             </div>
+
 
             {/* Clearpay */}
             {clearpayEnabled && (

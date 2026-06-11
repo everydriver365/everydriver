@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
-import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
+// Square wallet/form imports removed — card payments go through Ryft via PayInSafariButton or the inline "Pay by Card" button below
 import { PayInSafariButton } from "@/components/payments/PayInSafariButton";
 import { useIsNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { useAdminFee } from "@/hooks/useAdminFee";
@@ -382,26 +381,8 @@ export function PupilPaymentDrawer({
                 </div>
               ) : (
                 <>
-                  {/* Express Checkout — Apple Pay / Google Pay */}
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Express checkout</p>
-                    <SquareWalletButtons
-                      amount={effectiveTotal}
-                      pupilId={pupilId}
-                      instructorId={instructorId}
-                      customerName={pupilName}
-                      customerEmail={pupilEmail}
-                      onProcessing={setProcessing}
-                      disabled={processing || paymentAmount <= 0}
-                    />
-                  </div>
+                  {/* Express wallet buttons removed — Apple Pay / Google Pay are offered via Ryft's hosted checkout when the user taps "Pay by Card" below */}
 
-                  {/* Divider */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-px bg-border" />
-                    <span className="text-xs text-muted-foreground">or</span>
-                    <div className="flex-1 h-px bg-border" />
-                  </div>
 
                   {/* Pay by Card — Ryft hosted checkout */}
                   <Button
@@ -500,33 +481,8 @@ export function PupilPaymentDrawer({
                 <span>Payments are processed securely. Your card details are never stored.</span>
               </div>
             </div>
-          ) : (
-            <div className="px-5 pb-8 space-y-4 overflow-auto">
-              <div className="flex items-center gap-3 pt-1">
-                <button
-                  onClick={() => setStage("method")}
-                  className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors"
-                  disabled={processing}
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </button>
-                <div className="flex-1">
-                  <h2 className="text-[17px] font-semibold text-foreground">Pay £{effectiveTotal.toFixed(2)}</h2>
-                  <p className="text-xs text-muted-foreground">Enter card details</p>
-                </div>
-              </div>
-              <SquarePaymentForm
-                amount={effectiveTotal}
-                pupilId={pupilId}
-                instructorId={instructorId}
-                customerName={pupilName}
-                customerEmail={pupilEmail || undefined}
-                customerPhone={pupilPhone || undefined}
-                onPaid={() => handleOpenChange(false)}
-                onCancel={() => setStage("method")}
-              />
-            </div>
-          )}
+          ) : null}
+
         </DrawerPrimitive.Content>
       </DrawerPrimitive.Portal>
     </DrawerPrimitive.Root>

@@ -11,7 +11,7 @@ interface PupilPaymentRequest {
   instructorId: string;
   amount: number;
   adminFee?: number;
-  gateway: "npi" | "clearpay" | "klarna";
+  gateway: "clearpay" | "klarna";
   customerName: string;
   customerEmail?: string;
   customerPhone?: string;
@@ -19,32 +19,7 @@ interface PupilPaymentRequest {
   cancelUrl: string;
 }
 
-// RFC 1738 encoding for Cardstream signature
-function rfc1738Encode(str: string): string {
-  return encodeURIComponent(str)
-    .replace(/%20/g, '+')
-    .replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase());
-}
-
-// SHA-512 signature for NPI/Cardstream
-async function createSignature(data: Record<string, string>, secretKey: string): Promise<string> {
-  const sortedKeys = Object.keys(data).sort();
-  const queryString = sortedKeys
-    .map(key => `${rfc1738Encode(key)}=${rfc1738Encode(data[key] ?? '')}`)
-    .join('&');
-
-  const normalizedQueryString = queryString
-    .replace(/%0D%0A/g, '%0A')
-    .replace(/%0A%0D/g, '%0A')
-    .replace(/%0D/g, '%0A');
-
-  const signatureInput = normalizedQueryString + secretKey;
-  const encoder = new TextEncoder();
-  const dataBuffer = encoder.encode(signatureInput);
-  const hashBuffer = await crypto.subtle.digest("SHA-512", dataBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
+// NPI/Cardstream signature helpers removed — Cardstream is on the forbidden-gateways list.
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -81,51 +56,8 @@ serve(async (req: Request) => {
     // Build callback URL that routes back to payment-callback
     const callbackUrl = `${supabaseUrl}/functions/v1/payment-callback?provider=${gateway}&pupilId=${pupilId}&ref=${orderReference}&type=balance&baseAmount=${amount}&adminFee=${adminFee}`;
 
-    // Handle each gateway
+    // Handle each gateway (Card payments use ryft-create-checkout — not this function)
     switch (gateway) {
-      case "npi": {
-        const merchantId = Deno.env.get("NPI_MERCHANT_ID");
-        const secretKey = Deno.env.get("NPI_MERCHANT_SECRET");
-
-        if (!merchantId || !secretKey) {
-          return new Response(
-            JSON.stringify({ error: "NPI payment not configured" }),
-            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-
-        const amountInPence = Math.round(chargeAmount * 100);
-        const transactionUnique = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-        const formData: Record<string, string> = {
-          merchantID: merchantId,
-          action: "SALE",
-          type: "1",
-          countryCode: "826",
-          currencyCode: "826",
-          amount: amountInPence.toString(),
-          orderRef: orderReference,
-          transactionUnique,
-          redirectURL: callbackUrl,
-        };
-
-        if (customerEmail) formData.customerEmail = customerEmail;
-        if (customerName) formData.customerName = customerName;
-
-        const signature = await createSignature(formData, secretKey);
-        formData.signature = signature;
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            gateway: "npi",
-            formAction: "https://gateway.cardstream.com/hosted/",
-            formFields: formData,
-            transactionId: transactionUnique,
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
 
 
       case "clearpay": {

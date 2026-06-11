@@ -1,5 +1,5 @@
 // External-partner payment kickoff. Auth via x-partner-key + EXTERNAL_BOOKING_PARTNER_KEYS.
-// Dispatches to existing payment edge functions (square-checkout / klarna-checkout / clearpay-checkout).
+// Card payments dispatch to ryft-create-checkout. BNPL methods dispatch to klarna-checkout / clearpay-checkout.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
@@ -14,7 +14,7 @@ const json = (data: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-type Method = "square" | "klarna" | "clearpay";
+type Method = "card" | "square" | "klarna" | "clearpay"; // "square" kept as deprecated alias for "card"
 
 interface Body {
   partner_key: string;
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     if (!body.booking_id || !body.method || !body.customer?.email || !body.return_url || !body.cancel_url) {
       return json({ error: "Missing required fields" }, 400);
     }
-    if (!["square", "klarna", "clearpay"].includes(body.method)) {
+    if (!["card", "square", "klarna", "clearpay"].includes(body.method)) {
       return json({ error: "Unsupported payment method" }, 400);
     }
 
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     };
 
     const fnName =
-      body.method === "square" ? "ryft-create-checkout" :
+      body.method === "card" || body.method === "square" ? "ryft-create-checkout" :
       body.method === "klarna" ? "klarna-checkout" :
       "clearpay-checkout";
 
