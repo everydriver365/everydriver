@@ -12,21 +12,14 @@ import { WhitelabelTheme } from "@/components/WhitelabelTheme";
 import { detectNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { installQueryBudget } from "@/lib/queryBudget";
 import { enforceRememberMeOnBoot } from "@/lib/sessionPersistence";
-import { installBundleRefresh, checkBundleAfterLogin } from "@/lib/bundleRefresh";
-import { supabase } from "@/integrations/supabase/client";
+import { installBundleRefresh } from "@/lib/bundleRefresh";
 
 // Honour the "Remember me" choice before any auth-gated UI mounts.
 void enforceRememberMeOnBoot();
 
 // Wire cache-busting: re-check the bundle hash on app resume / tab visible
-// and after any successful sign-in. Forces the WebView to drop a stale bundle.
+// without registering a second global auth listener.
 installBundleRefresh();
-supabase.auth.onAuthStateChange((event) => {
-  if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-    checkBundleAfterLogin();
-  }
-});
-
 
 if (import.meta.env.DEV) {
   installQueryBudget();

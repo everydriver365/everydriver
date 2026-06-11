@@ -97,7 +97,7 @@ export default function InstructorDiary() {
 
   const initials = (instructor?.name || "I")
     .split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
-  const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
+  const handleSignOut = async () => { await signOut(); };
   const Shell = ({ children }: { children: React.ReactNode }) =>
     isMobile ? (
       <InstructorPortalLayout>{children}</InstructorPortalLayout>

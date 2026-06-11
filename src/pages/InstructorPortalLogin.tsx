@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,7 +64,6 @@ export default function InstructorPortalLogin() {
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
   const { signIn, resetPassword } = useInstructorAuth();
-  const navigate = useNavigate();
 
   // Single source of truth for clearing transient auth state. Used by both
   // deep-link arrivals AND the mobile sign-in ↔ forgot-password toggle so no
@@ -156,7 +155,6 @@ export default function InstructorPortalLogin() {
         setError("Biometric login failed. Please use email and password.");
       } else {
         toast.success("Welcome back!", { duration: 2000 });
-        navigate("/instructor");
       }
     } catch (err) {
       console.error("Biometric login error:", err);
@@ -233,7 +231,6 @@ export default function InstructorPortalLogin() {
         // button appears on next launch.
         await saveCredentialsForBiometric(email.trim(), password);
         toast.success("Welcome back!", { duration: 2000 });
-        navigate("/instructor");
       }
     } catch (err) {
       setError("An unexpected error occurred");
@@ -263,7 +260,6 @@ export default function InstructorPortalLogin() {
             return { error: signInError.message };
           }
           setRememberMe(remember);
-          navigate("/instructor");
         }}
         onForgot={async (em) => {
           const { error: resetError } = await resetPassword(em);

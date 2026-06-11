@@ -513,7 +513,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/instructor-app/login");
   };
 
   const handleNavClick = (href: string) => {
