@@ -123,15 +123,12 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
 
     const initialSessionTimeout = window.setTimeout(() => {
       if (!mounted) return;
-      console.warn(`${AUTH_LOG_PREFIX} initial session check timed out`);
-      setSession(null);
-      setUser(null);
-      setInstructor(null);
-      setSubscription(null);
+      // Non-destructive: stop the spinner but DO NOT null an existing
+      // persisted session. If getSession() eventually resolves, the .then
+      // handler still wins. This avoids logging out valid users on a slow
+      // cold-start network.
+      console.warn(`${AUTH_LOG_PREFIX} initial session check slow — releasing spinner`);
       setLoading(false);
-      if (isInstructorPortalPath()) {
-        navigate('/instructor-app/login', { replace: true });
-      }
     }, INITIAL_SESSION_TIMEOUT_MS);
 
     supabase.auth.getSession().then(({ data: { session } }) => {
