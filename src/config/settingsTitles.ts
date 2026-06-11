@@ -24,6 +24,7 @@ export const SECTION_SUBTITLES: Record<string, string> = {
   notifications:     "Control when and how you receive alerts",
   vehicle:           "Your car, licence number and DVSA credentials",
   hours:             "When you're available to teach",
+  "first-lesson-only": "Let pupils reserve a start date and arrange lesson times later",
   rates:             "Your prices, radius and postcode coverage",
   lessons:           "Intensive, semi-intensive, weekly and custom",
   "how-book":        "Instant booking, deposits and requests",
