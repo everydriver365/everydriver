@@ -950,7 +950,7 @@ export function MobileBookingView({
                       const payAmount = paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal;
                       setIsWalletProcessing(true);
                       try {
-                        const pid = embeddedCheckoutPupilId || (await ensureBookingCreated?.());
+                        const pid = await ensureBookingCreated?.();
                         const orderReference = `BOOK-${(pid || 'anon').toString().slice(0, 8)}-${Date.now()}`;
                         const baseUrl = window.location.origin;
                         const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
