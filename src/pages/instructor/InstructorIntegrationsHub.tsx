@@ -317,15 +317,18 @@ export default function InstructorIntegrationsHub() {
         <div className="bg-card rounded-2xl border p-6 space-y-4">
           {tab === "google-calendar" && <IcsCalendarSync instructorId={instructorId} />}
           {tab === "square" && (
-            <SquareConnectSettings
-              instructorId={instructorId}
-              squareMerchantId={(instructor as any)?.square_merchant_id}
-              squareConnectedAt={(instructor as any)?.square_connected_at}
-              onUpdate={() => {
-                refreshInstructor();
-                statuses.refresh();
-              }}
-            />
+            <div className="space-y-4">
+              <RyftPayoutsCard instructorId={instructorId} />
+              <SquareConnectSettings
+                instructorId={instructorId}
+                squareMerchantId={(instructor as any)?.square_merchant_id}
+                squareConnectedAt={(instructor as any)?.square_connected_at}
+                onUpdate={() => {
+                  refreshInstructor();
+                  statuses.refresh();
+                }}
+              />
+            </div>
           )}
           {tab === "trackers" && (
             <div className="space-y-3">
