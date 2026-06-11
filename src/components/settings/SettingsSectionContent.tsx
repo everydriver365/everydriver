@@ -1,6 +1,8 @@
 import { SettingsGroup } from "./SettingsGroup";
 import { SettingRow, SettingCell } from "./SettingRow";
 import { EditButton } from "./controls/EditButton";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { StartDateOnlyBookingEditor } from "@/components/instructor/StartDateOnlyBookingEditor";
 
 interface Props {
   section: string;
@@ -8,11 +10,16 @@ interface Props {
 }
 
 /**
- * Placeholder per-section content. Each section renders a single SettingsGroup
- * card prompting the instructor to use the legacy editor while we migrate
- * fields into the new shell. Wiring real controls per section is a follow-up.
+ * Placeholder per-section content. Most sections still render a "Coming soon"
+ * card while controls are migrated in. Specific sections are wired below.
  */
 export function SettingsSectionContent({ section }: Props) {
+  const { instructor } = useInstructorAuth();
+
+  if (section === "first-lesson-only" && instructor?.id) {
+    return <StartDateOnlyBookingEditor instructorId={instructor.id} />;
+  }
+
   return (
     <SettingsGroup
       icon="info"
