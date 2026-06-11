@@ -1,6 +1,7 @@
 import { lazyWithRetry as lazy } from "@/utils/lazyWithRetry";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Suspense } from "react";
+import { RouterFallback } from "./_routerFallback";
 
 const Mobile = lazy(() => import("@/pages/InstructorSchedule"));
 const Desktop = lazy(() => import("@/pages/instructor-app/InstructorScheduleDesktop"));
@@ -8,5 +9,5 @@ const Desktop = lazy(() => import("@/pages/instructor-app/InstructorScheduleDesk
 export default function InstructorScheduleRouter() {
   const isMobile = useIsMobile();
   const Cmp = isMobile ? Mobile : Desktop;
-  return <Suspense fallback={null}><Cmp /></Suspense>;
+  return <Suspense fallback={<RouterFallback />}><Cmp /></Suspense>;
 }
