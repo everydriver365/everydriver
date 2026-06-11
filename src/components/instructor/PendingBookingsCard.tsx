@@ -151,13 +151,7 @@ export function PendingBookingsCard({ instructorId }: Props) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-6">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  if (loading) return null;
   if (rows.length === 0) return null;
 
   return (
