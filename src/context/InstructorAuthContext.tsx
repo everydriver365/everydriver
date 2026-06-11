@@ -436,68 +436,46 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
   const signIn = async (email: string, password: string) => {
-    let lastError: Error | null = null;
+    // Thin pass-through: one network call, no client-side timeout race, no
+    // retry loop, no extra round-trip. Real backend errors surface verbatim.
+    console.info(`${AUTH_LOG_PREFIX} password sign-in started`);
+    const startedAt = performance.now();
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.info(`${AUTH_LOG_PREFIX} password sign-in finished`, {
+      durationMs: Math.round(performance.now() - startedAt),
+      ok: !error,
+    });
 
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      console.info(`${AUTH_LOG_PREFIX} password sign-in attempt`, { attempt: attempt + 1 });
-      const { data, error } = await signInWithTimeout(email, password);
+    if (error) {
+      return { error: error as Error, session: null };
+    }
 
-      if (!error) {
-        console.info(`${AUTH_LOG_PREFIX} password sign-in accepted`, {
-          sessionReceived: Boolean(data.session),
-        });
+    // Hydrate session immediately so the rest of the app doesn't have to wait
+    // for the onAuthStateChange listener to fire.
+    if (data.session) {
+      setSession(data.session);
+      setUser(data.session.user ?? null);
+    }
 
-        // Blocked-login check: refuse sign-in for instructors with a pending
-        // scheduled deletion. Match on auth user id; do not block if the
-        // record cannot be found (admins, pupils, etc. fall through).
-        const authUserId = data.session?.user?.id ?? data.user?.id;
-        if (authUserId) {
-          try {
-            const { data: instructorRow } = await supabase
-              .from('instructors')
-              .select('deleted_at, scheduled_purge_at')
-              .eq('auth_user_id', authUserId)
-              .maybeSingle();
-            const purgeAt = instructorRow?.scheduled_purge_at
-              ? new Date(instructorRow.scheduled_purge_at as string)
-              : null;
-            if (instructorRow?.deleted_at && purgeAt && purgeAt.getTime() > Date.now()) {
-              await supabase.auth.signOut();
-              const dateStr = purgeAt.toLocaleDateString('en-GB', {
-                day: 'numeric', month: 'long', year: 'numeric',
-              });
-              const blockErr = new Error(
-                `Your account is scheduled for deletion on ${dateStr}. Check your email for a cancellation link.`,
-              );
-              (blockErr as Error & { code?: string }).code = 'account_pending_deletion';
-              return { error: blockErr, session: null };
-            }
-          } catch (checkErr) {
-            // Fail open: don't lock anyone out if this check itself fails.
-            // Log with enough context to detect at scale in production.
-            const errMsg = checkErr instanceof Error ? checkErr.message : String(checkErr);
-            console.warn(`${AUTH_LOG_PREFIX} pending-deletion check failed (fail-open)`, {
-              authUserId,
-              email,
-              error: errMsg,
-            });
-          }
-        }
-
-        // Eagerly hydrate context state and load the instructor profile so the
-        // redirect to /instructor doesn't depend on the onAuthStateChange event
-        // firing (which can be missed or delayed in some browsers).
-        if (data.session) {
-          setSession(data.session);
-          setUser(data.session.user ?? null);
-        }
-        if (authUserId) {
-          setLoading(true);
-          void fetchInstructorProfile(authUserId);
-        }
-
-        return { error: null, session: data.session };
+    // Load the minimal session bundle (RPC: indexed, one round-trip). The
+    // pending-deletion check now lives inside that RPC, so we don't need a
+    // second blocking SELECT here.
+    const authUserId = data.session?.user?.id ?? data.user?.id;
+    if (authUserId) {
+      setLoading(true);
+      const bundleErr = await loadInstructorSessionBundle();
+      if (bundleErr) {
+        // Surface the real reason; the login screen will show it.
+        return { error: bundleErr, session: null };
       }
+      // Background-load the wide profile so dashboards have rich data, but
+      // don't block the redirect on it.
+      void fetchInstructorProfile(authUserId);
+    }
+
+    return { error: null, session: data.session };
+  };
+
 
       lastError = error as Error;
       if (!isTransientAuthError(lastError) || attempt === 1) break;
