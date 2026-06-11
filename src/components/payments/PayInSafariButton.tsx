@@ -52,7 +52,7 @@ export function PayInSafariButton({
       const returnUrl = `${baseUrl}/i/${instructorSlug}?payment=success&amount=${amount}`;
       const cancelUrl = `${baseUrl}/i/${instructorSlug}?payment=cancelled`;
 
-      const { data, error } = await supabase.functions.invoke("square-checkout", {
+      const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
         body: {
           amount,
           orderReference,

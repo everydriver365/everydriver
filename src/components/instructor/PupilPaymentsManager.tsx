@@ -209,7 +209,7 @@ export function PupilPaymentsManager({
     if (!(outstanding > 0)) return fallback;
     try {
       const orderRef = `PR-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-      const { data, error } = await supabase.functions.invoke("square-checkout", {
+      const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
         body: {
           amount: outstanding,
           orderReference: orderRef,

@@ -178,7 +178,7 @@ export function TakePaymentModal({
         const recipientName = isManualOnly ? "Payment" : (selectedPupil?.name || "Payment");
         const orderRef = `PR-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
 
-        const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("square-checkout", {
+        const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("ryft-create-checkout", {
           body: {
             amount: chargeAmount,
             orderReference: orderRef,
@@ -411,7 +411,7 @@ export function TakePaymentModal({
                         const chargeAmount = qrFee.hasFee ? qrFee.totalCharge : qrParsedAmount;
                         const qrPupil = pupils.find((p) => p.id === qrSelectedPupilId);
                         const orderRef = `QR-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-                        const { data, error } = await supabase.functions.invoke("square-checkout", {
+                        const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
                           body: {
                             amount: chargeAmount,
                             orderReference: orderRef,
