@@ -159,11 +159,7 @@ interface MobileBookingViewProps {
   klarnaEnabled?: boolean;
   clearpayEnabled?: boolean;
   onWalletSuccess: (pupilId: string) => void;
-  // Embedded checkout
-  showEmbeddedCheckout?: boolean;
-  embeddedCheckoutPupilId?: string | null;
-  onEmbeddedCheckoutSuccess?: () => void;
-  onEmbeddedCheckoutCancel?: () => void;
+  /** Called before wallet payment to ensure booking exists */
   /** Called before wallet payment to ensure booking exists */
   ensureBookingCreated?: () => Promise<string | null>;
 }
