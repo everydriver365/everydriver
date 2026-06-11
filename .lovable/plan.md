@@ -1,29 +1,46 @@
-## Problem
+## Goal
+Surface the existing **Book First Lesson Only** setting (`StartDateOnlyBookingEditor`) in the instructor portal's desktop settings so it appears under / near **Working hours**.
 
-On `everydriver.co.uk` (and any non-instructor host) signing in succeeds — Supabase returns a valid session — but `ConditionalHome` always renders the learner marketing page on `/` regardless of auth state. There is no automatic hop into `/auth/redirect`, so an instructor like Kenneth ends up back on the public homepage and assumes login is broken.
+## Background
+- The component already exists and works on the mobile menu tile grid.
+- The desktop settings currently render through the **V3 shell** (`SettingsShellV3`), which shows a grid landing and detail pages. The old two-pane sidebar (`SettingsSidebar` from `settingsSections.ts`) is still in code but is not the active desktop path.
+- To make the link visible **and** functional, it must be added to **both** the legacy sidebar config and the active V3 shell.
 
-Auth logs and network traffic confirm:
-- `POST /token` (login) → 200 for `kenneth@dufosse.co.uk`
-- `POST /token?grant_type=refresh_token` → 200 with a fresh access token
-- The page rendered is the EveryDriver marketing homepage, not the instructor portal
+## Changes
 
-## Fix
+### 1. Legacy sidebar entry (`src/config/settingsSections.ts`)
+Add a new item under the **"Teaching setup"** section, immediately after **"Working hours"**:
 
-Add a one-shot session check to `ConditionalHome` that runs before the marketing variants render. If the user already has a Supabase session, redirect them through `/auth/redirect` so `RoleRedirect` sends them to the correct portal (instructor, pupil, admin, school, etc.).
+```text
+id: "first-lesson-only"
+label: "Book first lesson only"
+icon: "calendar-plus"   (or closest semantic icon)
+iconBg: "#EDE9FE"
+iconColour: "#5B21B6"
+```
 
-### File: `src/components/ConditionalHome.tsx`
+### 2. Legacy sidebar titles (`src/config/settingsTitles.ts`)
+Add entries:
+- `SECTION_TITLES["first-lesson-only"]` = "Book first lesson only"
+- `SECTION_SUBTITLES["first-lesson-only"]` = "Let pupils reserve a start date and arrange lesson times later"
 
-1. Import `useEffect`, `useState`, `supabase`, and reuse the existing spinner pattern.
-2. At the top of the component, run `supabase.auth.getSession()` once. While resolving, render the existing centered spinner (max ~1.5s timeout so anonymous users don't see a flash).
-3. If a session exists AND the current path is `/` (root), `<Navigate to="/auth/redirect" replace />`. This guarantees authed users land in their portal whether they hit `everydriver.co.uk`, a Drive365 host, a whitelabel host, or the lovable preview.
-4. If no session OR timeout fires, fall through to the existing variant logic unchanged (instructor variant still uses `AppEntryRedirect`, mini-website subdomains still render their public page, etc.).
+### 3. Legacy content wiring (`src/components/settings/SettingsSectionContent.tsx`)
+Wire the real component for `section === "first-lesson-only"` instead of the generic "Coming soon" placeholder.
+Render `<StartDateOnlyBookingEditor instructorId={...} />` using the instructor ID from context or props.
 
-### Out of scope
+### 4. V3 shell — section data (`src/components/instructor/settings/categories.tsx`)
+Add a new section under the **`schedule`** category:
+- id: `"first-lesson-only"`
+- title: `"Book first lesson only"`
+- render: `<StartDateOnlyBookingEditor instructorId={id} />`
 
-- No changes to `UnifiedLogin`, `RoleRedirect`, `AppEntryRedirect`, or any login form.
-- No DB changes. No mobile-layout changes.
-- Mini-website subdomains (`isInstructorSubdomain()`) remain a public marketing surface — the redirect is only applied at the root of the marketing/EveryDriver/Drive365/whitelabel hosts where users would otherwise be stranded.
+### 5. V3 shell — area pulls (`src/components/instructor/settings/v3/areas.tsx`)
+Add `G("schedule", "first-lesson-only")` to the `pulls` array of the **`working-hours`** area item so the section appears inside the Working hours detail page.
+
+### 6. Mobile menu (already done)
+No change needed — the tile already exists in `InstructorMenu.tsx` under the **Scheduling** category.
 
 ## Result
-
-After signing in on `everydriver.co.uk` (or returning to it with a live session), instructors land on `/instructor`, pupils on `/pupil` (or `/p/:slug`), admins on `/admin`, etc., instead of being dumped back on the learner marketing page.
+- Desktop V3: instructors navigating to **Settings → Teaching → Working hours** will see a **"Book first lesson only"** section card inside that page.
+- Legacy sidebar (if rendered anywhere): a **"Book first lesson only"** link appears directly under **"Working hours"** in the left-hand menu.
+- Mobile: unchanged (tile already present).

@@ -30,6 +30,7 @@ export const SIDEBAR_SECTIONS: SidebarSectionConfig[] = [
     items: [
       { id: "vehicle",  label: "Vehicle & credentials", iconBg: "#FBEAEA", iconColour: "#CC2229", icon: "shield-check", flag: "vehicle" },
       { id: "hours",    label: "Working hours",         iconBg: "#E6F1FB", iconColour: "#1A52A0", icon: "clock",        flag: "hours" },
+      { id: "first-lesson-only", label: "Book first lesson only", iconBg: "#EDE9FE", iconColour: "#5B21B6", icon: "calendar-plus" },
       { id: "rates",    label: "Rates & coverage",      iconBg: "#E6F1FB", iconColour: "#1A52A0", icon: "map-pin" },
       { id: "lessons",  label: "Lesson types",          iconBg: "#E6F1FB", iconColour: "#1A52A0", icon: "calendar" },
     ],
