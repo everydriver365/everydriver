@@ -177,7 +177,9 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Single source of auth truth — onAuthStateChange fires INITIAL_SESSION
+    // on subscribe, so no separate getSession() call is needed.
+    let lastUserId: string | null = null;
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.info(`${AUTH_LOG_PREFIX} auth state changed`, {
@@ -186,34 +188,23 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         });
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Defer fetching instructor profile
-        if (session?.user) {
+
+        const newUserId = session?.user?.id ?? null;
+        // Only re-fetch the profile when the user identity actually changes,
+        // not on every TOKEN_REFRESHED tick.
+        if (newUserId && newUserId !== lastUserId) {
+          lastUserId = newUserId;
           setTimeout(() => {
-            fetchInstructorProfile(session.user.id);
+            fetchInstructorProfile(newUserId);
           }, 0);
-        } else {
+        } else if (!newUserId) {
+          lastUserId = null;
           setInstructor(null);
           setSubscription(null);
+          setLoading(false);
         }
       }
     );
-
-    // THEN check for existing session
-    const sessionStartedAt = performance.now();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.info(`${AUTH_LOG_PREFIX} initial session checked`, {
-        durationMs: Math.round(performance.now() - sessionStartedAt),
-        hasSession: Boolean(session),
-      });
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchInstructorProfile(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
 
     return () => authSubscription.unsubscribe();
   }, []);
