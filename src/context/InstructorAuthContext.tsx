@@ -177,11 +177,31 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Single source of auth truth — onAuthStateChange fires INITIAL_SESSION
-    // on subscribe, so no separate getSession() call is needed.
-    let lastUserId: string | null = null;
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      console.info(`${AUTH_LOG_PREFIX} initial session checked`, {
+        hasSession: Boolean(session),
+      });
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      const userId = session?.user?.id;
+      if (userId) {
+        void fetchInstructorProfile(userId);
+      } else {
+        setInstructor(null);
+        setSubscription(null);
+        setLoading(false);
+      }
+    });
+
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!mounted) return;
+        if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT') return;
+
         console.info(`${AUTH_LOG_PREFIX} auth state changed`, {
           event,
           hasSession: Boolean(session),
@@ -189,16 +209,12 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         setSession(session);
         setUser(session?.user ?? null);
 
-        const newUserId = session?.user?.id ?? null;
-        // Only re-fetch the profile when the user identity actually changes,
-        // not on every TOKEN_REFRESHED tick.
-        if (newUserId && newUserId !== lastUserId) {
-          lastUserId = newUserId;
-          setTimeout(() => {
-            fetchInstructorProfile(newUserId);
-          }, 0);
-        } else if (!newUserId) {
-          lastUserId = null;
+        const userId = session?.user?.id;
+        if (event === 'SIGNED_IN' && userId) {
+          void fetchInstructorProfile(userId);
+        }
+
+        if (event === 'SIGNED_OUT') {
           setInstructor(null);
           setSubscription(null);
           setLoading(false);
@@ -206,7 +222,10 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       }
     );
 
-    return () => authSubscription.unsubscribe();
+    return () => {
+      mounted = false;
+      authSubscription.unsubscribe();
+    };
   }, []);
 
   const fetchInstructorProfile = async (userId: string) => {
