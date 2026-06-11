@@ -974,45 +974,26 @@ export default function BookingSummary() {
     navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&ref=${orderId}`);
   };
 
-  const handleNPICheckout = async () => {
+  const handleCardCheckout = async () => {
     const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
     if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
       toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
       return;
     }
 
-    // Show embedded checkout directly — booking will be created after payment succeeds
-    setShowHostedFields(true);
-  };
-
-  // Handler for showing embedded hosted fields
-  const handleShowHostedFields = async () => {
-    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
-    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
-      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
-      return;
-    }
-
-    // Show hosted fields directly — booking will be created after payment succeeds
-    setShowHostedFields(true);
-  };
-
-  const handleSquareCheckout = async () => {
-    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
-    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
-      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
-      return;
-    }
-
-    setIsSquareLoading(true);
+    setIsCardLoading(true);
     try {
-      const pupilId = await ensureBookingCreated();
+      const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
+      const amount = isDepositPayment ? depositAmount : totalPrice + upsellTotal;
+
+      const pupilId = await ensureBookingCreated(
+        isDepositPayment ? 'deposit' : 'full',
+        amount,
+      );
       if (!pupilId) return;
 
-      const orderReference = `SQ-${instructor.id.slice(0, 8)}-${Date.now()}`;
-      const currentUrl = window.location.origin;
-
-      // Build lesson slots for order metadata
+      const orderReference = `BOOK-${pupilId.slice(0, 8)}-${Date.now()}`;
+      const baseUrl = window.location.origin;
       const lessonSlots = selectedSlots.map((slot) => ({
         date: format(slot.date, "yyyy-MM-dd"),
         time: slot.startTime,
@@ -1020,51 +1001,36 @@ export default function BookingSummary() {
 
       const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
         body: {
-          amount: totalPrice + upsellTotal,
+          amount,
           orderReference,
           customerEmail: pupilEmail.trim(),
           customerName: pupilName.trim(),
           customerPhone: pupilPhone.trim(),
-          courseName: courseName,
+          courseName,
           description: `${courseName} - ${hours} Hour Driving Course`,
-          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&square=success&ref=${orderReference}`,
-          cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&square=cancelled`,
+          returnUrl: `${baseUrl}/booking-confirmation?pupilId=${pupilId}&ryft=success&ref=${orderReference}`,
+          cancelUrl: `${baseUrl}/book/${instructor.id}?hours=${hours}&ryft=cancelled`,
           instructorId: instructor.id,
           pupilId,
           lessonSlots,
         },
       });
 
-      if (error) {
-        console.error("Square checkout error:", error);
-        toast.error("Failed to start Square checkout. Please try again.");
-        return;
+      if (error) throw error;
+      if (!data?.checkoutUrl) {
+        throw new Error(data?.userMessage || data?.error || "Could not start card checkout");
       }
 
-      if (data?.checkoutUrl) {
-        persistDraftBeforeRedirect();
-        window.location.href = data.checkoutUrl;
-      } else {
-        toast.error("Could not get Square checkout URL");
-      }
+      persistDraftBeforeRedirect();
+      window.location.href = data.checkoutUrl;
     } catch (err) {
-      console.error("Square error:", err);
-      toast.error("Something went wrong with Square. Please try again.");
+      console.error("Card checkout error:", err);
+      toast.error(err instanceof Error ? err.message : "Could not start card checkout. Please try again.");
     } finally {
-      setIsSquareLoading(false);
+      setIsCardLoading(false);
     }
   };
 
-  const handleElavonCheckout = async () => {
-    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
-    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
-      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
-      return;
-    }
-
-    // Show inline hosted fields directly — booking will be created after payment succeeds
-    setShowHostedFields(true);
-  };
 
   const [isRetryingBooking, setIsRetryingBooking] = useState(false);
   const handleRefreshAndRetry = async () => {
