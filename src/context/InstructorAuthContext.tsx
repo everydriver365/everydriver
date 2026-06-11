@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { clearAuthPersistence } from '@/lib/sessionPersistence';
@@ -175,9 +176,19 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   const [instructor, setInstructor] = useState<InstructorProfile | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
+    const isInstructorLoginPath = () =>
+      window.location.pathname === '/instructor-app/login' ||
+      window.location.pathname === '/instructor/login';
+    const isInstructorPortalPath = () => window.location.pathname.startsWith('/instructor');
+    const loadInstructorProfile = (userId: string) => {
+      window.setTimeout(() => {
+        if (mounted) void fetchInstructorProfile(userId);
+      }, 0);
+    };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
@@ -189,7 +200,11 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
 
       const userId = session?.user?.id;
       if (userId) {
-        void fetchInstructorProfile(userId);
+        setLoading(false);
+        loadInstructorProfile(userId);
+        if (isInstructorLoginPath()) {
+          navigate('/instructor', { replace: true });
+        }
       } else {
         setInstructor(null);
         setSubscription(null);
@@ -211,13 +226,20 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
 
         const userId = session?.user?.id;
         if (event === 'SIGNED_IN' && userId) {
-          void fetchInstructorProfile(userId);
+          setLoading(false);
+          loadInstructorProfile(userId);
+          if (isInstructorLoginPath()) {
+            navigate('/instructor', { replace: true });
+          }
         }
 
         if (event === 'SIGNED_OUT') {
           setInstructor(null);
           setSubscription(null);
           setLoading(false);
+          if (isInstructorPortalPath()) {
+            navigate('/instructor-app/login', { replace: true });
+          }
         }
       }
     );
@@ -442,8 +464,6 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   const signOut = async () => {
     await clearAuthPersistence('instructor');
     await supabase.auth.signOut();
-    setInstructor(null);
-    setSubscription(null);
   };
 
   const resetPassword = async (email: string) => {

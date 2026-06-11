@@ -321,7 +321,7 @@ export default function InstructorPlanBilling() {
   const maxPupils = currentPlan?.maxPupils ?? subscription?.planId ? (currentPlan?.maxPupils ?? 0) : 0;
   const overLimit = maxPupils > 0 && pupilCount >= maxPupils;
 
-  const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
+  const handleSignOut = async () => { await signOut(); };
   const initials = (instructor?.name || "")
     .split(" ").map(p => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
 

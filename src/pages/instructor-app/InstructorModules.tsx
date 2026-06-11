@@ -164,7 +164,7 @@ export default function InstructorModules() {
     });
   };
 
-  const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
+  const handleSignOut = async () => { await signOut(); };
 
   const initials = (instructor?.name || "")
     .split(" ").map(p => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";

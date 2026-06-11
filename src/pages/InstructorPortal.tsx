@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -77,7 +77,6 @@ export default function InstructorPortal() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/instructor-app/login");
   };
   
   const [instructorData, setInstructorData] = useState<InstructorData | null>(null);
@@ -111,12 +110,6 @@ export default function InstructorPortal() {
       setUpdatingVisibility(false);
     }
   };
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/instructor-app/login");
-    }
-  }, [authLoading, user, navigate]);
 
   useEffect(() => {
     if (instructorId) {
@@ -193,6 +186,10 @@ export default function InstructorPortal() {
         <HomeSkeleton />
       </InstructorPortalLayout>
     );
+  }
+
+  if (!user) {
+    return <Navigate to="/instructor-app/login" replace />;
   }
 
   if (!instructorId && user) {

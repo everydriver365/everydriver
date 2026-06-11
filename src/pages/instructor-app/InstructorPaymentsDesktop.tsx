@@ -208,7 +208,7 @@ export default function InstructorPaymentsDesktop() {
   }, [instructor?.id, allPupils, refresh]);
 
   const initials = (instructor?.name || "").split(" ").map(s=>s[0]).filter(Boolean).slice(0,2).join("").toUpperCase() || "ID";
-  const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
+  const handleSignOut = async () => { await signOut(); };
 
   // chart geometry
   const chartW = 460, chartH = 140, padL = 30, padB = 20, padT = 8, padR = 8;

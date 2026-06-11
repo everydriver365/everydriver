@@ -471,7 +471,7 @@ function MySiteInner() {
     }, 1500);
   };
 
-  const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
+  const handleSignOut = async () => { await signOut(); };
 
   return (
     <DashboardShell

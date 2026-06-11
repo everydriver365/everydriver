@@ -136,12 +136,6 @@ export function installBundleRefresh(): void {
         // @ts-expect-error iOS Safari standalone flag
         window.navigator?.standalone === true));
 
-  // Check shortly after boot so a stale wrapper bundle updates without
-  // needing a resume or login event.
-  setTimeout(() => {
-    void checkForNewBundle("boot", isWrapped);
-  }, isWrapped ? 1500 : 5000);
-
   // Web: tab becomes visible again (covers PWA install + browser tabs).
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import dsmLogo from "@/assets/dsm-logo.png";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
 import {
@@ -94,7 +94,6 @@ export default function InstructorLogin() {
   const activeAuthAttemptRef = useRef(0);
 
   const { signIn, resetPassword } = useInstructorAuth();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const showVerifyBanner = searchParams.get("verify") === "1";
 
@@ -178,8 +177,7 @@ export default function InstructorLogin() {
       } else {
         setFaceIdState("success");
         toast.success("Welcome back!");
-        console.info(`${LOGIN_LOG_PREFIX} biometric redirecting to instructor dashboard`);
-        navigate("/instructor");
+        console.info(`${LOGIN_LOG_PREFIX} biometric sign-in accepted`);
       }
     } catch {
       if (!isActiveAuthAttempt(attemptId)) return;
@@ -244,10 +242,9 @@ export default function InstructorLogin() {
         if (!isActiveAuthAttempt(attemptId)) return;
         setBiometricAvailable(true);
         toast.success("Welcome back!");
-        console.info(`${LOGIN_LOG_PREFIX} password redirecting to instructor dashboard`, {
+        console.info(`${LOGIN_LOG_PREFIX} password sign-in accepted`, {
           sessionReceived: Boolean(session),
         });
-        navigate("/instructor");
       }
     } catch {
       if (!isActiveAuthAttempt(attemptId)) return;

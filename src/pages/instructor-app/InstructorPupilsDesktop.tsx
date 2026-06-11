@@ -891,7 +891,7 @@ export default function InstructorPupilsDesktop() {
     });
   };
 
-  const handleSignOut = async () => { await signOut(); navigate("/instructor-app/login"); };
+  const handleSignOut = async () => { await signOut(); };
   const initials = (instructor?.name || "").split(" ").map(s => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ID";
 
   const gridCols = "22px minmax(0, 1.6fr) 90px 100px 100px 110px 90px 90px 30px";
