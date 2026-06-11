@@ -112,6 +112,10 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     let mounted = true;
     const isInstructorPortalPath = () => window.location.pathname.startsWith('/instructor');
     const loadInstructorProfile = (userId: string) => {
+      // Fast path: indexed RPC bundle gets the shell rendered + redirect off
+      // the login screen. Wide 70-col fetch runs in the background so it can
+      // never block sign-in even when the DB is slow.
+      void loadInstructorSessionBundle();
       window.setTimeout(() => {
         if (mounted) void fetchInstructorProfile(userId);
       }, 0);
