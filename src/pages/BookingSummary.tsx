@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
+import { BookingModeTabs } from "@/components/booking/BookingModeTabs";
 
 
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
@@ -1968,20 +1969,31 @@ export default function BookingSummary() {
                 </div>
               </div>
             )}
-            <LessonScheduler
+            <BookingModeTabs
               instructorId={instructor.id}
-              totalHours={requiredScheduledHours}
-              maxLessonLength={instructor.preferred_lesson_length}
-              bookingAdvanceDays={instructor.booking_advance_days}
-              availableFrom={instructor.available_from}
-              allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
-              bufferMinutes={instructor.buffer_minutes}
-              instructorHomePostcode={instructor.home_postcode}
-              instructorFirstName={instructor.name?.split(" ")[0]}
-              pupilPostcode={differentPickup ? pickupPostcode : pupilPostcode}
-              onSlotsChange={handleSlotsChange}
-              onConfirm={() => paymentBlockRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-            />
+              instructor={instructor}
+              courseHours={hours}
+              ensurePupilId={() => ensureBookingCreated('full', 0)}
+              onReserved={(reservationId) => {
+                clearDraft();
+                navigate(`/booking-confirmation?reservationId=${reservationId}&reserved=true`);
+              }}
+            >
+              <LessonScheduler
+                instructorId={instructor.id}
+                totalHours={requiredScheduledHours}
+                maxLessonLength={instructor.preferred_lesson_length}
+                bookingAdvanceDays={instructor.booking_advance_days}
+                availableFrom={instructor.available_from}
+                allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
+                bufferMinutes={instructor.buffer_minutes}
+                instructorHomePostcode={instructor.home_postcode}
+                instructorFirstName={instructor.name?.split(" ")[0]}
+                pupilPostcode={differentPickup ? pickupPostcode : pupilPostcode}
+                onSlotsChange={handleSlotsChange}
+                onConfirm={() => paymentBlockRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              />
+            </BookingModeTabs>
           </motion.div>
         )}
 

@@ -28,7 +28,10 @@ interface Props {
   instructor: any;
   /** Max hours-per-week cap from instructor_booking_settings, or null for no cap. */
   maxHoursPerWeekCap: number | null;
-  pupilId: string;
+  /** Pre-resolved pupil id. If null, ensurePupilId() is called at reserve time. */
+  pupilId: string | null;
+  /** Lazily create or fetch the pupil id (e.g. via the host page's ensureBookingCreated). */
+  ensurePupilId?: () => Promise<string | null>;
   onReserved?: (reservationId: string) => void;
 }
 
@@ -51,6 +54,7 @@ export function StartDateOnlyBookingPanel({
   instructor,
   maxHoursPerWeekCap,
   pupilId,
+  ensurePupilId,
   onReserved,
 }: Props) {
   const today = new Date();
@@ -94,11 +98,18 @@ export function StartDateOnlyBookingPanel({
 
   const reserveMutation = useMutation({
     mutationFn: async () => {
+      let resolvedPupilId = pupilId;
+      if (!resolvedPupilId && ensurePupilId) {
+        resolvedPupilId = await ensurePupilId();
+      }
+      if (!resolvedPupilId) {
+        throw new Error("Please complete your pupil details below before reserving.");
+      }
       const { data, error } = await supabase.functions.invoke("create-course-reservation", {
         body: {
           instructor_id: instructorId,
           course_id: courseId,
-          pupil_id: pupilId,
+          pupil_id: resolvedPupilId,
           start_date: format(startDate, "yyyy-MM-dd"),
           completion_window_weeks: completionWeeks,
           allowed_days: allowedDays,
