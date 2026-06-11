@@ -56,11 +56,17 @@ async function runInstructorChecks(svc: ReturnType<typeof createClient>, instruc
     message: lessons.error ?? undefined,
   });
 
-  // 4. Messages (unread)
-  const msgs = await timed(() => svc.from("messages")
-    .select("id", { count: "exact", head: true })
-    .eq("instructor_id", instructorId)
-    .is("read_at", null));
+  // 4. Messages (unread) — messages has no instructor_id column; resolve via conversations.
+  const msgs = await timed(async () => {
+    const { data: convs } = await svc.from("conversations").select("id").eq("instructor_id", instructorId);
+    const ids = (convs || []).map((c: any) => c.id);
+    if (ids.length === 0) return { count: 0 } as any;
+    return await svc.from("messages")
+      .select("id", { count: "exact", head: true })
+      .in("conversation_id", ids)
+      .eq("sender_type", "pupil")
+      .is("read_at", null);
+  });
   checks.push({
     source: "messages",
     status: msgs.error ? "fail" : "ok",
