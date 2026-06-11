@@ -1,43 +1,87 @@
-## Problem
+## Goal
 
-`/courses` is stuck on "Finding instructors near you…" because `useCourseDiscovery.fetchData` (`src/hooks/useCourseDiscovery.ts`) does:
+Add a second booking mode — **"Reserve start date only"** — alongside the existing slot-by-slot flow. The pupil picks a start date and their availability preferences; the system uses the existing availability engine to verify the instructor can finish the course within those constraints; payment goes through normally; the actual lesson times are arranged off-platform.
 
-```ts
-supabase.from("public_instructors").select("*").eq("is_active", true)
+## Instructor side
+
+**1. New toggle in instructor booking settings** (`instructor_booking_settings`):
+- `allow_start_date_only_booking boolean default false`
+- `start_date_only_max_hours_per_week int` (optional ceiling the pupil's "hours per week" can't exceed)
+
+Surfaced in the existing Booking Settings page with a short explainer: "Let pupils reserve a start date without picking each lesson time. You'll arrange exact times together after booking."
+
+## Pupil side — booking flow
+
+When the chosen instructor + course has the toggle on, the checkout page shows two tabs:
+
+```text
+[ Pick exact lesson times ]   [ Reserve start date only ]
 ```
 
-paginated in 1000-row chunks. The table has **5,800 active rows** (5,796 network-placeholder seeds + 4 real instructors) and 240 columns. That single load dominates time-to-first-render, so `setLoading(false)` never fires fast enough and the grid never shows real courses.
+The new tab collects:
 
-The legacy `src/pages/Courses.tsx` already solved this with a two-phase load — that pattern was lost when the hook was introduced.
+- **Start date** — single date picker, must be ≥ today + instructor's `min_lead_time`.
+- **Target completion window** — "Finish within N weeks of start date" (default suggested from course hours).
+- **Days of week** — Mon–Sun multi-select chips.
+- **Time-of-day windows** — multi-select chips: Mornings (08–12), Afternoons (12–17), Evenings (17–21).
+- **Hours per week cap** — slider, capped by `start_date_only_max_hours_per_week` if set.
 
-## Fix
+Below the form, a live "Availability check" banner runs as the pupil changes inputs:
 
-Refactor `useCourseDiscovery.fetchData` to mirror the proven two-phase load:
+- ✅ "Yes — your instructor has enough time across [window] to complete your [N]-hour course." → enables payment buttons.
+- ⚠ "Not quite — only X of your N hours fit. Try widening days, time windows, or pushing the end date." → payment disabled, suggestion bullets shown.
 
-**Phase 1 (blocking, fast):** load only real instructors.
-- `public_instructors` `select *` `eq is_active true` `eq is_network_placeholder false` — ~4 rows.
-- Continue with `course_templates`, `instructor_premium_placements`, `instructor_courses` (scoped to real ids), `loadCourseAvailabilitySources`, and the postcode geocoding pass exactly as today, but only over real ids.
-- `setInstructors(realOnly)`, `setLoading(false)` — page now renders.
+## Capacity check (strict)
 
-**Phase 2 (background, non-blocking):** load placeholders with a slim column set.
-- After Phase 1 awaits resolve and `loading` is false, fire a second `fetchAll` against `public_instructors` with `.eq("is_network_placeholder", true)` and the explicit slim select used in the old `Courses.tsx`:
-  `id,name,home_postcode,placeholder_district,is_network_placeholder,is_active,lat,lng,profile_image_url,brand_colour,app_slug,hourly_rate,car_type`.
-- Merge into the existing `instructors` state (dedupe by id) so postcode search can still resolve coverage placeholders for districts with no real instructor.
-- Wrap in `try/catch`; failures here must not toast or block the rendered page.
+Reuse the existing availability engine — the same one used for the slot-by-slot flow that already factors in working hours, manual blocks, Google Calendar busy events, buffers, and travel time (per existing memory rules). **No new Google Calendar integration work.**
 
-No schema, RLS, edge function, or UI component changes. The existing `instructorsInArea` placeholder-matching logic already handles a deferred placeholder population.
+Algorithm (client-side helper, mirrored in an edge function for the final commit):
 
-Keep `instructorId` early-exit and the eslint-disabled deps comment intact.
+1. Build the candidate window `[startDate, startDate + completionWeeks]`.
+2. Pull the instructor's free slots from the engine across that window.
+3. Filter slots to those whose weekday is in the pupil's selected days AND whose start time is inside one of the selected time-of-day buckets.
+4. Greedy-pack into "weekly bins"; cap each bin at the pupil's hours-per-week.
+5. Sum the packed hours. If `>= course.hours`, pass. Otherwise return shortfall + which constraint is most binding (used to drive the suggestion bullets).
+
+The live banner uses the client helper for instant feedback; the edge function re-runs the same check at payment commit time so capacity can't be raced.
+
+## Persistence
+
+Extend `scheduled_lessons` is the wrong fit — these aren't scheduled yet. Add a sibling table:
+
+`public.course_reservations`
+- `id`, `course_id`, `instructor_id`, `pupil_id`
+- `start_date date`
+- `completion_window_weeks int`
+- `allowed_days int[]` (0–6)
+- `time_windows text[]` (`morning|afternoon|evening`)
+- `hours_per_week_cap int`
+- `total_hours int` (course hours snapshot)
+- `payment_status`, `payment_intent_id`, `amount_paid_pence`
+- `status` enum: `awaiting_scheduling | partially_scheduled | completed | cancelled`
+- timestamps + GRANTs + RLS (pupil reads their own; instructor reads via `public.get_instructor_id_for_user(auth.uid())`).
+
+When the instructor later enters real lessons in their scheduler, they link them to the reservation via a nullable `reservation_id` on `scheduled_lessons`, and the reservation status flips automatically once all hours are scheduled.
+
+## Instructor dashboard surface
+
+A new "Reservations awaiting scheduling" card in the instructor dashboard lists open reservations with:
+- Pupil name + contact button (already-existing chat/WhatsApp/phone CTAs).
+- Start date, end-by date, allowed days, time windows, hours-per-week cap, hours remaining to schedule.
+- "Add lesson" button that opens the normal scheduler pre-filtered to the reservation's days/time windows so they don't fall outside the agreement.
+
+## Out of scope (intentionally)
+
+- No auto-fill of lessons from preferences.
+- No structured "propose schedule → pupil approves" flow — arrangement is off-platform, per your decision.
+- No change to the slot-by-slot booking flow.
+- No change to the network-placeholder / coverage path — start-date-only is real instructors only.
+- No new Google Calendar code — existing engine already covers busy events.
 
 ## Verification
 
-1. Hard-refresh `/courses?postcode=SO302TD` in the preview.
-2. Confirm courses for the 4 real instructors render within ~1–2s instead of hanging on the spinner.
-3. Confirm searching a placeholder-only district (after a few seconds) still surfaces the coverage card (placeholder background load completed).
-4. Network panel: first batch is one small `public_instructors` query, not six 1000-row pages.
-
-## Out of scope
-
-- Visual changes to `CourseResults`, `SidebarCalendar`, `CourseGrid`.
-- Any change to `public_instructors` shape, RLS, or the network-placeholder filter rule.
-- Touching `WhitelabelCourses` or the embed variant — they share the hook and inherit the fix.
+1. Toggle the setting on for a test instructor; confirm both tabs render on that instructor's checkout and only the original tab shows for instructors with it off.
+2. Pick a start date with constraints the instructor *can* satisfy → green banner, payment buttons enabled, reservation row created on commit, pupil + instructor both see it in their portals.
+3. Tighten constraints until the instructor can't satisfy → banner turns amber, payment disabled, suggestion bullets shown.
+4. Edge function re-check: artificially saturate the instructor's calendar between draft and commit; commit must reject with the same shortfall message.
+5. Instructor adds a lesson against the reservation; remaining hours decrement; status flips to `completed` when all hours are scheduled.
