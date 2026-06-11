@@ -1,33 +1,53 @@
-## Why payments still look like "Square"
+# Card payments → Ryft only (platform-wide)
 
-Short answer: live card payments are already going through **Ryft**, not Square. What's left are a few stale references that make it look like Square is still in play:
+Audit complete. Most card flows already go through `ryft-create-checkout`, but **several user-facing surfaces still mount Square components**. The biggest one is `/pay/:instructorId` — every "Share payment link" and QR link lands there and currently renders Square.
 
-### What's actually happening today
-- **Pupil card payments** (`PupilPaymentModal` → "Pay by Card") → `ryft-create-checkout` ✅
-- **Instructor "Take Payment" modal** → `ryft-create-checkout` ✅
-- **PupilPaymentsManager** payment links → `ryft-create-checkout` ✅ (only the `console.error` text still says "square-checkout failed")
-- **Public partner payment** (`public-start-payment`) → already maps `method: "square"` to `ryft-create-checkout` ✅
-- **Klarna / Clearpay** → still their own gateways (intentional)
+Klarna, Clearpay, Cash, Bank, GoCardless, SumUp are out of scope (intentional).
 
-### What is genuinely still calling Square
-1. **`src/components/parent/ParentPaymentTopUp.tsx`** — the parent top-up button invokes `pupil-payment-checkout` with `paymentMethod: "square"`. This is the only user-facing flow that still references Square as a gateway. It also uses the wrong field name (`paymentMethod` vs the function's `gateway` switch), so it likely fails on click.
-2. **`src/components/instructor/TakePaymentModal.tsx`** — comments, the realtime listener key (`square:` ref prefix), and toast/log copy still say "Square". The actual checkout call goes to Ryft, but webhook-driven realtime "received" flip is keyed on the old `square:` ref prefix written by `square-webhook` — if a payment lands via `ryft-webhook` the modal won't auto-flip.
-3. **`src/components/instructor/PupilPaymentsManager.tsx`** — only a stale `console.error("square-checkout failed…")` and a toast string. Cosmetic.
-4. Edge functions `square-checkout`, `square-webhook`, `square-wallet-config` are still deployed and referenced in `payment-health`, `usePaymentGatewayHealth`, school gateway UI, etc.
+## What stays as-is (already correct)
+- Pupil portal modal + drawer card button → Ryft
+- Parent top-up → Ryft
+- Instructor "Take Payment" modal → Ryft
+- PupilPaymentsManager link generation → Ryft
+- Both BookingSummary "Pay by Card" buttons → Ryft
+- `public-start-payment` dispatch → Ryft (just misleadingly named)
 
-## Proposed cleanup
+## Changes
 
-### Code changes
-1. **ParentPaymentTopUp** — switch to the same Ryft flow used by `PupilPaymentModal` (`ryft-create-checkout` with `serviceFeePence`, redirect to `data.checkoutUrl`). Removes the broken `paymentMethod: "square"` call.
-2. **TakePaymentModal** — replace the realtime listener's `square:` ref-prefix check with the equivalent Ryft signal (match by `payment_history.method = 'ryft_card'` + order ref, or listen on `ryft_payment_intents`). Update comments/toasts to say "Card" instead of "Square".
-3. **PupilPaymentsManager** — change the stale log/toast strings to neutral "card payment link" wording.
+### 1. `src/pages/PublicPaymentPage.tsx` — highest priority
+Every shared payment link and QR (`/pay/:instructorId`) lands here and currently renders `SquareWalletButtons` + `SquarePaymentForm`. Replace the Square section with a single "Pay by Card" button that calls `ryft-create-checkout` and redirects to the hosted checkout URL (same pattern as `PupilPaymentModal`). Keep amount input, BNPL options, and branding untouched.
 
-### Optional follow-ups (ask before doing)
-- Retire `square-checkout` / `square-wallet-config` edge functions and drop `square` from `payment-health` + `usePaymentGatewayHealth` + `SchoolPaymentGatewaysSection`. Keep `square-webhook` only if historic Square payments still need to settle; otherwise retire it too.
-- The school-side UI ("Use DSM Square Account", Square logo tile) still markets Square as the platform processor — needs a copy/branding pass to say Ryft (or "platform card processing").
+### 2. `src/components/pupil-portal/PupilPaymentDrawer.tsx`
+Remove the `<SquareWalletButtons>` mount at line ~388 (Express Checkout block). Apple Pay / Google Pay on Ryft will come through the hosted checkout when the user taps the existing Ryft "Pay by Card" button — no separate wallet button needed. Leave the `isNativeWrapper` → `PayInSafariButton` branch (already Ryft).
 
-### Out of scope
-- Klarna and Clearpay flows (unchanged).
-- Historic Square payment history rows (left as-is for audit).
+### 3. `src/pages/BookingSummary.tsx` and `src/pages/everydriver/BookingSummary.tsx`
+Remove the `SquarePaymentForm` / `SquareWalletButtons` mounts (lines ~2113 / ~2136, ~2164). The Ryft "Pay by Card" button already exists in both files — Square is now duplicate/dead UI underneath it.
 
-Want me to do just the 3 code changes in step 1–3, or also the optional retirement + school UI rebrand?
+### 4. `src/components/instructor/AddLessonSheet.tsx`
+No code change needed — once `PublicPaymentPage` is Ryft (step 1), the `/pay/${slug}` link this opens is automatically correct.
+
+### 5. `supabase/functions/public-start-payment/index.ts`
+Accept `method: "card"` as the preferred name and keep `"square"` as a deprecated alias (so old QR/links keep working). Both dispatch to `ryft-create-checkout`.
+
+### 6. `supabase/functions/pupil-payment-checkout/index.ts`
+Remove the dead `gateway: "npi"` / Cardstream branch (no UI caller passes it; Cardstream is on the forbidden-gateways list).
+
+### 7. Cleanup (delete dead files, no behaviour change)
+- `src/components/booking/BookingWalletButtons.tsx` — no mount points
+- After steps 1–3, the following are no longer imported anywhere and are safe to delete:
+  - `src/components/payments/SquareWalletButtons.tsx`
+  - `src/components/payments/SquarePaymentForm.tsx`
+  - `src/components/pupil-portal/SquareWalletButtons.tsx`
+- Keep `square-invoice-manage` and `SquareInvoicesPage.tsx` (invoice management, not checkout). Keep `square-webhook` for historic settlement.
+
+## Out of scope
+- QR URL values stored in `instructors.payment_qr_url*` — these are just raw URLs admins paste in. Once `PublicPaymentPage` is Ryft-only, existing links that point to `/pay/<slug>` automatically use Ryft. Any QR pointing at a Square-hosted URL (rare) is an admin data fix, not code.
+- Klarna / Clearpay branches in `pupil-payment-checkout` — intentional BNPL.
+- Square invoices page — historic data view, not a card processor.
+
+## Technical detail
+- New Ryft button payload mirrors `PupilPaymentModal.tsx:284`: `{ amount, orderReference, customerName, customerEmail, customerPhone, description, returnUrl, cancelUrl, instructorId, pupilId, serviceFeePence }`.
+- `orderReference` format: keep existing prefix per surface (`PUPIL-…`, `PARENT-…`, `PUBLIC-…`).
+- No DB migrations. No edge-function secret changes. `ryft-create-checkout` already deployed.
+
+Shall I proceed?
