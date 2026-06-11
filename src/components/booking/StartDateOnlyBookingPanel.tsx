@@ -28,7 +28,10 @@ interface Props {
   instructor: any;
   /** Max hours-per-week cap from instructor_booking_settings, or null for no cap. */
   maxHoursPerWeekCap: number | null;
-  pupilId: string;
+  /** Pre-resolved pupil id. If null, ensurePupilId() is called at reserve time. */
+  pupilId: string | null;
+  /** Lazily create or fetch the pupil id (e.g. via the host page's ensureBookingCreated). */
+  ensurePupilId?: () => Promise<string | null>;
   onReserved?: (reservationId: string) => void;
 }
 
