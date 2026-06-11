@@ -71,6 +71,49 @@ function AppEntryRedirect({
  */
 export function ConditionalHome() {
   const variant = getAppVariant();
+  const [authState, setAuthState] = useState<"checking" | "authed" | "anon">("checking");
+
+  useEffect(() => {
+    let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) setAuthState((s) => (s === "checking" ? "anon" : s));
+    }, 1500);
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (cancelled) return;
+        window.clearTimeout(timeout);
+        setAuthState(data.session ? "authed" : "anon");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        window.clearTimeout(timeout);
+        setAuthState("anon");
+      });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, []);
+
+  // Authed users on the root of any marketing/learner host → route to portal.
+  // Skip mini-website subdomains (kept as public marketing surfaces).
+  if (
+    authState === "authed" &&
+    typeof window !== "undefined" &&
+    window.location.pathname === "/" &&
+    !isInstructorSubdomain()
+  ) {
+    return <Navigate to="/auth/redirect" replace />;
+  }
+
+  if (authState === "checking") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   // 1. Instructor app variant — DSM login (or /instructor if authed).
   //    EveryDriver is the learner-facing brand, so it must NOT redirect here.
