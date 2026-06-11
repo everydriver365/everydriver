@@ -1,25 +1,29 @@
-### Where the setting lives today
-The "Reserve start date only" toggle (plus its `max hours per week` input) is currently buried inside **Settings → Pupil Self-Service Booking** (`PupilBookingSettingsEditor`). It writes to `instructor_booking_settings.allow_start_date_only_booking` and `start_date_only_max_hours_per_week`.
+## Problem
 
-### Goal
-Surface it as its own top-level link in the instructor settings menu, positioned **directly under "Working Hours"** in the Scheduling category.
+On `everydriver.co.uk` (and any non-instructor host) signing in succeeds — Supabase returns a valid session — but `ConditionalHome` always renders the learner marketing page on `/` regardless of auth state. There is no automatic hop into `/auth/redirect`, so an instructor like Kenneth ends up back on the public homepage and assumes login is broken.
 
-### Changes
-1. **New component** `src/components/instructor/StartDateOnlyBookingEditor.tsx`
-   - Reads/writes only `allow_start_date_only_booking` and `start_date_only_max_hours_per_week` on `instructor_booking_settings` (upsert on `instructor_id`).
-   - Same UI pattern as the existing section (toggle + conditional max-hours input).
-   - Hooks into `useOptionalSettingsDirty` so the sticky save bar works.
+Auth logs and network traffic confirm:
+- `POST /token` (login) → 200 for `kenneth@dufosse.co.uk`
+- `POST /token?grant_type=refresh_token` → 200 with a fresh access token
+- The page rendered is the EveryDriver marketing homepage, not the instructor portal
 
-2. **`src/pages/InstructorMenu.tsx`**
-   - Add new item just after `working-hours` (line 158):
-     ```
-     { id: "first-lesson-only", title: "Book First Lesson Only", description: "Let pupils reserve a start date and arrange times later", icon: CalendarDays, tintBg: "#EDE9FE", tintColor: "#5B21B6", category: "scheduling" }
-     ```
-   - Add `case "first-lesson-only": return <StartDateOnlyBookingEditor instructorId={instructorId} />;` in the renderer switch.
+## Fix
 
-3. **`src/components/instructor/settings/categories.tsx`**
-   - Add the same entry under the scheduling category right after `hours` (Working hours), pointing to the new component, so the desktop settings shell also lists it.
+Add a one-shot session check to `ConditionalHome` that runs before the marketing variants render. If the user already has a Supabase session, redirect them through `/auth/redirect` so `RoleRedirect` sends them to the correct portal (instructor, pupil, admin, school, etc.).
+
+### File: `src/components/ConditionalHome.tsx`
+
+1. Import `useEffect`, `useState`, `supabase`, and reuse the existing spinner pattern.
+2. At the top of the component, run `supabase.auth.getSession()` once. While resolving, render the existing centered spinner (max ~1.5s timeout so anonymous users don't see a flash).
+3. If a session exists AND the current path is `/` (root), `<Navigate to="/auth/redirect" replace />`. This guarantees authed users land in their portal whether they hit `everydriver.co.uk`, a Drive365 host, a whitelabel host, or the lovable preview.
+4. If no session OR timeout fires, fall through to the existing variant logic unchanged (instructor variant still uses `AppEntryRedirect`, mini-website subdomains still render their public page, etc.).
 
 ### Out of scope
-- Leave the existing toggle inside `PupilBookingSettingsEditor` untouched so nothing breaks; both surfaces write to the same row.
-- No DB or mobile-layout changes.
+
+- No changes to `UnifiedLogin`, `RoleRedirect`, `AppEntryRedirect`, or any login form.
+- No DB changes. No mobile-layout changes.
+- Mini-website subdomains (`isInstructorSubdomain()`) remain a public marketing surface — the redirect is only applied at the root of the marketing/EveryDriver/Drive365/whitelabel hosts where users would otherwise be stranded.
+
+## Result
+
+After signing in on `everydriver.co.uk` (or returning to it with a live session), instructors land on `/instructor`, pupils on `/pupil` (or `/p/:slug`), admins on `/admin`, etc., instead of being dumped back on the learner marketing page.
