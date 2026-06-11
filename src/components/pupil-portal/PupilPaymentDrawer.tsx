@@ -403,14 +403,41 @@ export function PupilPaymentDrawer({
                     <div className="flex-1 h-px bg-border" />
                   </div>
 
-                  {/* Pay by Card — primary (Square) */}
+                  {/* Pay by Card — Ryft hosted checkout */}
                   <Button
-                    onClick={() => setStage("card")}
+                    onClick={async () => {
+                      if (paymentAmount <= 0) return;
+                      setProcessing(true);
+                      try {
+                        const baseUrl = window.location.origin;
+                        const orderReference = `PUPIL-${pupilId.slice(0, 8)}-${Date.now()}`;
+                        const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
+                          body: {
+                            amount: effectiveTotal,
+                            orderReference,
+                            customerName: pupilName,
+                            customerEmail: pupilEmail || undefined,
+                            customerPhone: pupilPhone || undefined,
+                            description: "Lesson payment",
+                            returnUrl: `${baseUrl}/i/${instructorSlug}?payment=success&amount=${paymentAmount}`,
+                            cancelUrl: `${baseUrl}/i/${instructorSlug}?payment=cancelled`,
+                            instructorId,
+                            pupilId,
+                            serviceFeePence: Math.round(effectiveAdminFee * 100),
+                          },
+                        });
+                        if (error) throw error;
+                        if (!data?.checkoutUrl) throw new Error(data?.userMessage || data?.error || "Could not start checkout");
+                        window.location.href = data.checkoutUrl;
+                      } catch (e) {
+                        toast({ title: "Payment failed", description: e instanceof Error ? e.message : "Could not start checkout", variant: "destructive" });
+                        setProcessing(false);
+                      }
+                    }}
                     className="w-full h-12 rounded-xl text-base font-semibold"
-                    disabled={processing}
+                    disabled={processing || paymentAmount <= 0}
                   >
-                    <CreditCard className="h-5 w-5 mr-2" />
-                    Pay by Card
+                    {processing ? <Loader2 className="h-5 w-5 animate-spin" /> : <><CreditCard className="h-5 w-5 mr-2" /> Pay by Card</>}
                   </Button>
                 </>
               )}
