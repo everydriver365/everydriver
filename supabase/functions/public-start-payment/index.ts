@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     };
 
     const fnName =
-      body.method === "square" ? "square-checkout" :
+      body.method === "square" ? "ryft-create-checkout" :
       body.method === "klarna" ? "klarna-checkout" :
       "clearpay-checkout";
 

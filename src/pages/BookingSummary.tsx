@@ -975,7 +975,7 @@ export default function BookingSummary() {
         time: slot.startTime,
       }));
 
-      const { data, error } = await supabase.functions.invoke("square-checkout", {
+      const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
         body: {
           amount: totalPrice + upsellTotal,
           orderReference,
