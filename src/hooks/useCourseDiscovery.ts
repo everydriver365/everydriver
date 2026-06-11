@@ -363,11 +363,17 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         return { data: all, error: null };
       };
 
-      // 1. Load all instructors (needed so placeholders appear on postcode
-      //    search). This is ~5.8k rows but a single column-set, ~6 round trips.
+      // PHASE 1 — load REAL instructors only (~4 rows). The 5,796 network
+      // placeholder rows are loaded in the background after this phase so the
+      // page renders immediately instead of waiting on a 240-col × 5.8k-row
+      // payload.
       const [instructorsRes, templatesRes, premiumRes] = await Promise.all([
         fetchAll<any>(() => {
-          let q = supabase.from("public_instructors").select("*").eq("is_active", true);
+          let q = supabase
+            .from("public_instructors")
+            .select("*")
+            .eq("is_active", true)
+            .eq("is_network_placeholder", false);
           if (instructorId) q = q.eq("id", instructorId);
           return q;
         }),
