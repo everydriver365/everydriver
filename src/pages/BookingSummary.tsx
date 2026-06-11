@@ -172,13 +172,10 @@ export default function BookingSummary() {
   const [isClearpayLoading, setIsClearpayLoading] = useState(false);
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
   const [isNPILoading, setIsNPILoading] = useState(false);
-  const [isSquareLoading, setIsSquareLoading] = useState(false);
-  const [isElavonLoading, setIsElavonLoading] = useState(false);
+  const [isCardLoading, setIsCardLoading] = useState(false);
   const [bookingPupilId, setBookingPupilId] = useState<string | null>(null);
   const bookingPupilIdRef = useRef<string | null>(null);
-  
-  // NPI Hosted Fields state (embedded card form)
-  const [showHostedFields, setShowHostedFields] = useState(false);
+
   const [showKlarnaModal, setShowKlarnaModal] = useState(false);
   
   // Deposit payment state
