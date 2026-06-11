@@ -38,6 +38,7 @@ export default function UnifiedLogin() {
         onSignIn={handleSignIn}
         onForgot={handleForgot}
         className="rounded-none"
+        showOnAllViewports
         googleSlot={
           <GoogleSignInButton
             redirectTo={`${window.location.origin}/auth/redirect`}
