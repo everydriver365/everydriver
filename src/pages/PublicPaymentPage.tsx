@@ -3,9 +3,8 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SquarePaymentForm } from "@/components/payments/SquarePaymentForm";
-import { SquareWalletButtons } from "@/components/payments/SquareWalletButtons";
-import { Loader2, CheckCircle2, PoundSterling, User, Mail, X } from "lucide-react";
+import { Loader2, CheckCircle2, PoundSterling, User, Mail, X, CreditCard } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface InstructorInfo {
   id: string;
@@ -38,6 +37,7 @@ export default function PublicPaymentPage() {
   const [payerEmail, setPayerEmail] = useState("");
   const [pupilLinked, setPupilLinked] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [paid, setPaid] = useState(false);
 
   const emailValid = !payerEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payerEmail);
@@ -73,9 +73,40 @@ export default function PublicPaymentPage() {
   const parsedAmount = parseFloat(amount);
   const isValidAmount = !isNaN(parsedAmount) && parsedAmount >= 1 && parsedAmount <= 5000;
 
-  const handleContinue = () => {
-    if (!isValidAmount) return;
+  const handleContinue = async () => {
+    if (!isValidAmount || !instructor) return;
     setShowCheckout(true);
+    setProcessing(true);
+    try {
+      const orderReference = `PUBLIC-${instructor.id.slice(0, 8)}-${Date.now()}`;
+      const baseUrl = window.location.origin;
+      const returnUrl = `${baseUrl}/pay/${instructor.id}?success=true&amount=${parsedAmount}`;
+      const cancelUrl = `${baseUrl}/pay/${instructor.id}?cancelled=true`;
+      const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
+        body: {
+          amount: parsedAmount,
+          orderReference,
+          customerName: payerName.trim() || undefined,
+          customerEmail: payerEmail.trim() || undefined,
+          description: `Payment to ${instructor.name}`,
+          returnUrl,
+          cancelUrl,
+          instructorId: instructor.id,
+          pupilId: pupilParam || undefined,
+        },
+      });
+      if (error) throw error;
+      if (!data?.checkoutUrl) throw new Error(data?.userMessage || data?.error || "Could not start checkout");
+      window.location.href = data.checkoutUrl;
+    } catch (e) {
+      toast({
+        title: "Payment failed",
+        description: e instanceof Error ? e.message : "Could not start checkout",
+        variant: "destructive",
+      });
+      setProcessing(false);
+      setShowCheckout(false);
+    }
   };
 
   // Show success screen FIRST — derived from URL, works even before data loads
