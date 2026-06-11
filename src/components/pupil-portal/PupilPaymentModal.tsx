@@ -275,45 +275,42 @@ export function PupilPaymentModal({
             hasFee={hasFee && feeEnabled}
           />
 
-          {isNativeWrapper ? (
-            /* Inside Despia / WKWebView — Apple Pay JS API isn't available,
-                so route through Safari via a hosted Ryft checkout link. */}
-            <Button
-              type="button"
-              className="w-full h-12 text-base font-semibold"
-              disabled={processing || paymentAmount <= 0}
-              onClick={async () => {
-                setProcessing(true);
-                try {
-                  const baseUrl = window.location.origin;
-                  const orderReference = `PUPIL-${pupilId.slice(0, 8)}-${Date.now()}`;
-                  const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
-                    body: {
-                      amount: effectiveTotal,
-                      orderReference,
-                      customerName: pupilName,
-                      customerEmail: pupilEmail || undefined,
-                      customerPhone: pupilPhone || undefined,
-                      description: "Lesson payment",
-                      returnUrl: `${baseUrl}/i/${instructorSlug}?payment=success&amount=${paymentAmount}`,
-                      cancelUrl: `${baseUrl}/i/${instructorSlug}?payment=cancelled`,
-                      instructorId,
-                      pupilId,
-                      serviceFeePence: Math.round(effectiveAdminFee * 100),
-                    },
-                  });
-                  if (error) throw error;
-                  if (!data?.checkoutUrl) throw new Error(data?.userMessage || data?.error || "Could not start checkout");
-                  window.location.href = data.checkoutUrl;
-                } catch (e) {
-                  toast({ title: "Payment failed", description: e instanceof Error ? e.message : "Could not start checkout", variant: "destructive" });
-                  setProcessing(false);
-                }
-              }}
-            >
-              {processing ? <Loader2 className="h-5 w-5 animate-spin" /> : <><CreditCard className="h-5 w-5 mr-2" /> Pay £{effectiveTotal.toFixed(2)} by Card</>}
-            </Button>
-          )}
+          {/* Card / Apple Pay / Google Pay / 3DS — Ryft hosted checkout */}
+          <Button
+            type="button"
+            className="w-full h-12 text-base font-semibold"
+            disabled={processing || paymentAmount <= 0}
+            onClick={async () => {
+              setProcessing(true);
+              try {
+                const baseUrl = window.location.origin;
+                const orderReference = `PUPIL-${pupilId.slice(0, 8)}-${Date.now()}`;
+                const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
+                  body: {
+                    amount: effectiveTotal,
+                    orderReference,
+                    customerName: pupilName,
+                    customerEmail: pupilEmail || undefined,
+                    customerPhone: pupilPhone || undefined,
+                    description: "Lesson payment",
+                    returnUrl: `${baseUrl}/i/${instructorSlug}?payment=success&amount=${paymentAmount}`,
+                    cancelUrl: `${baseUrl}/i/${instructorSlug}?payment=cancelled`,
+                    instructorId,
+                    pupilId,
+                    serviceFeePence: Math.round(effectiveAdminFee * 100),
+                  },
+                });
+                if (error) throw error;
+                if (!data?.checkoutUrl) throw new Error(data?.userMessage || data?.error || "Could not start checkout");
+                window.location.href = data.checkoutUrl;
+              } catch (e) {
+                toast({ title: "Payment failed", description: e instanceof Error ? e.message : "Could not start checkout", variant: "destructive" });
+                setProcessing(false);
+              }
+            }}
+          >
+            {processing ? <Loader2 className="h-5 w-5 animate-spin" /> : <><CreditCard className="h-5 w-5 mr-2" /> Pay £{effectiveTotal.toFixed(2)} by Card</>}
+          </Button>
 
           {/* Payment Gateway Options */}
           <div className="space-y-2">
