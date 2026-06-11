@@ -98,11 +98,18 @@ export function StartDateOnlyBookingPanel({
 
   const reserveMutation = useMutation({
     mutationFn: async () => {
+      let resolvedPupilId = pupilId;
+      if (!resolvedPupilId && ensurePupilId) {
+        resolvedPupilId = await ensurePupilId();
+      }
+      if (!resolvedPupilId) {
+        throw new Error("Please complete your pupil details below before reserving.");
+      }
       const { data, error } = await supabase.functions.invoke("create-course-reservation", {
         body: {
           instructor_id: instructorId,
           course_id: courseId,
-          pupil_id: pupilId,
+          pupil_id: resolvedPupilId,
           start_date: format(startDate, "yyyy-MM-dd"),
           completion_window_weeks: completionWeeks,
           allowed_days: allowedDays,
