@@ -98,10 +98,11 @@ Deno.serve(async (req) => {
     const signed = body.isRefund ? -positive : positive;
     const methodLabel = body.method === "card" ? "Square" : body.method === "cash" ? "Cash" : "Bank Transfer";
 
-    // ---- Card: hand off to Square hosted checkout ----
+    // ---- Card: hand off to Ryft hosted checkout ----
     if (body.method === "card") {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const resp = await fetch(`${supabaseUrl}/functions/v1/square-checkout`, {
+      const orderReference = `RP-${instructorId.slice(0, 8)}-${Date.now()}`;
+      const resp = await fetch(`${supabaseUrl}/functions/v1/ryft-create-checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -111,6 +112,8 @@ Deno.serve(async (req) => {
           pupilId: body.pupilId,
           instructorId,
           amount: positive,
+          orderReference,
+          description: "Lesson payment",
           customerEmail: body.customerEmail ?? pupil.email ?? undefined,
           customerName: body.customerName ?? pupil.name ?? undefined,
           customerPhone: body.customerPhone,
@@ -120,7 +123,7 @@ Deno.serve(async (req) => {
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
-        return json({ error: data?.error || "Failed to create Square checkout" }, resp.status);
+        return json({ error: data?.error || "Failed to create card checkout" }, resp.status);
       }
       return json({ ok: true, kind: "card", ...data });
     }
