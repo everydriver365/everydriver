@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import squareCardsLogo from "@/assets/square-cards-3.jpg";
+
 import gocardlessLogo from "@/assets/gocardless-logo.png";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,7 +27,7 @@ import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutoc
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { Checkbox } from "@/components/ui/checkbox";
-// SquarePaymentForm import removed — card payments go through Ryft hosted checkout
+
 import { BookingFormField } from "@/components/booking/BookingFormField";
 import { BookingRecoveryBanner } from "@/components/booking/BookingRecoveryBanner";
 import { validateField, type FieldErrors } from "@/lib/booking-validation";
@@ -144,7 +144,7 @@ interface MobileBookingViewProps {
   isNPILoading: boolean;
   isClearpayLoading: boolean;
   klarnaMerchantReference: string;
-  gatewayHealth: { npi: { available: boolean }; clearpay: { available: boolean }; elavon: { available: boolean }; square: { available: boolean }; gocardless: { available: boolean } };
+  gatewayHealth: { npi: { available: boolean }; clearpay: { available: boolean }; elavon: { available: boolean }; gocardless: { available: boolean } };
   onBookingSubmit: () => void;
   onNPICheckout: () => void;
   onClearpayCheckout: () => void;
@@ -159,11 +159,6 @@ interface MobileBookingViewProps {
   klarnaEnabled?: boolean;
   clearpayEnabled?: boolean;
   onWalletSuccess: (pupilId: string) => void;
-  // Embedded checkout
-  showEmbeddedCheckout?: boolean;
-  embeddedCheckoutPupilId?: string | null;
-  onEmbeddedCheckoutSuccess?: () => void;
-  onEmbeddedCheckoutCancel?: () => void;
   /** Called before wallet payment to ensure booking exists */
   ensureBookingCreated?: () => Promise<string | null>;
 }
@@ -235,10 +230,6 @@ export function MobileBookingView({
   klarnaEnabled = false,
   clearpayEnabled = false,
   onWalletSuccess,
-  showEmbeddedCheckout,
-  embeddedCheckoutPupilId,
-  onEmbeddedCheckoutSuccess,
-  onEmbeddedCheckoutCancel,
   ensureBookingCreated,
 }: MobileBookingViewProps) {
   const navigate = useNavigate();
@@ -950,7 +941,7 @@ export function MobileBookingView({
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="rounded bg-green-600 px-2 py-0.5 text-xs font-bold text-white">💳 Pay by Card</span>
-                    <img src={squareCardsLogo} alt="Visa, Mastercard, Amex" className="h-5 object-contain" />
+                    <span className="text-[10px] text-muted-foreground font-medium">Visa · Mastercard · Amex</span>
                   </div>
                   <Button
                     className="w-full"
@@ -959,7 +950,7 @@ export function MobileBookingView({
                       const payAmount = paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal;
                       setIsWalletProcessing(true);
                       try {
-                        const pid = embeddedCheckoutPupilId || (await ensureBookingCreated?.());
+                        const pid = await ensureBookingCreated?.();
                         const orderReference = `BOOK-${(pid || 'anon').toString().slice(0, 8)}-${Date.now()}`;
                         const baseUrl = window.location.origin;
                         const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
@@ -1067,7 +1058,7 @@ export function MobileBookingView({
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               <span className="text-[10px]">Secure checkout</span>
             </div>
-            <img src={squareCardsLogo} alt="Square, Visa, Mastercard, Amex" className="h-5 object-contain" />
+            <span className="text-[10px] text-muted-foreground font-medium">Visa · Mastercard · Amex</span>
           </div>
         </div>
       </div>

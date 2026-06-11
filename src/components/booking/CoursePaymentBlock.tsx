@@ -43,9 +43,9 @@ interface Props {
   instantBankPayEnabled: boolean;
   cashPaymentsEnabled: boolean;
   // gateway health
-  squareAvailable: boolean;
   clearpayAvailable: boolean;
   // loading
+  isCardLoading?: boolean;
   isKlarnaLoading: boolean;
   isClearpayLoading: boolean;
   isInstantBankPayLoading: boolean;
@@ -81,8 +81,8 @@ export function CoursePaymentBlock({
   clearpayEnabled,
   instantBankPayEnabled,
   cashPaymentsEnabled,
-  squareAvailable,
   clearpayAvailable,
+  isCardLoading = false,
   isKlarnaLoading,
   isClearpayLoading,
   isInstantBankPayLoading,
@@ -162,6 +162,7 @@ export function CoursePaymentBlock({
   ];
 
   const isLoadingFor = (id: PaymentMethodId) =>
+    (id === "card" && isCardLoading) ||
     (id === "klarna" && isKlarnaLoading) ||
     (id === "clearpay" && isClearpayLoading) ||
     (id === "bank" && isInstantBankPayLoading) ||
@@ -170,7 +171,7 @@ export function CoursePaymentBlock({
   const ctaFor = (id: PaymentMethodId) => {
     switch (id) {
       case "card":
-        return { label: `Pay £${cardAmount} securely`, handler: onCardCheckout, disabledExtra: !squareAvailable };
+        return { label: `Pay £${cardAmount} securely`, handler: onCardCheckout, disabledExtra: false };
       case "klarna":
         return { label: `Continue to Klarna · £${grandTotal}`, handler: onKlarnaCheckout, disabledExtra: false };
       case "clearpay":
