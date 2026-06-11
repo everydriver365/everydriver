@@ -471,6 +471,18 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
           }
         }
 
+        // Eagerly hydrate context state and load the instructor profile so the
+        // redirect to /instructor doesn't depend on the onAuthStateChange event
+        // firing (which can be missed or delayed in some browsers).
+        if (data.session) {
+          setSession(data.session);
+          setUser(data.session.user ?? null);
+        }
+        if (authUserId) {
+          setLoading(true);
+          void fetchInstructorProfile(authUserId);
+        }
+
         return { error: null, session: data.session };
       }
 
