@@ -136,6 +136,7 @@ interface MobileBookingViewProps {
   upsellTotal?: number;
   // Actions
   canSubmit: boolean;
+  payDisabledReason?: string | null;
   isPupilDetailsComplete: boolean;
   isFullyScheduled: boolean;
   isSubmitting: boolean;
