@@ -1974,9 +1974,35 @@ export default function BookingSummary() {
               instructor={instructor}
               courseHours={hours}
               ensurePupilId={() => ensureBookingCreated('full', 0)}
-              onReserved={(reservationId) => {
-                clearDraft();
-                navigate(`/booking-confirmation?reservationId=${reservationId}&reserved=true`);
+              onReserved={async (reservationId) => {
+                try {
+                  const amount = Math.max(0.5, hours * effectiveHourlyRate + schoolSkimAmount + platformFee);
+                  const currentUrl = window.location.origin;
+                  const { data, error } = await supabase.functions.invoke("ryft-create-checkout", {
+                    body: {
+                      amount,
+                      orderReference: `reservation-${reservationId}`,
+                      customerEmail: pupilEmail.trim() || undefined,
+                      customerName: pupilName.trim() || undefined,
+                      customerPhone: pupilPhone.trim() || undefined,
+                      description: `${courseName} reservation`,
+                      returnUrl: `${currentUrl}/booking-confirmation?reservationId=${reservationId}&reserved=true`,
+                      cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&reservation_cancelled=1`,
+                      instructorId: instructor.id,
+                      reservationId,
+                      platformFeePence: Math.round(platformFee * 100),
+                    },
+                  });
+                  if (error || !data?.checkoutUrl) {
+                    toast.error(data?.userMessage || "Couldn't start payment. Please try again.");
+                    return;
+                  }
+                  clearDraft();
+                  window.location.href = data.checkoutUrl;
+                } catch (e) {
+                  console.error("reservation checkout error", e);
+                  toast.error("Couldn't start payment. Please try again.");
+                }
               }}
             >
               <LessonScheduler
