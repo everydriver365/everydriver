@@ -19,12 +19,36 @@ export default function InstructorSettingsHub() {
   const [search, setSearch] = useState("");
   const categories = useSettingsCategories();
   const isMobile = useIsMobile();
-  const { instructor } = useInstructorAuth();
+  const { instructor, loading } = useInstructorAuth();
+
+  if (loading) {
+    return (
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center py-24 text-muted-foreground">
+          Loading your profile…
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
+
+  if (!instructor?.id) {
+    return (
+      <InstructorPortalLayout>
+        <div className="mx-auto max-w-lg py-16 text-center">
+          <h2 className="text-lg font-semibold mb-2">No instructor profile linked</h2>
+          <p className="text-sm text-muted-foreground">
+            Your account is signed in but isn't linked to an instructor profile yet.
+            Please contact support so we can connect your record.
+          </p>
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
 
   if (!isMobile) {
     return (
       <InstructorPortalLayout>
-        <SettingsShellV3 instructorId={instructor?.id ?? ""} />
+        <SettingsShellV3 instructorId={instructor.id} />
       </InstructorPortalLayout>
     );
   }
