@@ -1259,7 +1259,7 @@ export default function BookingSummary() {
         klarnaMerchantReference={klarnaMerchantReference}
         gatewayHealth={gatewayHealth}
         onBookingSubmit={handleBookingSubmit}
-        onNPICheckout={handleElavonCheckout}
+        onNPICheckout={handleCardCheckout}
         onClearpayCheckout={handleClearpayCheckout}
         onKlarnaCheckout={handleKlarnaCheckout}
         isKlarnaLoading={isKlarnaLoading}
@@ -1272,23 +1272,6 @@ export default function BookingSummary() {
         klarnaEnabled={klarnaEnabled}
         clearpayEnabled={clearpayEnabled}
         onWalletSuccess={(pupilId) => { clearDraft(); navigate(`/booking-confirmation?pupilId=${pupilId}`); }}
-        showEmbeddedCheckout={showHostedFields}
-        embeddedCheckoutPupilId={bookingPupilId}
-        onEmbeddedCheckoutSuccess={async () => {
-          const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
-          const fullPaymentAmount = totalPrice + upsellTotal;
-          const pupilId = await ensureBookingCreated(
-            isDepositPayment ? 'deposit' : 'full',
-            isDepositPayment ? depositAmount : fullPaymentAmount
-          );
-          toast.success("Payment successful!");
-          if (pupilId) {
-            await triggerConfirmBooking(pupilId);
-            clearDraft();
-            navigate(`/booking-confirmation?pupilId=${pupilId}&npi=success`);
-          }
-        }}
-        onEmbeddedCheckoutCancel={() => setShowHostedFields(false)}
         ensureBookingCreated={async () => {
           const id = await ensureBookingCreated();
           return id;
@@ -2052,14 +2035,14 @@ export default function BookingSummary() {
               clearpayEnabled={clearpayEnabled}
               instantBankPayEnabled={instantBankPayEnabled}
               cashPaymentsEnabled={cashPaymentsEnabled}
-              squareAvailable={gatewayHealth.square.available}
               clearpayAvailable={gatewayHealth.clearpay.available}
               
               isKlarnaLoading={isKlarnaLoading}
               isClearpayLoading={isClearpayLoading}
               isInstantBankPayLoading={isInstantBankPayLoading}
               isCashProcessing={isCashProcessing}
-              onCardCheckout={handleElavonCheckout}
+              isCardLoading={isCardLoading}
+              onCardCheckout={handleCardCheckout}
               onKlarnaCheckout={handleKlarnaCheckout}
               onClearpayCheckout={handleClearpayCheckout}
               onBankCheckout={handleInstantBankPay}
@@ -2073,8 +2056,7 @@ export default function BookingSummary() {
           </div>
         </ErrorBoundary>
 
-        {/* Square hosted card form (revealed after card checkout) */}
-        {/* Square card form + Apple/Google Pay express checkout removed — card payments now use Ryft via the embedded checkout above */}
+
 
 
         {/* Cancellation Policy */}
