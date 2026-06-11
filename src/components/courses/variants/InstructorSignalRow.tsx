@@ -10,6 +10,8 @@ interface Props {
   showSnippet?: boolean;
   snippetClamp?: 1 | 2;
   className?: string;
+  /** Optional fallback snippet (e.g. Google review) used when no native review exists. */
+  fallbackReview?: { snippet: string; reviewerFirstName?: string | null } | null;
 }
 
 /**
@@ -22,10 +24,12 @@ export function InstructorSignalRow({
   showSnippet = true,
   snippetClamp = 1,
   className,
+  fallbackReview,
 }: Props) {
   const { data: rating } = useInstructorRating(instructorId);
   const { data: verified } = useVerifiedProSummary(instructorId);
-  const { data: review } = useInstructorTopReview(instructorId);
+  const { data: nativeReview } = useInstructorTopReview(instructorId);
+  const review = nativeReview ?? (fallbackReview ? { snippet: fallbackReview.snippet, reviewerFirstName: fallbackReview.reviewerFirstName ?? "" } : null);
 
   const enough = hasEnoughReviews(rating);
   const isVerified = !!verified?.badge_enabled && (verified.verified_credential_count > 0 || verified.is_founding);
