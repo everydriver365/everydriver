@@ -7,7 +7,6 @@ import { StartDateOnlyBookingPanel } from "@/components/booking/StartDateOnlyBoo
 interface Props {
   instructorId: string;
   instructor: any;
-  courseId: string;
   courseHours: number;
   ensurePupilId: () => Promise<string | null>;
   onReserved?: (reservationId: string) => void;
