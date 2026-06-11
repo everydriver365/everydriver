@@ -162,7 +162,7 @@ export function TakePaymentModal({
     }
   };
 
-  // Generate Square payment link then send via SMS (email is admin-only)
+  // Generate a card payment link via Ryft then send via SMS (email is admin-only)
   const handleSendLink = async () => {
     if (!instructorId) return;
     if (!manualPhone) return;
@@ -172,7 +172,7 @@ export function TakePaymentModal({
       const isManualOnly = selectedPupilId === "_manual" || !selectedPupilId;
       let paymentLink: string;
 
-      // If amount is set, generate a Square payment link with the total (including admin fee)
+      // If amount is set, generate a card payment link with the total (including admin fee)
       if (parsedAmount > 0) {
         const chargeAmount = hasFee ? totalCharge : parsedAmount;
         const recipientName = isManualOnly ? "Payment" : (selectedPupil?.name || "Payment");
