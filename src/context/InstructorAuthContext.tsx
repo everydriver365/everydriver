@@ -120,6 +120,7 @@ function isTransientAuthError(error: Error | null): boolean {
 const retryDelay = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 const SIGN_IN_TIMEOUT_MS = 12000;
+const INITIAL_SESSION_TIMEOUT_MS = 3000;
 
 function createTransientAuthError(message: string): AuthServiceError {
   const error = new Error(message) as AuthServiceError;
@@ -187,8 +188,22 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       }, 0);
     };
 
+    const initialSessionTimeout = window.setTimeout(() => {
+      if (!mounted) return;
+      console.warn(`${AUTH_LOG_PREFIX} initial session check timed out`);
+      setSession(null);
+      setUser(null);
+      setInstructor(null);
+      setSubscription(null);
+      setLoading(false);
+      if (isInstructorPortalPath()) {
+        navigate('/instructor-app/login', { replace: true });
+      }
+    }, INITIAL_SESSION_TIMEOUT_MS);
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
+      window.clearTimeout(initialSessionTimeout);
       console.info(`${AUTH_LOG_PREFIX} initial session checked`, {
         hasSession: Boolean(session),
       });
@@ -203,6 +218,18 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         setInstructor(null);
         setSubscription(null);
         setLoading(false);
+      }
+    }).catch((error) => {
+      if (!mounted) return;
+      window.clearTimeout(initialSessionTimeout);
+      console.warn(`${AUTH_LOG_PREFIX} initial session check failed`, error);
+      setSession(null);
+      setUser(null);
+      setInstructor(null);
+      setSubscription(null);
+      setLoading(false);
+      if (isInstructorPortalPath()) {
+        navigate('/instructor-app/login', { replace: true });
       }
     });
 
@@ -237,6 +264,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
 
     return () => {
       mounted = false;
+      window.clearTimeout(initialSessionTimeout);
       authSubscription.unsubscribe();
     };
   }, []);
