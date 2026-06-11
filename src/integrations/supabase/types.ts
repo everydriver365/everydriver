@@ -21690,6 +21690,19 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: string
       }
+      get_my_instructor_session: {
+        Args: never
+        Returns: {
+          app_slug: string
+          deletion_pending_until: string
+          features: Json
+          instructor_id: string
+          is_active: boolean
+          name: string
+          plan_name: string
+          plan_slug: string
+        }[]
+      }
       get_public_instructor_booking_preferences: {
         Args: { p_instructor_id: string }
         Returns: {

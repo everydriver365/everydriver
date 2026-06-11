@@ -90,86 +90,11 @@ interface InstructorAuthContextType {
 }
 
 const InstructorAuthContext = createContext<InstructorAuthContextType | undefined>(undefined);
-type SignInResult = Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>;
-type AuthServiceError = Error & { status?: number; code?: string };
-
 const AUTH_LOG_PREFIX = '[InstructorAuth]';
 
-const transientAuthMessages = [
-  'timeout',
-  'timed out',
-  'context deadline exceeded',
-  'upstream request timeout',
-  'database error querying schema',
-];
-
-function isTransientAuthError(error: Error | null): boolean {
-  if (!error) return false;
-  const authError = error as Error & { status?: number; code?: string };
-  const message = error.message.toLowerCase();
-
-  return (
-    authError.status === 500 ||
-    authError.status === 504 ||
-    authError.code === 'request_timeout' ||
-    authError.code === 'unexpected_failure' ||
-    transientAuthMessages.some((text) => message.includes(text))
-  );
-}
-
-const retryDelay = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
-
-const SIGN_IN_TIMEOUT_MS = 12000;
 const INITIAL_SESSION_TIMEOUT_MS = 3000;
+const SESSION_BUNDLE_TIMEOUT_MS = 6000;
 
-function createTransientAuthError(message: string): AuthServiceError {
-  const error = new Error(message) as AuthServiceError;
-  error.name = 'AuthServiceTimeoutError';
-  error.status = 504;
-  error.code = 'request_timeout';
-  return error;
-}
-
-async function signInWithTimeout(email: string, password: string): Promise<SignInResult> {
-  const startedAt = performance.now();
-  let timeoutId: number | undefined;
-  console.info(`${AUTH_LOG_PREFIX} password sign-in started`);
-
-  const timeout = new Promise<SignInResult>((resolve) => {
-    timeoutId = window.setTimeout(() => {
-      resolve({
-        data: { user: null, session: null },
-        error: createTransientAuthError('Login service timed out. Please try again in a moment.'),
-      } as SignInResult);
-    }, SIGN_IN_TIMEOUT_MS);
-  });
-
-  try {
-    const result = await Promise.race([
-      supabase.auth.signInWithPassword({ email, password }),
-      timeout,
-    ]);
-    const durationMs = Math.round(performance.now() - startedAt);
-
-    if (result.error) {
-      const error = result.error as AuthServiceError;
-      console.info(`${AUTH_LOG_PREFIX} password sign-in failed`, {
-        durationMs,
-        status: error.status,
-        code: error.code,
-      });
-    } else {
-      console.info(`${AUTH_LOG_PREFIX} password sign-in succeeded`, {
-        durationMs,
-        sessionReceived: Boolean(result.data.session),
-      });
-    }
-
-    return result;
-  } finally {
-    if (timeoutId) window.clearTimeout(timeoutId);
-  }
-}
 
 export function InstructorAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -355,6 +280,114 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     }
   };
 
+  /**
+   * Minimal post-login bundle via SECURITY DEFINER RPC.
+   * One indexed lookup; runs on the login critical path.
+   * Returns an Error to surface on the login screen, or null on success.
+   * Sets `instructor` (minimal) + `subscription` so the shell can render
+   * before the wide profile fetch completes in the background.
+   */
+  const loadInstructorSessionBundle = async (): Promise<Error | null> => {
+    const startedAt = performance.now();
+    const ac = new AbortController();
+    const timer = window.setTimeout(() => ac.abort(), SESSION_BUNDLE_TIMEOUT_MS);
+    try {
+      const { data, error } = await supabase
+        .rpc('get_my_instructor_session')
+        .abortSignal(ac.signal)
+        .maybeSingle();
+
+      console.info(`${AUTH_LOG_PREFIX} session bundle fetch finished`, {
+        durationMs: Math.round(performance.now() - startedAt),
+        ok: !error,
+        found: Boolean(data),
+      });
+
+      if (error) {
+        return new Error(error.message || 'Backend is unreachable. Please try again.');
+      }
+      if (!data) {
+        // Authenticated but no instructor profile linked.
+        setInstructor(null);
+        setSubscription(null);
+        setLoading(false);
+        return null;
+      }
+
+      const bundle = data as {
+        instructor_id: string;
+        name: string | null;
+        app_slug: string | null;
+        is_active: boolean | null;
+        plan_slug: string | null;
+        plan_name: string | null;
+        features: string[] | null;
+        deletion_pending_until: string | null;
+      };
+
+      // Block sign-in for accounts pending deletion.
+      if (bundle.deletion_pending_until) {
+        const purgeAt = new Date(bundle.deletion_pending_until);
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+        setSession(null);
+        setUser(null);
+        setInstructor(null);
+        setSubscription(null);
+        setLoading(false);
+        const dateStr = purgeAt.toLocaleDateString('en-GB', {
+          day: 'numeric', month: 'long', year: 'numeric',
+        });
+        const err = new Error(
+          `Your account is scheduled for deletion on ${dateStr}. Check your email for a cancellation link.`,
+        ) as Error & { code?: string };
+        err.code = 'account_pending_deletion';
+        return err;
+      }
+
+      // Seed minimal instructor + subscription so the shell renders instantly.
+      setInstructor((prev) => ({
+        ...(prev ?? ({} as InstructorProfile)),
+        id: bundle.instructor_id,
+        name: bundle.name ?? '',
+        app_slug: bundle.app_slug,
+        is_active: Boolean(bundle.is_active),
+      } as InstructorProfile));
+
+      if (bundle.plan_slug || bundle.plan_name || bundle.features) {
+        setSubscription({
+          id: '',
+          plan_id: '',
+          status: 'active',
+          plan_slug: bundle.plan_slug ?? undefined,
+          plan_name: bundle.plan_name ?? undefined,
+          features: bundle.features ?? [],
+        });
+      }
+
+      // Now that we know the user is a real instructor, get off the login screen.
+      if (
+        window.location.pathname === '/instructor-app/login' ||
+        window.location.pathname === '/instructor/login'
+      ) {
+        navigate('/instructor', { replace: true });
+      }
+
+      setLoading(false);
+      return null;
+    } catch (err) {
+      const aborted = (err as { name?: string })?.name === 'AbortError';
+      console.error(`${AUTH_LOG_PREFIX} session bundle fetch failed`, err);
+      setLoading(false);
+      return new Error(
+        aborted
+          ? 'Backend is unreachable. Please try again.'
+          : (err instanceof Error ? err.message : 'Unable to load your account.'),
+      );
+    } finally {
+      window.clearTimeout(timer);
+    }
+  };
+
 
   const signUp = async (email: string, password: string, name: string) => {
     const redirectUrl = `${window.location.origin}/instructor-app/login`;
@@ -436,80 +469,47 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
   const signIn = async (email: string, password: string) => {
-    let lastError: Error | null = null;
+    // Thin pass-through: one network call, no client-side timeout race, no
+    // retry loop, no extra round-trip. Real backend errors surface verbatim.
+    console.info(`${AUTH_LOG_PREFIX} password sign-in started`);
+    const startedAt = performance.now();
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.info(`${AUTH_LOG_PREFIX} password sign-in finished`, {
+      durationMs: Math.round(performance.now() - startedAt),
+      ok: !error,
+    });
 
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      console.info(`${AUTH_LOG_PREFIX} password sign-in attempt`, { attempt: attempt + 1 });
-      const { data, error } = await signInWithTimeout(email, password);
+    if (error) {
+      return { error: error as Error, session: null };
+    }
 
-      if (!error) {
-        console.info(`${AUTH_LOG_PREFIX} password sign-in accepted`, {
-          sessionReceived: Boolean(data.session),
-        });
+    // Hydrate session immediately so the rest of the app doesn't have to wait
+    // for the onAuthStateChange listener to fire.
+    if (data.session) {
+      setSession(data.session);
+      setUser(data.session.user ?? null);
+    }
 
-        // Blocked-login check: refuse sign-in for instructors with a pending
-        // scheduled deletion. Match on auth user id; do not block if the
-        // record cannot be found (admins, pupils, etc. fall through).
-        const authUserId = data.session?.user?.id ?? data.user?.id;
-        if (authUserId) {
-          try {
-            const { data: instructorRow } = await supabase
-              .from('instructors')
-              .select('deleted_at, scheduled_purge_at')
-              .eq('auth_user_id', authUserId)
-              .maybeSingle();
-            const purgeAt = instructorRow?.scheduled_purge_at
-              ? new Date(instructorRow.scheduled_purge_at as string)
-              : null;
-            if (instructorRow?.deleted_at && purgeAt && purgeAt.getTime() > Date.now()) {
-              await supabase.auth.signOut();
-              const dateStr = purgeAt.toLocaleDateString('en-GB', {
-                day: 'numeric', month: 'long', year: 'numeric',
-              });
-              const blockErr = new Error(
-                `Your account is scheduled for deletion on ${dateStr}. Check your email for a cancellation link.`,
-              );
-              (blockErr as Error & { code?: string }).code = 'account_pending_deletion';
-              return { error: blockErr, session: null };
-            }
-          } catch (checkErr) {
-            // Fail open: don't lock anyone out if this check itself fails.
-            // Log with enough context to detect at scale in production.
-            const errMsg = checkErr instanceof Error ? checkErr.message : String(checkErr);
-            console.warn(`${AUTH_LOG_PREFIX} pending-deletion check failed (fail-open)`, {
-              authUserId,
-              email,
-              error: errMsg,
-            });
-          }
-        }
-
-        // Eagerly hydrate context state and load the instructor profile so the
-        // redirect to /instructor doesn't depend on the onAuthStateChange event
-        // firing (which can be missed or delayed in some browsers).
-        if (data.session) {
-          setSession(data.session);
-          setUser(data.session.user ?? null);
-        }
-        if (authUserId) {
-          setLoading(true);
-          void fetchInstructorProfile(authUserId);
-        }
-
-        return { error: null, session: data.session };
+    // Load the minimal session bundle (RPC: indexed, one round-trip). The
+    // pending-deletion check now lives inside that RPC, so we don't need a
+    // second blocking SELECT here.
+    const authUserId = data.session?.user?.id ?? data.user?.id;
+    if (authUserId) {
+      setLoading(true);
+      const bundleErr = await loadInstructorSessionBundle();
+      if (bundleErr) {
+        // Surface the real reason; the login screen will show it.
+        return { error: bundleErr, session: null };
       }
-
-      lastError = error as Error;
-      if (!isTransientAuthError(lastError) || attempt === 1) break;
-      await retryDelay(800);
+      // Background-load the wide profile so dashboards have rich data, but
+      // don't block the redirect on it.
+      void fetchInstructorProfile(authUserId);
     }
 
-    if (lastError && isTransientAuthError(lastError)) {
-      return { error: createTransientAuthError('Login service timed out. Please try again in a moment.') };
-    }
-
-    return { error: lastError, session: null };
+    return { error: null, session: data.session };
   };
+
+
 
   const signOut = async () => {
     try {
