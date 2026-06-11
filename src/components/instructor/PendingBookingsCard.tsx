@@ -38,37 +38,52 @@ export function PendingBookingsCard({ instructorId }: Props) {
   const [acting, setActing] = useState<string | null>(null);
 
   const fetchRows = async () => {
-    const { data, error } = await supabase
-      .from("scheduled_lessons")
-      .select("id, pupil_id, lesson_date, start_time, duration_minutes")
-      .eq("instructor_id", instructorId)
-      .eq("booking_status", "pending_approval")
-      .order("lesson_date", { ascending: true })
-      .order("start_time", { ascending: true });
-
-    if (error || !data) {
+    if (!instructorId) {
       setRows([]);
       setLoading(false);
       return;
     }
+    try {
+      const { data, error } = await supabase
+        .from("scheduled_lessons")
+        .select("id, pupil_id, lesson_date, start_time, duration_minutes")
+        .eq("instructor_id", instructorId)
+        .eq("booking_status", "pending_approval")
+        .order("lesson_date", { ascending: true })
+        .order("start_time", { ascending: true });
 
-    const pupilIds = Array.from(new Set(data.map((r) => r.pupil_id).filter(Boolean)));
-    const { data: pupils } = pupilIds.length
-      ? await supabase.from("pupils").select("id, name").in("id", pupilIds)
-      : { data: [] as { id: string; name: string }[] };
-    const pupilMap = new Map((pupils ?? []).map((p: any) => [p.id, p.name as string]));
+      if (error || !data || data.length === 0) {
+        if (error) console.error("[PendingBookingsCard] fetch failed", error);
+        setRows([]);
+        return;
+      }
 
-    setRows(
-      data.map((r) => ({
-        ...r,
-        pupil_name: pupilMap.get(r.pupil_id) ?? "Unknown pupil",
-      })),
-    );
-    setLoading(false);
+      const pupilIds = Array.from(new Set(data.map((r) => r.pupil_id).filter(Boolean)));
+      const { data: pupils } = pupilIds.length
+        ? await supabase.from("pupils").select("id, name").in("id", pupilIds)
+        : { data: [] as { id: string; name: string }[] };
+      const pupilMap = new Map((pupils ?? []).map((p: any) => [p.id, p.name as string]));
+
+      setRows(
+        data.map((r) => ({
+          ...r,
+          pupil_name: pupilMap.get(r.pupil_id) ?? "Unknown pupil",
+        })),
+      );
+    } catch (e) {
+      console.error("[PendingBookingsCard] unexpected error", e);
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (!instructorId) return;
+    if (!instructorId) {
+      setRows([]);
+      setLoading(false);
+      return;
+    }
     fetchRows();
     const ch = supabase
       .channel(`pending-bookings-${instructorId}`)
