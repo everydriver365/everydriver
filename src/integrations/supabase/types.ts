@@ -22250,6 +22250,10 @@ export type Database = {
         Args: { _school: string; _user: string }
         Returns: boolean
       }
+      user_owns_school: {
+        Args: { _school: string; _user: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "instructor" | "admin" | "pupil" | "school_manager" | "parent"
