@@ -582,9 +582,14 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
           }
         }
 
-        if (instructorsNearby.length > 0) {
+        const hasAnyMatch =
+          instructorsNearby.length > 0 || placeholderIdsInDistrict.length > 0;
+
+        if (hasAnyMatch) {
           toast({ title: "Location found!", description: `Showing courses near ${areaName || district}` });
-        } else {
+        } else if (instructors.length > 0) {
+          // Only warn once the upstream instructor list has actually loaded —
+          // otherwise we flash a destructive toast during the initial fetch.
           toast({ title: "No instructors nearby", description: `We couldn't find instructors near ${areaName || district}. Try a wider radius.`, variant: "destructive" });
         }
       } else {
