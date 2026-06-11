@@ -87,8 +87,22 @@ Deno.serve(async (req) => {
           .update({ status: "paid", payment_method: session.paymentMethod?.type || "card" })
           .eq("id", intent.id);
 
+        const creditPence = intent.amount_pence - intent.service_fee_pence - intent.platform_fee_pence;
+        const reservationId = (intent.metadata as any)?.reservationId || null;
+
+        if (reservationId) {
+          // Course reservation flow — mark the reservation paid.
+          await supabase
+            .from("course_reservations")
+            .update({
+              payment_status: "paid",
+              payment_intent_id: sessionId,
+              amount_paid_pence: creditPence,
+            })
+            .eq("id", reservationId);
+        }
+
         if (intent.pupil_id) {
-          const creditPence = intent.amount_pence - intent.service_fee_pence - intent.platform_fee_pence;
           await supabase.rpc("increment_pupil_balance", {
             p_pupil_id: intent.pupil_id,
             p_amount: creditPence / 100,
@@ -99,7 +113,7 @@ Deno.serve(async (req) => {
             instructor_id: intent.instructor_id,
             amount: creditPence / 100,
             payment_method: "ryft_card",
-            notes: `Ryft payment ${sessionId}`,
+            notes: reservationId ? `Ryft reservation ${reservationId}` : `Ryft payment ${sessionId}`,
             recorded_at: new Date().toISOString(),
           });
         }
