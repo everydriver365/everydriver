@@ -20,6 +20,7 @@ interface Body {
   pupilId?: string;
   serviceFeePence?: number;
   platformFeePence?: number;
+  reservationId?: string;        // links the checkout to a course_reservations row
 }
 
 function ryftBase(env: string): string {
@@ -99,6 +100,7 @@ Deno.serve(async (req) => {
         pupilId: pupilId || "",
         serviceFeePence: String(serviceFeePence),
         platformFeePence: String(platformFeePence),
+        reservationId: body.reservationId || "",
       },
       returnUrl,
       // Sub-account split: instructor receives net of platformShare
@@ -155,7 +157,7 @@ Deno.serve(async (req) => {
       currency: "GBP",
       status: "pending",
       checkout_url: checkoutUrl,
-      metadata: { orderReference },
+      metadata: { orderReference, reservationId: body.reservationId || null },
     });
 
     return new Response(
