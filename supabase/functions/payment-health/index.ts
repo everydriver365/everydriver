@@ -18,6 +18,7 @@ interface HealthResponse {
   square: GatewayStatus;
   elavon: GatewayStatus;
   gocardless: GatewayStatus;
+  ryft: GatewayStatus;
 }
 
 serve(async (req: Request) => {
@@ -33,7 +34,19 @@ serve(async (req: Request) => {
       square: { available: false, configured: false },
       elavon: { available: false, configured: false },
       gocardless: { available: false, configured: false },
+      ryft: { available: false, configured: false },
     };
+
+    // Check Ryft credentials
+    const ryftSecret = Deno.env.get("RYFT_SECRET_KEY");
+    const ryftWebhook = Deno.env.get("RYFT_WEBHOOK_SECRET");
+    if (ryftSecret && ryftWebhook) {
+      response.ryft.configured = true;
+      response.ryft.available = true;
+    } else {
+      if (!ryftSecret) response.ryft.error = "RYFT_SECRET_KEY not set";
+      else if (!ryftWebhook) response.ryft.error = "RYFT_WEBHOOK_SECRET not set";
+    }
 
     // Check Clearpay credentials
     const clearpayMerchantId = Deno.env.get("CLEARPAY_MERCHANT_ID");

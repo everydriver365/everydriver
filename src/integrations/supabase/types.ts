@@ -10531,6 +10531,10 @@ export type Database = {
           radius_miles: number
           reflective_logs_enabled: boolean | null
           road_tax_reference: string | null
+          ryft_account_id: string | null
+          ryft_account_status: string | null
+          ryft_onboarding_url: string | null
+          ryft_payouts_enabled: boolean
           scheduled_purge_at: string | null
           school_skim_amount: number | null
           school_skim_percentage: number | null
@@ -10769,6 +10773,10 @@ export type Database = {
           radius_miles?: number
           reflective_logs_enabled?: boolean | null
           road_tax_reference?: string | null
+          ryft_account_id?: string | null
+          ryft_account_status?: string | null
+          ryft_onboarding_url?: string | null
+          ryft_payouts_enabled?: boolean
           scheduled_purge_at?: string | null
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
@@ -11007,6 +11015,10 @@ export type Database = {
           radius_miles?: number
           reflective_logs_enabled?: boolean | null
           road_tax_reference?: string | null
+          ryft_account_id?: string | null
+          ryft_account_status?: string | null
+          ryft_onboarding_url?: string | null
+          ryft_payouts_enabled?: boolean
           scheduled_purge_at?: string | null
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
@@ -17463,6 +17475,90 @@ export type Database = {
           id?: string
           source?: string
           to_postcode?: string
+        }
+        Relationships: []
+      }
+      ryft_payment_intents: {
+        Row: {
+          amount_pence: number
+          checkout_url: string | null
+          created_at: string
+          currency: string
+          id: string
+          instructor_id: string
+          last_error: string | null
+          metadata: Json
+          payment_method: string | null
+          platform_fee_pence: number
+          pupil_id: string | null
+          ryft_payment_session_id: string
+          service_fee_pence: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_pence: number
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          instructor_id: string
+          last_error?: string | null
+          metadata?: Json
+          payment_method?: string | null
+          platform_fee_pence?: number
+          pupil_id?: string | null
+          ryft_payment_session_id: string
+          service_fee_pence?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_pence?: number
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          instructor_id?: string
+          last_error?: string | null
+          metadata?: Json
+          payment_method?: string | null
+          platform_fee_pence?: number
+          pupil_id?: string | null
+          ryft_payment_session_id?: string
+          service_fee_pence?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ryft_webhook_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json
+          processed_at: string | null
+          signature_valid: boolean
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_type: string
+          id?: string
+          payload: Json
+          processed_at?: string | null
+          signature_valid?: boolean
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          signature_valid?: boolean
         }
         Relationships: []
       }
