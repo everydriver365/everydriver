@@ -616,12 +616,8 @@ export default function BookingSummary() {
     });
   }
 
-  // Auto-show card form when canSubmit becomes true
-  useEffect(() => {
-    if (canSubmit && !showHostedFields) {
-      setShowHostedFields(true);
-    }
-  }, [canSubmit, showHostedFields]);
+
+
 
   const bookingInProgressRef = useRef(false);
   const paymentBlockRef = useRef<HTMLDivElement | null>(null);
