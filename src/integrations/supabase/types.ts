@@ -2602,6 +2602,98 @@ export type Database = {
           },
         ]
       }
+      course_reservations: {
+        Row: {
+          allowed_days: number[]
+          amount_paid_pence: number
+          completion_window_weeks: number
+          course_id: string
+          created_at: string
+          hours_per_week_cap: number
+          hours_scheduled: number
+          id: string
+          instructor_id: string
+          payment_intent_id: string | null
+          payment_status: string
+          pupil_id: string
+          pupil_notes: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["course_reservation_status"]
+          time_windows: string[]
+          total_hours: number
+          updated_at: string
+        }
+        Insert: {
+          allowed_days: number[]
+          amount_paid_pence?: number
+          completion_window_weeks: number
+          course_id: string
+          created_at?: string
+          hours_per_week_cap: number
+          hours_scheduled?: number
+          id?: string
+          instructor_id: string
+          payment_intent_id?: string | null
+          payment_status?: string
+          pupil_id: string
+          pupil_notes?: string | null
+          start_date: string
+          status?: Database["public"]["Enums"]["course_reservation_status"]
+          time_windows: string[]
+          total_hours: number
+          updated_at?: string
+        }
+        Update: {
+          allowed_days?: number[]
+          amount_paid_pence?: number
+          completion_window_weeks?: number
+          course_id?: string
+          created_at?: string
+          hours_per_week_cap?: number
+          hours_scheduled?: number
+          id?: string
+          instructor_id?: string
+          payment_intent_id?: string | null
+          payment_status?: string
+          pupil_id?: string
+          pupil_notes?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["course_reservation_status"]
+          time_windows?: string[]
+          total_hours?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_reservations_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_reservations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_reservations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_reservations_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_reviews: {
         Row: {
           course_hours: number
@@ -7003,6 +7095,7 @@ export type Database = {
           allow_self_booking: boolean
           allow_self_cancel: boolean
           allow_self_reschedule: boolean
+          allow_start_date_only_booking: boolean
           allowed_durations: number[]
           booking_message: string | null
           cancel_notice_hours: number
@@ -7013,6 +7106,7 @@ export type Database = {
           min_notice_hours: number
           require_approval: boolean
           reschedule_notice_hours: number
+          start_date_only_max_hours_per_week: number | null
           updated_at: string
         }
         Insert: {
@@ -7020,6 +7114,7 @@ export type Database = {
           allow_self_booking?: boolean
           allow_self_cancel?: boolean
           allow_self_reschedule?: boolean
+          allow_start_date_only_booking?: boolean
           allowed_durations?: number[]
           booking_message?: string | null
           cancel_notice_hours?: number
@@ -7030,6 +7125,7 @@ export type Database = {
           min_notice_hours?: number
           require_approval?: boolean
           reschedule_notice_hours?: number
+          start_date_only_max_hours_per_week?: number | null
           updated_at?: string
         }
         Update: {
@@ -7037,6 +7133,7 @@ export type Database = {
           allow_self_booking?: boolean
           allow_self_cancel?: boolean
           allow_self_reschedule?: boolean
+          allow_start_date_only_booking?: boolean
           allowed_durations?: number[]
           booking_message?: string | null
           cancel_notice_hours?: number
@@ -7047,6 +7144,7 @@ export type Database = {
           min_notice_hours?: number
           require_approval?: boolean
           reschedule_notice_hours?: number
+          start_date_only_max_hours_per_week?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -17763,6 +17861,7 @@ export type Database = {
           recurrence_rule: string | null
           reminder_1h_sent_at: string | null
           reminder_24h_sent_at: string | null
+          reservation_id: string | null
           source: string
           start_time: string
           status: string
@@ -17827,6 +17926,7 @@ export type Database = {
           recurrence_rule?: string | null
           reminder_1h_sent_at?: string | null
           reminder_24h_sent_at?: string | null
+          reservation_id?: string | null
           source?: string
           start_time: string
           status?: string
@@ -17891,6 +17991,7 @@ export type Database = {
           recurrence_rule?: string | null
           reminder_1h_sent_at?: string | null
           reminder_24h_sent_at?: string | null
+          reservation_id?: string | null
           source?: string
           start_time?: string
           status?: string
@@ -17942,6 +18043,13 @@ export type Database = {
             columns: ["recurrence_parent_id"]
             isOneToOne: false
             referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_lessons_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "course_reservations"
             referencedColumns: ["id"]
           },
           {
@@ -22057,6 +22165,10 @@ export type Database = {
         }
         Returns: string
       }
+      refresh_reservation_progress: {
+        Args: { _reservation_id: string }
+        Returns: undefined
+      }
       request_test_swap: {
         Args: { p_requester_signup_id: string; p_target_signup_id: string }
         Returns: string
@@ -22154,6 +22266,11 @@ export type Database = {
         | "recurring_exception"
         | "holiday_block"
         | "seasonal"
+      course_reservation_status:
+        | "awaiting_scheduling"
+        | "partially_scheduled"
+        | "completed"
+        | "cancelled"
       friendship_status: "pending" | "accepted" | "declined"
       payment_dispute_status: "open" | "resolved" | "dismissed"
       phone_number_provider: "twilio_provisioned" | "byo_forwarded"
@@ -22338,6 +22455,12 @@ export const Constants = {
         "recurring_exception",
         "holiday_block",
         "seasonal",
+      ],
+      course_reservation_status: [
+        "awaiting_scheduling",
+        "partially_scheduled",
+        "completed",
+        "cancelled",
       ],
       friendship_status: ["pending", "accepted", "declined"],
       payment_dispute_status: ["open", "resolved", "dismissed"],
