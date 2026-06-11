@@ -144,7 +144,7 @@ serve(async (req) => {
     const today = new Date().toISOString().split("T")[0];
     const { data: todayLessons } = await supabase
       .from("scheduled_lessons")
-      .select("id, pupil_id, start_time, end_time, status, pupils(name)")
+      .select("id, pupil_id, start_time, duration_minutes, status, pupils(name)")
       .eq("instructor_id", instructor_id)
       .gte("start_time", today)
       .lte("start_time", today + "T23:59:59")
@@ -348,7 +348,7 @@ Always be concise and helpful. Use British English.`;
           
           const { data: lessons } = await supabase
             .from("scheduled_lessons")
-            .select("start_time, end_time, status, pupils(name)")
+            .select("start_time, duration_minutes, status, pupils(name)")
             .eq("instructor_id", instructor_id)
             .gte("start_time", from)
             .lte("start_time", to)

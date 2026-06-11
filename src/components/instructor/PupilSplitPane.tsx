@@ -607,7 +607,7 @@ function PupilDetailPanel({ pupil, instructorId, onClose }: { pupil: Pupil; inst
     const fetchRecent = async () => {
       const { data } = await supabase
         .from("scheduled_lessons")
-        .select("id, lesson_date, start_time, end_time, status, pickup_location, price")
+        .select("id, lesson_date, start_time, duration_minutes, status, pickup_location, price")
         .eq("pupil_id", pupil.id)
         .order("lesson_date", { ascending: false })
         .limit(5);

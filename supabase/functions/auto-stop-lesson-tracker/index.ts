@@ -39,20 +39,21 @@ Deno.serve(async (req) => {
       // whose end_time has passed by at least 1 minute.
       const { data: lessons } = await supabase
         .from("scheduled_lessons")
-        .select("id, lesson_date, end_time")
+        .select("id, lesson_date, start_time, duration_minutes")
         .eq("instructor_id", session.instructor_id)
         .eq("pupil_id", session.pupil_id)
         .eq("lesson_date", today)
-        .order("end_time", { ascending: false });
+        .order("start_time", { ascending: false });
 
       if (!lessons || lessons.length === 0) continue;
 
-      // Find the most recent lesson whose end_time has elapsed
+      // Find the most recent lesson whose computed end time has elapsed
       const ended = lessons.find((l: any) => {
-        const endIso = `${l.lesson_date}T${l.end_time}`;
-        const endDate = new Date(endIso);
-        if (isNaN(endDate.getTime())) return false;
-        return endDate.getTime() <= now.getTime() - 60 * 1000;
+        const startIso = `${l.lesson_date}T${l.start_time}`;
+        const startDate = new Date(startIso);
+        if (isNaN(startDate.getTime())) return false;
+        const endMs = startDate.getTime() + (l.duration_minutes || 60) * 60 * 1000;
+        return endMs <= now.getTime() - 60 * 1000;
       });
 
       if (!ended) continue;
@@ -195,21 +196,22 @@ Deno.serve(async (req) => {
         if (!session.lesson_id) {
           // No linked lesson, can't determine first/last — skip silently
         } else {
-          const dayStartIso = `${today}T00:00:00`;
-          const dayEndIso = `${today}T23:59:59`;
-          const nowIso = now.toISOString();
 
           const { data: dayLessons } = await supabase
             .from("scheduled_lessons")
-            .select("id, start_time, end_time, pickup_postcode, dropoff_postcode")
+            .select("id, lesson_date, start_time, duration_minutes, pickup_postcode, dropoff_postcode")
             .eq("instructor_id", session.instructor_id)
             .in("status", ["confirmed", "scheduled"])
-            .gte("start_time", dayStartIso)
-            .lte("start_time", dayEndIso)
-            .lt("end_time", nowIso)
+            .eq("lesson_date", today)
             .order("start_time", { ascending: true });
 
-          const lessonsList = dayLessons ?? [];
+          const lessonsList = (dayLessons ?? []).filter((l: any) => {
+            const startIso = `${l.lesson_date}T${l.start_time}`;
+            const startMs = new Date(startIso).getTime();
+            if (isNaN(startMs)) return false;
+            const endMs = startMs + (l.duration_minutes || 60) * 60 * 1000;
+            return endMs < now.getTime();
+          });
           if (lessonsList.length > 0) {
             const firstLesson = lessonsList[0];
             const lastLesson = lessonsList[lessonsList.length - 1];

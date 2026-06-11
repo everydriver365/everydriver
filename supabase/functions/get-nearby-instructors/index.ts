@@ -99,9 +99,9 @@ Deno.serve(async (req) => {
 
     const { data: currentLessons } = await supabase
       .from("scheduled_lessons")
-      .select("instructor_id, lesson_type, status, start_time, end_time, duration_minutes")
+      .select("instructor_id, lesson_type, status, start_time, duration_minutes")
       .in("instructor_id", friendIds)
-      .gte("end_time", now.toISOString())
+      .gte("start_time", windowStart)
       .lte("start_time", windowEnd)
       .in("status", ["scheduled", "en_route", "in_progress"])
       .order("start_time", { ascending: true });
@@ -111,9 +111,7 @@ Deno.serve(async (req) => {
     for (const lesson of currentLessons || []) {
       if (!lessonMap.has(lesson.instructor_id)) {
         const startTime = new Date(lesson.start_time);
-        const endTime = lesson.end_time
-          ? new Date(lesson.end_time)
-          : new Date(startTime.getTime() + (lesson.duration_minutes || 60) * 60 * 1000);
+        const endTime = new Date(startTime.getTime() + (lesson.duration_minutes || 60) * 60 * 1000);
 
         // Only include if lesson is currently active or starting very soon (within 15 min)
         if (endTime > now && startTime <= new Date(now.getTime() + 15 * 60 * 1000)) {

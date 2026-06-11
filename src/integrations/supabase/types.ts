@@ -22246,6 +22246,14 @@ export type Database = {
             }
             Returns: string
           }
+      user_is_school_member: {
+        Args: { _school: string; _user: string }
+        Returns: boolean
+      }
+      user_owns_school: {
+        Args: { _school: string; _user: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "instructor" | "admin" | "pupil" | "school_manager" | "parent"

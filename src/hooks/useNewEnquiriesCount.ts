@@ -11,7 +11,7 @@ export function useNewEnquiriesCount(instructorId: string | undefined) {
       const booking = await sb
         .from("booking_enquiries")
         .select("id", { count: "exact", head: true })
-        .eq("assigned_instructor_id", instructorId!)
+        .eq("instructor_id", instructorId!)
         .eq("status", "new");
       if (booking.error) throw booking.error;
 
