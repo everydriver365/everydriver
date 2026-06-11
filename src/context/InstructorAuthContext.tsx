@@ -92,7 +92,7 @@ interface InstructorAuthContextType {
 const InstructorAuthContext = createContext<InstructorAuthContextType | undefined>(undefined);
 const AUTH_LOG_PREFIX = '[InstructorAuth]';
 
-const INITIAL_SESSION_TIMEOUT_MS = 3000;
+const INITIAL_SESSION_TIMEOUT_MS = 6000;
 const SESSION_BUNDLE_TIMEOUT_MS = 6000;
 
 
