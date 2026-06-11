@@ -280,6 +280,114 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     }
   };
 
+  /**
+   * Minimal post-login bundle via SECURITY DEFINER RPC.
+   * One indexed lookup; runs on the login critical path.
+   * Returns an Error to surface on the login screen, or null on success.
+   * Sets `instructor` (minimal) + `subscription` so the shell can render
+   * before the wide profile fetch completes in the background.
+   */
+  const loadInstructorSessionBundle = async (): Promise<Error | null> => {
+    const startedAt = performance.now();
+    const ac = new AbortController();
+    const timer = window.setTimeout(() => ac.abort(), SESSION_BUNDLE_TIMEOUT_MS);
+    try {
+      const { data, error } = await supabase
+        .rpc('get_my_instructor_session')
+        .abortSignal(ac.signal)
+        .maybeSingle();
+
+      console.info(`${AUTH_LOG_PREFIX} session bundle fetch finished`, {
+        durationMs: Math.round(performance.now() - startedAt),
+        ok: !error,
+        found: Boolean(data),
+      });
+
+      if (error) {
+        return new Error(error.message || 'Backend is unreachable. Please try again.');
+      }
+      if (!data) {
+        // Authenticated but no instructor profile linked.
+        setInstructor(null);
+        setSubscription(null);
+        setLoading(false);
+        return null;
+      }
+
+      const bundle = data as {
+        instructor_id: string;
+        name: string | null;
+        app_slug: string | null;
+        is_active: boolean | null;
+        plan_slug: string | null;
+        plan_name: string | null;
+        features: string[] | null;
+        deletion_pending_until: string | null;
+      };
+
+      // Block sign-in for accounts pending deletion.
+      if (bundle.deletion_pending_until) {
+        const purgeAt = new Date(bundle.deletion_pending_until);
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+        setSession(null);
+        setUser(null);
+        setInstructor(null);
+        setSubscription(null);
+        setLoading(false);
+        const dateStr = purgeAt.toLocaleDateString('en-GB', {
+          day: 'numeric', month: 'long', year: 'numeric',
+        });
+        const err = new Error(
+          `Your account is scheduled for deletion on ${dateStr}. Check your email for a cancellation link.`,
+        ) as Error & { code?: string };
+        err.code = 'account_pending_deletion';
+        return err;
+      }
+
+      // Seed minimal instructor + subscription so the shell renders instantly.
+      setInstructor((prev) => ({
+        ...(prev ?? ({} as InstructorProfile)),
+        id: bundle.instructor_id,
+        name: bundle.name ?? '',
+        app_slug: bundle.app_slug,
+        is_active: Boolean(bundle.is_active),
+      } as InstructorProfile));
+
+      if (bundle.plan_slug || bundle.plan_name || bundle.features) {
+        setSubscription({
+          id: '',
+          plan_id: '',
+          status: 'active',
+          plan_slug: bundle.plan_slug ?? undefined,
+          plan_name: bundle.plan_name ?? undefined,
+          features: bundle.features ?? [],
+        });
+      }
+
+      // Now that we know the user is a real instructor, get off the login screen.
+      if (
+        window.location.pathname === '/instructor-app/login' ||
+        window.location.pathname === '/instructor/login'
+      ) {
+        navigate('/instructor', { replace: true });
+      }
+
+      setLoading(false);
+      return null;
+    } catch (err) {
+      const aborted = (err as { name?: string })?.name === 'AbortError';
+      console.error(`${AUTH_LOG_PREFIX} session bundle fetch failed`, err);
+      setLoading(false);
+      return new Error(
+        aborted
+          ? 'Backend is unreachable. Please try again.'
+          : (err instanceof Error ? err.message : 'Unable to load your account.'),
+      );
+    } finally {
+      window.clearTimeout(timer);
+    }
+  };
+
 
   const signUp = async (email: string, password: string, name: string) => {
     const redirectUrl = `${window.location.origin}/instructor-app/login`;
