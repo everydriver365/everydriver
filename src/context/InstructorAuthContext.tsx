@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -104,7 +104,11 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const hasInitialised = useRef(false);
+
   useEffect(() => {
+    if (hasInitialised.current) return;
+    hasInitialised.current = true;
     let mounted = true;
     const isInstructorPortalPath = () => window.location.pathname.startsWith('/instructor');
     const loadInstructorProfile = (userId: string) => {
