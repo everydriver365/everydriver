@@ -1068,6 +1068,7 @@ export function MobileBookingView({
         isPupilDetailsComplete={isPupilDetailsComplete}
         isFullyScheduled={isFullyScheduled}
         requiresSlotSelection={requiresSlotSelection}
+        disabledReason={payDisabledReason}
       />
     </div>
   );
