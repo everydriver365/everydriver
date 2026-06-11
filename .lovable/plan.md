@@ -1,44 +1,39 @@
-## Problem
+## What I found
 
-The toggle and "Max hours per week" input in **Book first lesson only** don't save, and you think the feature isn't wired into the booking flow. Root cause is a single bug — the booking flow itself **is** already wired, but it only appears when the toggle is on. Since the toggle never saves, the booking tab never shows up, so it looks like nothing works.
+The login itself is now succeeding: the backend auth log shows Kenneth’s email/password login returned 200.
 
-### Why nothing saves
+The screenshot is the instructor mobile dashboard after login. The two spinners below “Needs attention” are coming from:
 
-`StartDateOnlyBookingEditor` doesn't have its own Save button. It registers a `save()` callback with a shared `SettingsDirtyContext` so the parent settings shell can call it from a global "Save changes" bar.
+- `PendingBookingsCard`
+- `RescheduleRequestsCard`
 
-- **Desktop (V3 settings shell):** wrapped in `SettingsDirtyProvider` → save callback fires from the global save bar. Works.
-- **Mobile (`InstructorMenu.tsx` sheet):** the editor is rendered raw, with no `SettingsDirtyProvider` and no save bar. `useOptionalSettingsDirty()` returns no-ops, so `save()` is never called → the toggle and the number you type into "Max hours per week" stay in local React state and are thrown away when you close the sheet.
+Both cards start with `loading = true`, then run database reads. If those reads fail, hang, or run before a valid instructor id is ready, they sit as standalone spinners and make the dashboard look broken.
 
-That single bug is also why the booking flow appears "not wired" — `BookingModeTabs` (already mounted in `src/pages/BookingSummary.tsx` and `src/pages/everydriver/BookingSummary.tsx`) reads `allow_start_date_only_booking` from `instructor_booking_settings`. Because the toggle never persists, the second tab never appears on the pupil's checkout.
+I also found repeated backend errors: `scheduled_lessons.end_time does not exist`. The live `scheduled_lessons` table has `lesson_date`, `start_time`, and `duration_minutes`, but no `end_time`. Some deployed backend code still asks for `end_time`, so that needs correcting separately where it is still referenced.
 
-## Fix
+## Plan
 
-### 1. `src/components/instructor/StartDateOnlyBookingEditor.tsx`
+1. Harden `PendingBookingsCard`
+   - If no `instructorId` is present, stop loading immediately and render nothing.
+   - Wrap fetches in `try/catch/finally` so the spinner always clears.
+   - On read errors, log the error and render nothing rather than spinning forever.
+   - Only fetch pupil names when pending rows exist.
 
-Make the editor self-saving when it's used outside a `SettingsDirtyProvider`:
+2. Harden `RescheduleRequestsCard`
+   - Same no-id guard.
+   - Same `try/catch/finally` protection.
+   - Ensure pupil/lesson hydration failures cannot leave the card loading forever.
 
-- Detect whether a real provider is present (the optional hook already returns the same shape — we'll check if `register` is the no-op by reading the raw context directly).
-- When no provider is present, render a small inline **Save** button beneath the controls that calls `save()` directly, with disabled/loading state and toast on success.
-- When a provider **is** present (desktop V3), keep the current registry-based behaviour unchanged so the global save bar still works.
-- Also write each change immediately on toggle change is an option, but a Save button matches the rest of the mobile sheet pattern (e.g. profile editor in the same file uses "Save Profile"). Use the Save button.
+3. Fix the missing `scheduled_lessons.end_time` backend reference
+   - Update `supabase/functions/whatsapp-webhook/index.ts` to select `duration_minutes` instead of `end_time` from `scheduled_lessons`.
+   - Compute the lesson end time from `lesson_date + start_time + duration_minutes` where needed.
+   - This avoids the repeated backend errors without adding a redundant database column.
 
-### 2. Verify the cap is honoured in checkout
+4. Validate
+   - Check for remaining frontend references to `scheduled_lessons.end_time`.
+   - Re-check backend logs/network signal after the change.
+   - If edge function code changed, deploy the affected function so published users get the fix.
 
-No code change expected, just a verification pass after fixing #1:
+## Expected result
 
-- `src/components/booking/BookingModeTabs.tsx` already reads `allow_start_date_only_booking` and `start_date_only_max_hours_per_week` and passes the cap into `StartDateOnlyBookingPanel` as `maxHoursPerWeekCap`.
-- `src/components/booking/StartDateOnlyBookingPanel.tsx` already uses that cap for the slider max (`maxSlider = maxHoursPerWeekCap ?? 40`) and surfaces "(instructor cap Xh)" in the label.
-- `supabase/functions/create-course-reservation/index.ts` already re-runs the capacity check server-side.
-
-Once the toggle and cap actually persist, the second tab will appear in the pupil booking flow on both `/booking-summary` paths and the cap will limit the slider — no further wiring needed.
-
-### 3. Out of scope
-
-- Desktop V3 path: already working via `SettingsShellV3` → no changes.
-- Edge function and capacity check logic: already wired and correct.
-- BookingSummary integration: already mounted.
-
-## Result
-
-- Mobile: toggling **Book first lesson only** and entering a max-hours value will save (Save button + toast), and persist to `instructor_booking_settings`.
-- Pupil checkout: once enabled, the "Reserve start date only" tab appears in `BookingSummary`, with the slider capped by the instructor's configured max-hours-per-week.
+The dashboard should no longer sit with permanent spinning loaders. If there are no booking/reschedule requests, those sections will simply disappear, and the lower dashboard content should load normally.

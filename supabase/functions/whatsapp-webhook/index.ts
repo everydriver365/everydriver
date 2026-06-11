@@ -608,7 +608,7 @@ async function gatherInstructorContext(supabase: any, instructor: any) {
 
   const { data: bookedLessons } = await supabase
     .from("scheduled_lessons")
-    .select("lesson_date, start_time, end_time")
+    .select("lesson_date, start_time, duration_minutes")
     .eq("instructor_id", instructor.id)
     .gte("lesson_date", now.toISOString().split("T")[0])
     .lte("lesson_date", nextWeek.toISOString().split("T")[0])

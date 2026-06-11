@@ -46,49 +46,64 @@ export function RescheduleRequestsCard({ instructorId }: Props) {
   const [declineReason, setDeclineReason] = useState("");
 
   const fetchRows = async () => {
-    const { data, error } = await supabase
-      .from("reschedule_requests")
-      .select("id, pupil_id, lesson_id, requested_date, requested_time, original_date, original_time, reason, created_at")
-      .eq("instructor_id", instructorId)
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
-
-    if (error || !data) {
+    if (!instructorId) {
       setRows([]);
       setLoading(false);
       return;
     }
+    try {
+      const { data, error } = await supabase
+        .from("reschedule_requests")
+        .select("id, pupil_id, lesson_id, requested_date, requested_time, original_date, original_time, reason, created_at")
+        .eq("instructor_id", instructorId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
 
-    // Hydrate pupil name + lesson duration
-    const pupilIds = Array.from(new Set(data.map((r) => r.pupil_id)));
-    const lessonIds = Array.from(new Set(data.map((r) => r.lesson_id)));
+      if (error || !data || data.length === 0) {
+        if (error) console.error("[RescheduleRequestsCard] fetch failed", error);
+        setRows([]);
+        return;
+      }
 
-    const [pupilsRes, lessonsRes] = await Promise.all([
-      pupilIds.length
-        ? supabase.from("pupils").select("id, name").in("id", pupilIds)
-        : Promise.resolve({ data: [] as { id: string; name: string }[] }),
-      lessonIds.length
-        ? supabase.from("scheduled_lessons").select("id, duration_minutes").in("id", lessonIds)
-        : Promise.resolve({ data: [] as { id: string; duration_minutes: number }[] }),
-    ]);
+      // Hydrate pupil name + lesson duration
+      const pupilIds = Array.from(new Set(data.map((r) => r.pupil_id)));
+      const lessonIds = Array.from(new Set(data.map((r) => r.lesson_id)));
 
-    const pupilMap = new Map((pupilsRes.data ?? []).map((p: any) => [p.id, p.name as string]));
-    const lessonMap = new Map(
-      (lessonsRes.data ?? []).map((l: any) => [l.id, l.duration_minutes as number]),
-    );
+      const [pupilsRes, lessonsRes] = await Promise.all([
+        pupilIds.length
+          ? supabase.from("pupils").select("id, name").in("id", pupilIds)
+          : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+        lessonIds.length
+          ? supabase.from("scheduled_lessons").select("id, duration_minutes").in("id", lessonIds)
+          : Promise.resolve({ data: [] as { id: string; duration_minutes: number }[] }),
+      ]);
 
-    setRows(
-      data.map((r) => ({
-        ...r,
-        pupil_name: pupilMap.get(r.pupil_id) ?? "Unknown pupil",
-        duration_minutes: lessonMap.get(r.lesson_id) ?? 60,
-      })),
-    );
-    setLoading(false);
+      const pupilMap = new Map((pupilsRes.data ?? []).map((p: any) => [p.id, p.name as string]));
+      const lessonMap = new Map(
+        (lessonsRes.data ?? []).map((l: any) => [l.id, l.duration_minutes as number]),
+      );
+
+      setRows(
+        data.map((r) => ({
+          ...r,
+          pupil_name: pupilMap.get(r.pupil_id) ?? "Unknown pupil",
+          duration_minutes: lessonMap.get(r.lesson_id) ?? 60,
+        })),
+      );
+    } catch (e) {
+      console.error("[RescheduleRequestsCard] unexpected error", e);
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (!instructorId) return;
+    if (!instructorId) {
+      setRows([]);
+      setLoading(false);
+      return;
+    }
     fetchRows();
     const ch = supabase
       .channel(`reschedule-requests-${instructorId}`)
@@ -188,13 +203,7 @@ export function RescheduleRequestsCard({ instructorId }: Props) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-6">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  if (loading) return null;
   if (rows.length === 0) return null;
 
   return (
