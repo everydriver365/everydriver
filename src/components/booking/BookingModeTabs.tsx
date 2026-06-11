@@ -21,13 +21,12 @@ interface Props {
 export function BookingModeTabs({
   instructorId,
   instructor,
-  courseId,
   courseHours,
   ensurePupilId,
   onReserved,
   children,
 }: Props) {
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings, isLoading: settingsLoading } = useQuery({
     queryKey: ["booking-settings", instructorId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -41,7 +40,23 @@ export function BookingModeTabs({
     enabled: !!instructorId,
   });
 
-  const enabled = !isLoading && settings?.allow_start_date_only_booking === true;
+  const enabled = !settingsLoading && settings?.allow_start_date_only_booking === true;
+
+  // Resolve instructor_courses.id for the course (instructor + hours combo).
+  const { data: courseRow } = useQuery({
+    queryKey: ["instructor-course-id", instructorId, courseHours],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("instructor_courses")
+        .select("id")
+        .eq("instructor_id", instructorId)
+        .eq("course_hours", courseHours)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: enabled && !!instructorId && !!courseHours,
+  });
 
   if (!enabled) {
     return <>{children}</>;
@@ -57,16 +72,22 @@ export function BookingModeTabs({
         {children}
       </TabsContent>
       <TabsContent value="reserve" className="mt-0">
-        <StartDateOnlyBookingPanel
-          instructorId={instructorId}
-          instructor={instructor}
-          courseId={courseId}
-          courseHours={courseHours}
-          maxHoursPerWeekCap={settings?.start_date_only_max_hours_per_week ?? null}
-          pupilId={null}
-          ensurePupilId={ensurePupilId}
-          onReserved={onReserved}
-        />
+        {courseRow?.id ? (
+          <StartDateOnlyBookingPanel
+            instructorId={instructorId}
+            instructor={instructor}
+            courseId={courseRow.id}
+            courseHours={courseHours}
+            maxHoursPerWeekCap={settings?.start_date_only_max_hours_per_week ?? null}
+            pupilId={null}
+            ensurePupilId={ensurePupilId}
+            onReserved={onReserved}
+          />
+        ) : (
+          <div className="rounded-2xl border border-border bg-muted/30 p-5 text-sm text-muted-foreground">
+            Loading reservation options…
+          </div>
+        )}
       </TabsContent>
     </Tabs>
   );
