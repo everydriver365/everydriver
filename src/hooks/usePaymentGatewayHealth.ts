@@ -14,6 +14,7 @@ interface PaymentHealthResponse {
   square: GatewayStatus;
   elavon: GatewayStatus;
   gocardless: GatewayStatus;
+  ryft: GatewayStatus;
 }
 
 const defaultHealth: PaymentHealthResponse = {
@@ -23,6 +24,7 @@ const defaultHealth: PaymentHealthResponse = {
   square: { available: false, configured: false },
   elavon: { available: false, configured: false },
   gocardless: { available: false, configured: false },
+  ryft: { available: false, configured: false },
 };
 
 export function usePaymentGatewayHealth() {
@@ -33,7 +35,7 @@ export function usePaymentGatewayHealth() {
     async function fetchHealth() {
       try {
         const { data, error } = await supabase.functions.invoke("payment-health");
-        
+
         if (error) {
           console.error("Payment health check failed:", error);
           setLoading(false);
@@ -48,6 +50,7 @@ export function usePaymentGatewayHealth() {
             square: data.square || defaultHealth.square,
             elavon: data.elavon || defaultHealth.elavon,
             gocardless: data.gocardless || defaultHealth.gocardless,
+            ryft: data.ryft || defaultHealth.ryft,
           });
         }
       } catch (err) {
