@@ -255,29 +255,26 @@ export default function PublicPaymentPage() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
-            <SquareWalletButtons
-              amount={parsedAmount}
-              instructorId={instructorId}
-              pupilId={pupilParam || undefined}
-              customerName={payerName.trim() || undefined}
-              customerEmail={payerEmail.trim() || undefined}
-              onPaid={() => setPaid(true)}
-            />
-            <SquarePaymentForm
-              amount={parsedAmount}
-              instructorId={instructorId}
-              pupilId={pupilParam || undefined}
-              customerName={payerName.trim() || undefined}
-              customerEmail={payerEmail.trim() || undefined}
-              onPaid={() => setPaid(true)}
-            />
+          <div className="space-y-3 text-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-sm text-muted-foreground">
+              {processing ? "Redirecting to secure card checkout…" : "Preparing checkout…"}
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setShowCheckout(false); setProcessing(false); }}
+              disabled={!processing && false}
+            >
+              Cancel
+            </Button>
           </div>
         )}
 
         <p className="text-xs text-center text-muted-foreground">
-          Payments are processed securely via Square
+          Payments are processed securely
         </p>
+
       </div>
     </div>
   );
