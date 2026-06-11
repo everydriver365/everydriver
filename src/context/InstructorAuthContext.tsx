@@ -90,86 +90,11 @@ interface InstructorAuthContextType {
 }
 
 const InstructorAuthContext = createContext<InstructorAuthContextType | undefined>(undefined);
-type SignInResult = Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>;
-type AuthServiceError = Error & { status?: number; code?: string };
-
 const AUTH_LOG_PREFIX = '[InstructorAuth]';
 
-const transientAuthMessages = [
-  'timeout',
-  'timed out',
-  'context deadline exceeded',
-  'upstream request timeout',
-  'database error querying schema',
-];
-
-function isTransientAuthError(error: Error | null): boolean {
-  if (!error) return false;
-  const authError = error as Error & { status?: number; code?: string };
-  const message = error.message.toLowerCase();
-
-  return (
-    authError.status === 500 ||
-    authError.status === 504 ||
-    authError.code === 'request_timeout' ||
-    authError.code === 'unexpected_failure' ||
-    transientAuthMessages.some((text) => message.includes(text))
-  );
-}
-
-const retryDelay = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
-
-const SIGN_IN_TIMEOUT_MS = 12000;
 const INITIAL_SESSION_TIMEOUT_MS = 3000;
+const SESSION_BUNDLE_TIMEOUT_MS = 6000;
 
-function createTransientAuthError(message: string): AuthServiceError {
-  const error = new Error(message) as AuthServiceError;
-  error.name = 'AuthServiceTimeoutError';
-  error.status = 504;
-  error.code = 'request_timeout';
-  return error;
-}
-
-async function signInWithTimeout(email: string, password: string): Promise<SignInResult> {
-  const startedAt = performance.now();
-  let timeoutId: number | undefined;
-  console.info(`${AUTH_LOG_PREFIX} password sign-in started`);
-
-  const timeout = new Promise<SignInResult>((resolve) => {
-    timeoutId = window.setTimeout(() => {
-      resolve({
-        data: { user: null, session: null },
-        error: createTransientAuthError('Login service timed out. Please try again in a moment.'),
-      } as SignInResult);
-    }, SIGN_IN_TIMEOUT_MS);
-  });
-
-  try {
-    const result = await Promise.race([
-      supabase.auth.signInWithPassword({ email, password }),
-      timeout,
-    ]);
-    const durationMs = Math.round(performance.now() - startedAt);
-
-    if (result.error) {
-      const error = result.error as AuthServiceError;
-      console.info(`${AUTH_LOG_PREFIX} password sign-in failed`, {
-        durationMs,
-        status: error.status,
-        code: error.code,
-      });
-    } else {
-      console.info(`${AUTH_LOG_PREFIX} password sign-in succeeded`, {
-        durationMs,
-        sessionReceived: Boolean(result.data.session),
-      });
-    }
-
-    return result;
-  } finally {
-    if (timeoutId) window.clearTimeout(timeoutId);
-  }
-}
 
 export function InstructorAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
