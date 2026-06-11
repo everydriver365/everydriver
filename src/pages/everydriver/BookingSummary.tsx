@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
 
-// SquarePaymentForm import removed — card payments go through Ryft
+
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { PostcodeAddressLookup } from "@/components/booking/PostcodeAddressLookup";
@@ -24,7 +24,7 @@ import { EnquiryFlow } from "@/components/booking/EnquiryFlow";
 import { CoursePaymentBlock } from "@/components/booking/CoursePaymentBlock";
 import { TestSwapOptInCard, type SwapPreference } from "@/components/everydriver/TestSwapOptInCard";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
-// SquareWalletButtons import removed — card payments go through Ryft
+
 import { KlarnaPaymentModal } from "@/components/payments/KlarnaPaymentModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
