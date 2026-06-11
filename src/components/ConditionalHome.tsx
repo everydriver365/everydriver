@@ -26,12 +26,25 @@ function AppEntryRedirect({
 
   useEffect(() => {
     let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
-      if (cancelled) return;
-      setResolved(data.session ? authedTo : loginTo);
-    });
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) setResolved(loginTo);
+    }, 3000);
+
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (cancelled) return;
+        window.clearTimeout(timeout);
+        setResolved(data.session ? authedTo : loginTo);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        window.clearTimeout(timeout);
+        setResolved(loginTo);
+      });
     return () => {
       cancelled = true;
+      window.clearTimeout(timeout);
     };
   }, [authedTo, loginTo]);
 
