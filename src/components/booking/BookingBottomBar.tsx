@@ -10,6 +10,7 @@ interface BookingBottomBarProps {
   isPupilDetailsComplete?: boolean;
   isFullyScheduled?: boolean;
   requiresSlotSelection?: boolean;
+  disabledReason?: string | null;
 }
 
 export function BookingBottomBar({ 
@@ -20,6 +21,7 @@ export function BookingBottomBar({
   isPupilDetailsComplete = false,
   isFullyScheduled = false,
   requiresSlotSelection = true,
+  disabledReason = null,
 }: BookingBottomBarProps) {
   // Determine contextual button text
   let buttonText = "Fill Your Details";
@@ -39,7 +41,7 @@ export function BookingBottomBar({
       animate={{ y: 0 }}
       className="fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-safe"
     >
-      <div className="px-4 py-3 flex items-center justify-between gap-4">
+      <div className="px-4 pt-3 pb-3 flex items-center justify-between gap-4">
         <div>
           <p className="text-xs text-muted-foreground">Total</p>
           <p className="text-xl font-bold">
@@ -59,6 +61,11 @@ export function BookingBottomBar({
           {buttonText}
         </Button>
       </div>
+      {disabledReason && !canSubmit && (
+        <div className="px-4 pb-3 -mt-1 text-[11px] text-destructive text-right">
+          {disabledReason}
+        </div>
+      )}
     </motion.div>
   );
 }

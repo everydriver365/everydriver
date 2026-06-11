@@ -136,6 +136,7 @@ interface MobileBookingViewProps {
   upsellTotal?: number;
   // Actions
   canSubmit: boolean;
+  payDisabledReason?: string | null;
   isPupilDetailsComplete: boolean;
   isFullyScheduled: boolean;
   isSubmitting: boolean;
@@ -211,6 +212,7 @@ export function MobileBookingView({
   onUpsellsChange,
   upsellTotal = 0,
   canSubmit,
+  payDisabledReason = null,
   isPupilDetailsComplete,
   isFullyScheduled,
   isSubmitting,
@@ -1066,6 +1068,7 @@ export function MobileBookingView({
         isPupilDetailsComplete={isPupilDetailsComplete}
         isFullyScheduled={isFullyScheduled}
         requiresSlotSelection={requiresSlotSelection}
+        disabledReason={payDisabledReason}
       />
     </div>
   );

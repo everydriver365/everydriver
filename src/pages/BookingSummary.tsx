@@ -569,6 +569,56 @@ export default function BookingSummary() {
   const requiresSlotSelection = bookingMode === 'pupil_choice' || bookingMode === 'first_lesson_only';
   const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting && unavailableSlots.length === 0;
 
+  // Auto-purge unavailableSlots entries whose date+startTime are no longer
+  // in selectedSlots. Without this, a stale conflict from an earlier attempt
+  // can keep the Pay button greyed out even after the pupil re-picks times.
+  useEffect(() => {
+    if (unavailableSlots.length === 0) return;
+    const selectedKeys = new Set(
+      selectedSlots.map((s) => `${s.date.toISOString().slice(0, 10)}__${s.startTime}`),
+    );
+    const stillUnavailable = unavailableSlots.filter((u) =>
+      selectedKeys.has(`${u.date}__${u.startTime}`),
+    );
+    if (stillUnavailable.length !== unavailableSlots.length) {
+      setUnavailableSlots(stillUnavailable);
+    }
+  }, [selectedSlots, unavailableSlots]);
+
+  // Safety net: if a payment handler throws before resetting isSubmitting,
+  // release the lock after 60s so the Pay button can recover without reload.
+  useEffect(() => {
+    if (!isSubmitting) return;
+    const t = setTimeout(() => setIsSubmitting(false), 60_000);
+    return () => clearTimeout(t);
+  }, [isSubmitting]);
+
+  // Human-readable reason the Pay button is disabled (shown when label is
+  // already "Pay £…" but canSubmit is false).
+  const payDisabledReason: string | null = (() => {
+    if (canSubmit) return null;
+    if (!isPupilDetailsComplete) return null; // label already says "Fill Your Details"
+    if (requiresSlotSelection && !isFullyScheduled) return null; // label already says "Choose Your Lessons"
+    if (unavailableSlots.length > 0) {
+      return unavailableSlots.length === 1
+        ? "1 slot is no longer available — please re-pick"
+        : `${unavailableSlots.length} slots are no longer available — please re-pick`;
+    }
+    if (isSubmitting) return "Finishing previous attempt…";
+    return null;
+  })();
+
+  if (import.meta.env.DEV && !canSubmit) {
+    // eslint-disable-next-line no-console
+    console.debug("[BookingSummary] Pay disabled:", {
+      isPupilDetailsComplete,
+      isFullyScheduled,
+      requiresSlotSelection,
+      isSubmitting,
+      unavailableSlotsCount: unavailableSlots.length,
+    });
+  }
+
   // Auto-show card form when canSubmit becomes true
   useEffect(() => {
     if (canSubmit && !showHostedFields) {
@@ -1252,6 +1302,7 @@ export default function BookingSummary() {
         onUpsellsChange={setSelectedUpsells}
         upsellTotal={upsellTotal}
         canSubmit={canSubmit}
+        payDisabledReason={payDisabledReason}
         isPupilDetailsComplete={isPupilDetailsComplete}
         isFullyScheduled={isFullyScheduled}
         isSubmitting={isSubmitting}
