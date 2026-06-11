@@ -954,7 +954,7 @@ export function MobileBookingView({
                   </div>
                   <Button
                     className="w-full"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isWalletProcessing}
                     onClick={async () => {
                       const payAmount = paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal;
                       setIsWalletProcessing(true);
