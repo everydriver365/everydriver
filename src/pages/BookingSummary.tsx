@@ -1302,6 +1302,7 @@ export default function BookingSummary() {
         onUpsellsChange={setSelectedUpsells}
         upsellTotal={upsellTotal}
         canSubmit={canSubmit}
+        payDisabledReason={payDisabledReason}
         isPupilDetailsComplete={isPupilDetailsComplete}
         isFullyScheduled={isFullyScheduled}
         isSubmitting={isSubmitting}
