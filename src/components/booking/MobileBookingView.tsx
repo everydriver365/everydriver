@@ -212,6 +212,7 @@ export function MobileBookingView({
   onUpsellsChange,
   upsellTotal = 0,
   canSubmit,
+  payDisabledReason = null,
   isPupilDetailsComplete,
   isFullyScheduled,
   isSubmitting,
