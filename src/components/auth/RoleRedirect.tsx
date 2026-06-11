@@ -44,29 +44,55 @@ export function RoleRedirect() {
   const [roles, setRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Hard timeout fallback — never spin forever. Default to instructor portal.
   useEffect(() => {
+    const t = setTimeout(() => {
+      console.warn("[RoleRedirect] timeout — falling back to /instructor");
+      navigate("/instructor", { replace: true });
+    }, 5000);
+    return () => clearTimeout(t);
+  }, [navigate]);
+
+  useEffect(() => {
+    let cancelled = false;
     const run = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      let user: any = null;
+      try {
+        const res = await supabase.auth.getUser();
+        user = res.data.user;
+      } catch (e) {
+        console.error("[RoleRedirect] getUser failed", e);
+      }
+      if (cancelled) return;
       if (!user) {
         navigate("/", { replace: true });
         return;
       }
 
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-
-      const userRoles = (data ?? []).map((r) => r.role as string);
+      let userRoles: string[] = [];
+      try {
+        const { data } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id);
+        userRoles = (data ?? []).map((r) => r.role as string);
+      } catch (e) {
+        console.error("[RoleRedirect] user_roles query failed", e);
+      }
+      if (cancelled) return;
 
       const goTo = async (role: string) => {
         if (role === "pupil") {
-          const path = await resolvePupilPath(user.id);
-          navigate(path, { replace: true });
+          try {
+            const path = await resolvePupilPath(user.id);
+            navigate(path, { replace: true });
+          } catch {
+            navigate("/pupil", { replace: true });
+          }
           return;
         }
         const info = ROLE_MAP[role];
-        navigate(info?.path ?? "/", { replace: true });
+        navigate(info?.path ?? "/instructor", { replace: true });
       };
 
       // Honour explicit portal hint when the user has that role.
@@ -84,9 +110,15 @@ export function RoleRedirect() {
       }
 
       if (userRoles.length === 0) {
-        // Fallback: try to detect a pupil by email even without a role row.
-        const path = await resolvePupilPath(user.id);
-        navigate(path, { replace: true });
+        // No role row — try pupil-by-email, otherwise fall back to instructor.
+        try {
+          const path = await resolvePupilPath(user.id);
+          if (path && path !== "/pupil") {
+            navigate(path, { replace: true });
+            return;
+          }
+        } catch { /* ignore */ }
+        navigate("/instructor", { replace: true });
         return;
       }
 
@@ -95,7 +127,6 @@ export function RoleRedirect() {
         return;
       }
 
-      // Multiple roles: pick highest-priority automatically.
       const auto = ROLE_PRIORITY.find((r) => userRoles.includes(r));
       if (auto) {
         await goTo(auto);
@@ -107,7 +138,11 @@ export function RoleRedirect() {
     };
 
     run();
+    return () => {
+      cancelled = true;
+    };
   }, [navigate, hint]);
+
 
   if (loading) {
     return (
