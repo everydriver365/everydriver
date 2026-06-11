@@ -202,7 +202,7 @@ export function PupilPaymentsManager({
     } finally { setSaving(false); }
   };
 
-  // Generate a real Square hosted checkout link when there's an outstanding balance,
+  // Generate a card hosted checkout link (via Ryft) when there's an outstanding balance,
   // otherwise fall back to the generic instructor pay page (same logic as TakePaymentModal).
   const buildPaymentLink = async (): Promise<string> => {
     const fallback = `${window.location.origin}/pay/${instructorId}?pupil=${pupilId}`;
@@ -228,8 +228,8 @@ export function PupilPaymentsManager({
       }
       return data.checkoutUrl as string;
     } catch (e: any) {
-      console.error("square-checkout failed, falling back to generic link", e);
-      toast.error(e?.message || "Could not create Square link, using generic link");
+      console.error("card payment link creation failed, falling back to generic link", e);
+      toast.error(e?.message || "Could not create payment link, using generic link");
       return fallback;
     }
   };
