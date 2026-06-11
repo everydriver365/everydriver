@@ -160,7 +160,6 @@ interface MobileBookingViewProps {
   clearpayEnabled?: boolean;
   onWalletSuccess: (pupilId: string) => void;
   /** Called before wallet payment to ensure booking exists */
-  /** Called before wallet payment to ensure booking exists */
   ensureBookingCreated?: () => Promise<string | null>;
 }
 
@@ -231,10 +230,6 @@ export function MobileBookingView({
   klarnaEnabled = false,
   clearpayEnabled = false,
   onWalletSuccess,
-  showEmbeddedCheckout,
-  embeddedCheckoutPupilId,
-  onEmbeddedCheckoutSuccess,
-  onEmbeddedCheckoutCancel,
   ensureBookingCreated,
 }: MobileBookingViewProps) {
   const navigate = useNavigate();
