@@ -54,6 +54,8 @@ export interface UnifiedMobileLoginCardProps {
   brand?: "dsm" | "drive365";
   /** Subtitle shown under the title on the sign-in view. */
   subtitle?: string;
+  /** Show the login surface across all viewport sizes. */
+  showOnAllViewports?: boolean;
 }
 
 
@@ -70,6 +72,7 @@ export function UnifiedMobileLoginCard({
   heroAlt: _heroAlt,
   brand,
   subtitle,
+  showOnAllViewports = false,
 }: UnifiedMobileLoginCardProps) {
 
   const [email, setEmail] = useState("");
@@ -192,6 +195,7 @@ export function UnifiedMobileLoginCard({
         logoAlt={portalName}
         logoHeightPx={80}
         brand={resolvedBrand}
+        hideAt={showOnAllViewports ? "never" : undefined}
         title={isForgot ? "Reset password" : "Welcome back"}
         subtitle={isForgot ? "Enter your email and we'll send you a reset link." : (subtitle ?? "")}
         email={email}
