@@ -1,82 +1,55 @@
-## Diagnosis (what's actually wrong)
+**Do I know what the issue is?** Yes.
 
-The backend isn't busy. The two `/auth/v1/token` calls in the network log both returned **200 in ~140 ms**. The "login service is busy" message is generated *inside the app*, in `InstructorAuthContext.signIn`, by a chain of fragile client-side mechanisms:
+**What is actually happening**
+- The auth request succeeds: the backend returns `200` and a valid session token.
+- The instructor account is linked correctly and has an active subscription.
+- The app then hangs after auth because `onAuthStateChange` starts backend/RPC profile loading inside the auth callback.
+- Supabase auth has a known deadlock pattern here: backend calls made from `onAuthStateChange` can cause later auth/backend calls to never return.
+- The live browser confirms this: `SIGNED_IN` fires, then initial session check and instructor profile fetch time out, and no session bundle completion appears.
 
-1. `signInWithTimeout` races `supabase.auth.signInWithPassword` against a 12 s timer, then retries on any "transient" error. Slow profile queries downstream can make the *whole* `signIn()` look timed out.
-2. After auth succeeds, `signIn()` still does a **second** round-trip (`instructors.select('deleted_at, scheduled_purge_at').eq('auth_user_id', …)`) before returning. If that one is slow under load, the user sees a failure even though auth worked.
-3. `fetchInstructorProfile` selects **~70 columns** from `instructors` (236-column wide table). At 6000 users this is the real bottleneck.
-4. Redirect to `/instructor` depends on `onAuthStateChange` firing — when it doesn't, the button spins forever and the user retries (causing those duplicate token calls).
-5. Sign-out previously awaited a network call that can hang on a stale refresh token.
-6. There are multiple parallel auth providers (Instructor / Admin / School / Pupil) all calling `supabase.auth.getSession()` on every mount → connection thrash.
+**Files isolated**
+- `src/context/InstructorAuthContext.tsx` — root cause.
+- `src/pages/instructor-app/InstructorLogin.tsx` — mostly OK; it is waiting for `signIn()` to resolve.
+- `src/pages/InstructorPortal.tsx` — guard is OK once auth state is reliable.
 
-## Target architecture (built for 6000 concurrent instructors)
+**Implementation plan**
+1. **Make `onAuthStateChange` auth-only**
+   - Only update `session`, `user`, and basic loading state inside the callback.
+   - Do not call `loadInstructorProfile`, `loadInstructorSessionBundle`, RPCs, table reads, or sign-out from inside the callback.
 
-```text
-Client                          Edge / Postgres
-──────                          ──────────────
-sign in (Supabase Auth) ─────►  /auth/v1/token   (always direct, never wrapped)
-        │
-        ▼
-AuthSessionContext (one global, app-wide)
-  - getSession() once on boot
-  - onAuthStateChange is the ONLY writer
-  - exposes { session, userId, status }
-        │
-        ▼
-useMyInstructorSession()  ──►   RPC get_my_instructor_session()
-  React Query, staleTime 5 min   - SECURITY DEFINER
-  enabled: status==='authed'     - returns minimal bundle in 1 round-trip:
-                                   { instructor_id, name, app_slug,
-                                     is_active, plan_slug, features[],
-                                     deletion_pending_until }
-        │
-        ▼
-useInstructorProfileExtended()  ──► thin views per concern
-  loaded lazily by the screen that needs it
-  (branding, payments, AI flags, MTD, etc.)
-```
+2. **Defer all post-auth backend loading outside the callback**
+   - Use a single scheduled hydration function, triggered with `window.setTimeout(..., 0)` after auth callback returns.
+   - Hydration will then call `get_my_instructor_session` and background profile fetch safely.
 
-### What changes
+3. **Deduplicate profile/session hydration**
+   - Add an in-flight/session-key guard so `getSession()`, `SIGNED_IN`, refresh recovery, and manual `signIn()` cannot start overlapping profile loads.
+   - Newer auth state wins; stale scheduled work exits without changing state.
 
-1. **One global auth context** (`AuthSessionContext`) replaces the per-portal providers' duplicate session bootstrapping. Portal-specific contexts subscribe to it instead of calling `getSession()` themselves.
-2. **`signIn` does one thing**: call `supabase.auth.signInWithPassword`, return its result. No timeout wrapper, no retry, no extra DB query, no "transient error" reclassification. Real errors surface verbatim.
-3. **Single RPC for post-login bundle**: `get_my_instructor_session()` returns the small set of fields actually needed to render the shell (id, name, slug, plan, features, deletion-pending flag). One indexed lookup, ~5 ms.
-4. **Lazy column loading**: split the 70-column profile read into focused hooks (`useInstructorBranding`, `usePaymentSettings`, `useAIFlags`, …) each fetching only what its screen needs, cached via React Query.
-5. **Deletion-pending check moves server-side** into the RPC, so login never makes a second blocking call.
-6. **Indexes & RLS hardening** for 6000 users:
-   - `create unique index if not exists instructors_auth_user_id_uidx on public.instructors(auth_user_id) where auth_user_id is not null;`
-   - Confirm `has_role(uuid, app_role)` is `STABLE SECURITY DEFINER` with `search_path=public` (it is) and used everywhere instead of inline subqueries.
-   - Verify `get_instructor_id_for_user(auth.uid())` is the only identity helper used in policies — replace any ad-hoc joins.
-7. **Sign-out becomes synchronous + local-only** (already partially done): clear context state, `supabase.auth.signOut({ scope: 'local' })` fire-and-forget, then navigate. Never awaits network.
-8. **Routing**: `/instructor-app/login` redirects to `/instructor` as soon as `status==='authed'` *and* the session RPC resolves. No reliance on `onAuthStateChange` for navigation.
-9. **Health surface**: if the session RPC fails or times out (>4 s), show a real error ("Backend is unreachable — try again") instead of pretending login failed.
-10. **Capacity guardrails**:
-    - All Supabase reads go through React Query with `staleTime` ≥ 30 s and dedup keys, eliminating duplicate requests across portals.
-    - `useRealtimeHub` (already memoised) stays the single websocket; per-screen subscribers attach to it.
-    - Connection budget instrumentation (`installQueryBudget`) extended to prod-flag noisy callers.
+4. **Keep password sign-in thin and deterministic**
+   - `signInWithPassword` remains the only blocking auth call.
+   - After it succeeds, run the same safe hydration path outside the auth callback.
+   - Preserve real backend errors; no fake “login service busy” mapping.
 
-### Why this scales to 6000
+5. **Keep logout local and reliable**
+   - Clear local app/auth state immediately.
+   - Avoid backend profile calls during logout/auth callback.
+   - Navigate to `/instructor-app/login` only after local state is cleared.
 
-- Login becomes 1 auth call + 1 small RPC. No 70-column reads on the hot path.
-- A unique index on `auth_user_id` keeps the RPC O(1) regardless of table size.
-- One websocket per tab instead of one per provider.
-- React Query dedup + staleTime caps DB QPS even with bursty navigation.
-- No client-side retry loops that amplify load when the DB *is* slow.
+6. **Validate end-to-end**
+   - Test login from a clean browser session.
+   - Refresh `/instructor` and confirm it stays logged in.
+   - Logout and confirm it returns to login without hanging.
+   - Login again after logout.
+   - Confirm console no longer shows repeated initial-session checks, profile timeouts, or auth loops.
 
-## Files this will touch
+**Scalability note for 6,000 users**
+- This fix removes the auth deadlock first.
+- Separate from login, the backend is showing heavy non-auth query pressure (`tile_health_checks`, public instructor searches, and broad instructor scans). After login is stable, those should be handled as a separate scaling pass so auth isn’t competing with noisy dashboard/health queries.
 
-- `src/context/InstructorAuthContext.tsx` — strip timeout/retry/extra query, delegate to new context, use RPC.
-- New `src/context/AuthSessionContext.tsx` — single source of truth.
-- New `src/hooks/useMyInstructorSession.ts` — React Query wrapper for the RPC.
-- Existing 70-col profile hook split into `useInstructorBranding`, `usePaymentSettings`, `useAIFlags`, `useComplianceDates`.
-- `src/pages/instructor-app/InstructorLogin.tsx` — remove "busy" reclassification; show backend's real error.
-- Migration: `get_my_instructor_session()` RPC + `instructors_auth_user_id_uidx`.
-- Admin / School / Pupil contexts converted to subscribers of `AuthSessionContext`.
+<presentation-actions>
+  <presentation-open-history>View History</presentation-open-history>
+</presentation-actions>
 
-No mobile layout changes. No payment-gateway changes. No schema-naming changes.
-
-## Out of scope
-
-- Rate limiting (no backend primitive yet — known gap).
-- Stripe/Elavon/etc. (forbidden).
-- Visual redesign of the login screen.
+<presentation-actions>
+<presentation-link url="https://docs.lovable.dev/tips-tricks/troubleshooting">Troubleshooting docs</presentation-link>
+</presentation-actions>
