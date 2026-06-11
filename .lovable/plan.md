@@ -1,34 +1,33 @@
-## Symptom
-Bottom-bar button reads `Pay £X` (so pupil details ✅ and slots ✅) but stays greyed out and unclickable.
+## Why payments still look like "Square"
 
-## Root cause analysis
-`canSubmit` in `src/pages/BookingSummary.tsx:570` is:
+Short answer: live card payments are already going through **Ryft**, not Square. What's left are a few stale references that make it look like Square is still in play:
 
-```
-isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true)
-  && !isSubmitting
-  && unavailableSlots.length === 0
-```
+### What's actually happening today
+- **Pupil card payments** (`PupilPaymentModal` → "Pay by Card") → `ryft-create-checkout` ✅
+- **Instructor "Take Payment" modal** → `ryft-create-checkout` ✅
+- **PupilPaymentsManager** payment links → `ryft-create-checkout` ✅ (only the `console.error` text still says "square-checkout failed")
+- **Public partner payment** (`public-start-payment`) → already maps `method: "square"` to `ryft-create-checkout` ✅
+- **Klarna / Clearpay** → still their own gateways (intentional)
 
-If the label is already `Pay £X`, the first two conditions are satisfied, so the disable is coming from one of:
+### What is genuinely still calling Square
+1. **`src/components/parent/ParentPaymentTopUp.tsx`** — the parent top-up button invokes `pupil-payment-checkout` with `paymentMethod: "square"`. This is the only user-facing flow that still references Square as a gateway. It also uses the wrong field name (`paymentMethod` vs the function's `gateway` switch), so it likely fails on click.
+2. **`src/components/instructor/TakePaymentModal.tsx`** — comments, the realtime listener key (`square:` ref prefix), and toast/log copy still say "Square". The actual checkout call goes to Ryft, but webhook-driven realtime "received" flip is keyed on the old `square:` ref prefix written by `square-webhook` — if a payment lands via `ryft-webhook` the modal won't auto-flip.
+3. **`src/components/instructor/PupilPaymentsManager.tsx`** — only a stale `console.error("square-checkout failed…")` and a toast string. Cosmetic.
+4. Edge functions `square-checkout`, `square-webhook`, `square-wallet-config` are still deployed and referenced in `payment-health`, `usePaymentGatewayHealth`, school gateway UI, etc.
 
-1. **`unavailableSlots.length > 0`** — populated by the availability re-check before payment. `handleSlotsChange` clears it, but if the user doesn't touch the scheduler again after a clash was detected the array stays populated and silently keeps the button dead. Most likely culprit.
-2. **`isSubmitting` stuck `true`** — if a payment attempt throws before `setIsSubmitting(false)` runs in the `finally`, the button locks until reload.
-3. **`unavailableSlots` getting set on mount** by a stale availability check while `selectedSlots` is still empty.
+## Proposed cleanup
 
-## Fix
-1. **Auto-clear `unavailableSlots` when affected slots are removed/changed**, not only on the next `handleSlotsChange`. Recompute on every `selectedSlots` change and drop entries whose `date+startTime` are no longer selected.
-2. **Surface the reason on the disabled button**: when `canSubmit` is false but the label is `Pay £X`, show a small helper line under the button ("X slots need re-picking" or "Finishing previous attempt…") so users aren't stuck guessing. Also scroll the unavailable-slots banner into view on tap.
-3. **Guarantee `isSubmitting` resets**: audit each payment handler (Ryft / Klarna / Clearpay / GoCardless / Cash) and ensure every path has a `finally { setIsSubmitting(false) }`. Add a 60s safety timeout that releases the lock if no redirect/response happened.
-4. **Console-log the blocking reason** in dev so future debugging is one glance.
+### Code changes
+1. **ParentPaymentTopUp** — switch to the same Ryft flow used by `PupilPaymentModal` (`ryft-create-checkout` with `serviceFeePence`, redirect to `data.checkoutUrl`). Removes the broken `paymentMethod: "square"` call.
+2. **TakePaymentModal** — replace the realtime listener's `square:` ref-prefix check with the equivalent Ryft signal (match by `payment_history.method = 'ryft_card'` + order ref, or listen on `ryft_payment_intents`). Update comments/toasts to say "Card" instead of "Square".
+3. **PupilPaymentsManager** — change the stale log/toast strings to neutral "card payment link" wording.
 
-## Files touched
-- `src/pages/BookingSummary.tsx` — `unavailableSlots` cleanup effect, payment handler `finally` audit, safety timeout, debug log.
-- `src/components/booking/BookingBottomBar.tsx` — optional helper sub-text under the button when disabled-but-labelled-Pay.
-- `src/components/booking/MobileBookingView.tsx` — pass a `disabledReason` string through.
+### Optional follow-ups (ask before doing)
+- Retire `square-checkout` / `square-wallet-config` edge functions and drop `square` from `payment-health` + `usePaymentGatewayHealth` + `SchoolPaymentGatewaysSection`. Keep `square-webhook` only if historic Square payments still need to settle; otherwise retire it too.
+- The school-side UI ("Use DSM Square Account", Square logo tile) still markets Square as the platform processor — needs a copy/branding pass to say Ryft (or "platform card processing").
 
-No backend / RLS / schema changes.
+### Out of scope
+- Klarna and Clearpay flows (unchanged).
+- Historic Square payment history rows (left as-is for audit).
 
-## Verification
-- Repro: open a course, fill details, pick slots, then have an admin grab one of those times — Pay button should now show "1 slot no longer available — re-pick" and the banner should auto-focus.
-- Repro: trigger a failed Ryft attempt (cancel on hosted page) → button must re-enable on return.
+Want me to do just the 3 code changes in step 1–3, or also the optional retirement + school UI rebrand?
