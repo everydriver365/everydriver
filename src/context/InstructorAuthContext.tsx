@@ -104,7 +104,11 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const hasInitialised = useRef(false);
+
   useEffect(() => {
+    if (hasInitialised.current) return;
+    hasInitialised.current = true;
     let mounted = true;
     const isInstructorPortalPath = () => window.location.pathname.startsWith('/instructor');
     const loadInstructorProfile = (userId: string) => {
