@@ -363,11 +363,17 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
         return { data: all, error: null };
       };
 
-      // 1. Load all instructors (needed so placeholders appear on postcode
-      //    search). This is ~5.8k rows but a single column-set, ~6 round trips.
+      // PHASE 1 — load REAL instructors only (~4 rows). The 5,796 network
+      // placeholder rows are loaded in the background after this phase so the
+      // page renders immediately instead of waiting on a 240-col × 5.8k-row
+      // payload.
       const [instructorsRes, templatesRes, premiumRes] = await Promise.all([
         fetchAll<any>(() => {
-          let q = supabase.from("public_instructors").select("*").eq("is_active", true);
+          let q = supabase
+            .from("public_instructors")
+            .select("*")
+            .eq("is_active", true)
+            .eq("is_network_placeholder", false);
           if (instructorId) q = q.eq("id", instructorId);
           return q;
         }),
@@ -469,6 +475,40 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
     } finally {
       
       setLoading(false);
+    }
+
+    // PHASE 2 — background load of network placeholder instructors with a
+    // slim column set. Only needed so postcode search can resolve coverage
+    // placeholders for districts with no real instructor. Failures here must
+    // not block or toast over the rendered page.
+    if (instructorId) return;
+    try {
+      const PAGE2 = 1000;
+      const placeholders: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from("public_instructors")
+          .select("id,name,home_postcode,placeholder_district,is_network_placeholder,is_active,lat,lng,profile_image_url,brand_colour,app_slug,hourly_rate,car_type")
+          .eq("is_active", true)
+          .eq("is_network_placeholder", true)
+          .range(from, from + PAGE2 - 1);
+        if (error) return;
+        const rows = (data || []) as any[];
+        placeholders.push(...rows);
+        if (rows.length < PAGE2) break;
+        from += PAGE2;
+        if (from > 100000) break;
+      }
+      if (!placeholders.length) return;
+      setInstructors((prev) => {
+        const seen = new Set(prev.map((i: any) => i.id));
+        const merged = [...prev];
+        for (const p of placeholders) if (!seen.has(p.id)) merged.push(p);
+        return merged;
+      });
+    } catch (err) {
+      console.error("[useCourseDiscovery] placeholder background load failed:", err);
     }
   }, [findFirstAvailableDate, geocodePostcodes, instructorId]);
 

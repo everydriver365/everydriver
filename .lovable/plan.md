@@ -1,65 +1,43 @@
-# What the "card details" section is
+## Problem
 
-At the bottom of the booking flow, the **CoursePaymentBlock** renders a list of payment-method tiles (Card / Klarna / Clearpay / Bank / Cash). The "Card" tile is the section you're seeing — it's the entry point for paying by Visa / Mastercard / Amex.
+`/courses` is stuck on "Finding instructors near you…" because `useCourseDiscovery.fetchData` (`src/hooks/useCourseDiscovery.ts`) does:
 
-# Is it wired in?
+```ts
+supabase.from("public_instructors").select("*").eq("is_active", true)
+```
 
-**On mobile** (`MobileBookingView`): Yes. Tapping "Pay by Card" calls `ryft-create-checkout` and redirects to the Ryft hosted page. ✅
+paginated in 1000-row chunks. The table has **5,800 active rows** (5,796 network-placeholder seeds + 4 real instructors) and 240 columns. That single load dominates time-to-first-render, so `setLoading(false)` never fires fast enough and the grid never shows real courses.
 
-**On desktop** (`src/pages/BookingSummary.tsx` and `src/pages/everydriver/BookingSummary.tsx`): **No — it's broken.** The Card tile's handler is `handleElavonCheckout`, which only sets a `showHostedFields` flag. That flag is then passed into `MobileBookingView` (which never renders on desktop) and into a deleted Square embedded checkout — so on desktop the button does nothing.
+The legacy `src/pages/Courses.tsx` already solved this with a two-phase load — that pattern was lost when the hook was introduced.
 
-There are also dozens of lingering Square references (state, handlers, props, gateway-health checks, query-param keys, the Square card logo image, stale comments) even though the Square card form itself was removed earlier.
+## Fix
 
-# Plan
+Refactor `useCourseDiscovery.fetchData` to mirror the proven two-phase load:
 
-## 1. Make the desktop Card tile actually pay (via Ryft)
+**Phase 1 (blocking, fast):** load only real instructors.
+- `public_instructors` `select *` `eq is_active true` `eq is_network_placeholder false` — ~4 rows.
+- Continue with `course_templates`, `instructor_premium_placements`, `instructor_courses` (scoped to real ids), `loadCourseAvailabilitySources`, and the postcode geocoding pass exactly as today, but only over real ids.
+- `setInstructors(realOnly)`, `setLoading(false)` — page now renders.
 
-In both `src/pages/BookingSummary.tsx` and `src/pages/everydriver/BookingSummary.tsx`:
+**Phase 2 (background, non-blocking):** load placeholders with a slim column set.
+- After Phase 1 awaits resolve and `loading` is false, fire a second `fetchAll` against `public_instructors` with `.eq("is_network_placeholder", true)` and the explicit slim select used in the old `Courses.tsx`:
+  `id,name,home_postcode,placeholder_district,is_network_placeholder,is_active,lat,lng,profile_image_url,brand_colour,app_slug,hourly_rate,car_type`.
+- Merge into the existing `instructors` state (dedupe by id) so postcode search can still resolve coverage placeholders for districts with no real instructor.
+- Wrap in `try/catch`; failures here must not toast or block the rendered page.
 
-- Replace `handleElavonCheckout` with a new `handleCardCheckout` that:
-  - Validates pupil details + schedule (same gate as today).
-  - Calls `ensureBookingCreated(paymentOption === 'deposit' ? 'deposit' : 'full', amount)` to create the pending booking.
-  - Invokes `supabase.functions.invoke("ryft-create-checkout", { … serviceFeePence, returnUrl `…?ryft=success`, cancelUrl `…?ryft=cancelled` })`.
-  - Redirects via `window.location.href = data.url`.
-  - Mirrors the implementation already used in `MobileBookingView` and `PupilPaymentModal`.
-- Pass `handleCardCheckout` to `CoursePaymentBlock` as `onCardCheckout` (replacing the dead Elavon handler).
+No schema, RLS, edge function, or UI component changes. The existing `instructorsInArea` placeholder-matching logic already handles a deferred placeholder population.
 
-## 2. Remove dead "hosted fields" / embedded Square plumbing
+Keep `instructorId` early-exit and the eslint-disabled deps comment intact.
 
-- Delete `showHostedFields` state, the auto-`setShowHostedFields(true)` effect, and every `setShowHostedFields(true)` call site.
-- Remove `showEmbeddedCheckout`, `embeddedCheckoutPupilId`, `onEmbeddedCheckoutSuccess`, `onEmbeddedCheckoutCancel` props on the `MobileBookingView` render and from `MobileBookingView`'s prop type. The mobile flow already does its own Ryft redirect.
+## Verification
 
-## 3. Remove every remaining Square reference (booking surfaces)
+1. Hard-refresh `/courses?postcode=SO302TD` in the preview.
+2. Confirm courses for the 4 real instructors render within ~1–2s instead of hanging on the spinner.
+3. Confirm searching a placeholder-only district (after a few seconds) still surfaces the coverage card (placeholder background load completed).
+4. Network panel: first batch is one small `public_instructors` query, not six 1000-row pages.
 
-Files: `src/pages/BookingSummary.tsx`, `src/pages/everydriver/BookingSummary.tsx`, `src/components/booking/MobileBookingView.tsx`, `src/components/booking/CoursePaymentBlock.tsx`.
+## Out of scope
 
-- Drop `isSquareLoading`, `handleSquareCheckout`, `squareAvailable` prop on `CoursePaymentBlock` (and the `disabledExtra: !squareAvailable` gate — replace with `false` since Ryft availability is assumed).
-- Drop `square` from the `gatewayHealth` type/initialiser and from the `cancelKeys` array used to clear stale query params (keep `gocardless`, `clearpay`, `npi`, add `ryft`).
-- Drop `onNPICheckout={handleElavonCheckout}` plumbing (legacy alias).
-- Replace `squareCardsLogo` (`@/assets/square-cards-3.jpg`) usages with a neutral "Visa · Mastercard · Amex" text row, or with an existing card-network logo asset if available. Remove the import. (We will not delete the asset file itself in this pass.)
-- Rewrite stale comments (`// SquarePaymentForm import removed`, `{/* Square card form removed */}`, etc.) — just delete them.
-- Rename `?square=success` / `?square=cancelled` return/cancel URL params to `?ryft=...` everywhere they remain.
-
-## 4. Out of scope (intentionally untouched)
-
-- `src/pages/instructor/SquareInvoicesPage.tsx` and the `square-invoice-manage` / `square-webhook` edge functions — these are historic invoice/settlement views, not card processors. Per existing memory they stay.
-- All `MessageSquare`, `Iconn`, etc. lucide-icon names — unrelated to Square payments.
-- Ryft edge functions and `pupil-payment-checkout` (already migrated).
-
-## Technical notes
-
-- The new `handleCardCheckout` payload mirrors `PupilPaymentModal` / `MobileBookingView`:
-  ```ts
-  await supabase.functions.invoke("ryft-create-checkout", {
-    body: {
-      instructorId: instructor.id,
-      pupilId,
-      amountPence: Math.round(amount * 100),
-      serviceFeePence: Math.round(effectiveAdminFee * 100),
-      description: `${courseName} - ${hours}h`,
-      returnUrl: `${origin}/booking-confirmation?pupilId=${pupilId}&ryft=success`,
-      cancelUrl: `${origin}/book/${instructor.id}?hours=${hours}&ryft=cancelled`,
-    },
-  });
-  ```
-- After the edit, the only card processor reachable from any booking surface is Ryft. Square remains only in the (separate) historic invoice page.
+- Visual changes to `CourseResults`, `SidebarCalendar`, `CourseGrid`.
+- Any change to `public_instructors` shape, RLS, or the network-placeholder filter rule.
+- Touching `WhitelabelCourses` or the embed variant — they share the hook and inherit the fix.
