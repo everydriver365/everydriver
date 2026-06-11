@@ -10,6 +10,7 @@ interface BookingBottomBarProps {
   isPupilDetailsComplete?: boolean;
   isFullyScheduled?: boolean;
   requiresSlotSelection?: boolean;
+  disabledReason?: string | null;
 }
 
 export function BookingBottomBar({ 
