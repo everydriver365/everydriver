@@ -54,6 +54,7 @@ export function StartDateOnlyBookingPanel({
   instructor,
   maxHoursPerWeekCap,
   pupilId,
+  ensurePupilId,
   onReserved,
 }: Props) {
   const today = new Date();
