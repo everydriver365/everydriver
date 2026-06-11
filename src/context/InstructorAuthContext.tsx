@@ -477,17 +477,6 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
 
-      lastError = error as Error;
-      if (!isTransientAuthError(lastError) || attempt === 1) break;
-      await retryDelay(800);
-    }
-
-    if (lastError && isTransientAuthError(lastError)) {
-      return { error: createTransientAuthError('Login service timed out. Please try again in a moment.') };
-    }
-
-    return { error: lastError, session: null };
-  };
 
   const signOut = async () => {
     try {
