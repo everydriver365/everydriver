@@ -29,6 +29,8 @@ interface BookingSettings {
   allowed_durations: number[];
   booking_message: string | null;
   allow_extra_hours_request: boolean;
+  allow_start_date_only_booking: boolean;
+  start_date_only_max_hours_per_week: number | null;
 }
 
 const DEFAULT_SETTINGS: BookingSettings = {
@@ -43,6 +45,8 @@ const DEFAULT_SETTINGS: BookingSettings = {
   allowed_durations: [60, 90, 120],
   booking_message: null,
   allow_extra_hours_request: false,
+  allow_start_date_only_booking: false,
+  start_date_only_max_hours_per_week: null,
 };
 
 export function PupilBookingSettingsEditor({ instructorId }: PupilBookingSettingsEditorProps) {
