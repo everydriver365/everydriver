@@ -4,6 +4,7 @@ export const SECTION_TITLES: Record<string, string> = {
   notifications:     "Notifications",
   vehicle:           "Vehicle & credentials",
   hours:             "Working hours",
+  "first-lesson-only": "Book first lesson only",
   rates:             "Rates & coverage",
   lessons:           "Lesson types & durations",
   "how-book":        "My Advertised Courses",
