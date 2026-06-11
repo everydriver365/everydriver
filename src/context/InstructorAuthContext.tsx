@@ -537,20 +537,19 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       setUser(data.session.user ?? null);
     }
 
-    // Load the minimal session bundle (RPC: indexed, one round-trip). The
-    // pending-deletion check now lives inside that RPC, so we don't need a
-    // second blocking SELECT here.
+    // Dispatch hydration through the shared, deduplicated path. The
+    // onAuthStateChange SIGNED_IN event will also schedule hydration, but
+    // hydrationInFlightRef/hydratedUserIdRef ensure exactly one runs.
     const authUserId = data.session?.user?.id ?? data.user?.id;
     if (authUserId) {
       setLoading(true);
-      const bundleErr = await loadInstructorSessionBundle();
-      if (bundleErr) {
-        // Surface the real reason; the login screen will show it.
-        return { error: bundleErr, session: null };
+      // Reset hydration markers in case of re-login as the same user after
+      // sign-out within the same page session.
+      if (hydratedUserIdRef.current !== authUserId) {
+        hydratedUserIdRef.current = null;
+        hydrationInFlightRef.current = null;
       }
-      // Background-load the wide profile so dashboards have rich data, but
-      // don't block the redirect on it.
-      void fetchInstructorProfile(authUserId);
+      window.setTimeout(() => hydrateRef.current(authUserId), 0);
     }
 
     return { error: null, session: data.session };
