@@ -957,7 +957,7 @@ export function MobileBookingView({
                     disabled={isSubmitting}
                     onClick={async () => {
                       const payAmount = paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal;
-                      setIsSubmitting(true);
+                      setIsWalletProcessing(true);
                       try {
                         const pid = embeddedCheckoutPupilId || (await ensureBookingCreated?.());
                         const orderReference = `BOOK-${(pid || 'anon').toString().slice(0, 8)}-${Date.now()}`;
@@ -980,7 +980,7 @@ export function MobileBookingView({
                         window.location.href = data.checkoutUrl;
                       } catch (e) {
                         toast.error(e instanceof Error ? e.message : "Could not start checkout");
-                        setIsSubmitting(false);
+                        setIsWalletProcessing(false);
                       }
                     }}
                   >
