@@ -164,13 +164,10 @@ export default function BookingSummary() {
   const [isClearpayLoading, setIsClearpayLoading] = useState(false);
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
   const [isNPILoading, setIsNPILoading] = useState(false);
-  const [isSquareLoading, setIsSquareLoading] = useState(false);
-  const [isElavonLoading, setIsElavonLoading] = useState(false);
+  const [isCardLoading, setIsCardLoading] = useState(false);
   const [bookingPupilId, setBookingPupilId] = useState<string | null>(null);
   const bookingPupilIdRef = useRef<string | null>(null);
-  
-  // NPI Hosted Fields state (embedded card form)
-  const [showHostedFields, setShowHostedFields] = useState(false);
+
   const [showKlarnaModal, setShowKlarnaModal] = useState(false);
   
   // Deposit payment state
@@ -294,7 +291,7 @@ export default function BookingSummary() {
     if (hasRehydratedRef.current) return;
     if (!instructorId) return;
 
-    const cancelKeys = ["gocardless", "square", "clearpay", "npi"];
+    const cancelKeys = ["gocardless", "ryft", "clearpay", "npi"];
     const cancelledKey = cancelKeys.find((k) => searchParams.get(k) === "cancelled");
 
     if (cancelledKey === "gocardless") {
@@ -585,12 +582,8 @@ export default function BookingSummary() {
   const requiresSlotSelection = bookingMode === 'pupil_choice' || bookingMode === 'first_lesson_only';
   const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting && unavailableSlots.length === 0;
 
-  // Auto-show card form when canSubmit becomes true
-  useEffect(() => {
-    if (canSubmit && !showHostedFields) {
-      setShowHostedFields(true);
-    }
-  }, [canSubmit, showHostedFields]);
+
+
 
   const bookingInProgressRef = useRef(false);
   const paymentBlockRef = useRef<HTMLDivElement | null>(null);
