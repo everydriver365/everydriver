@@ -196,9 +196,6 @@ Deno.serve(async (req) => {
         if (!session.lesson_id) {
           // No linked lesson, can't determine first/last — skip silently
         } else {
-          const dayStartIso = `${today}T00:00:00`;
-          const dayEndIso = `${today}T23:59:59`;
-          const nowIso = now.toISOString();
 
           const { data: dayLessons } = await supabase
             .from("scheduled_lessons")
