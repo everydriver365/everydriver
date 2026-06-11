@@ -100,6 +100,7 @@ Deno.serve(async (req) => {
         pupilId: pupilId || "",
         serviceFeePence: String(serviceFeePence),
         platformFeePence: String(platformFeePence),
+        reservationId: body.reservationId || "",
       },
       returnUrl,
       // Sub-account split: instructor receives net of platformShare
