@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
+import { BookingModeTabs } from "@/components/booking/BookingModeTabs";
 
 
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
