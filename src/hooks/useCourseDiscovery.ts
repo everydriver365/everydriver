@@ -587,9 +587,11 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all", i
 
         if (hasAnyMatch) {
           toast({ title: "Location found!", description: `Showing courses near ${areaName || district}` });
-        } else if (instructors.length > 0) {
-          // Only warn once the upstream instructor list has actually loaded —
-          // otherwise we flash a destructive toast during the initial fetch.
+        } else if (instructors.length > 0 && !loading) {
+          // Only warn once both the upstream instructor list AND the initial
+          // data fetch (including geocoding) have fully settled — otherwise we
+          // flash a destructive toast during the initial fetch while results
+          // are still being computed.
           toast({ title: "No instructors nearby", description: `We couldn't find instructors near ${areaName || district}. Try a wider radius.`, variant: "destructive" });
         }
       } else {
