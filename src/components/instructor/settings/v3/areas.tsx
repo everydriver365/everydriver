@@ -70,7 +70,7 @@ export const AREA_GROUPS: AreaGroup[] = [
         id: "working-hours", label: "Working hours",
         title: "Working hours & calendar", description: "Availability, calendar sync and reminders.",
         icon: Calendar, iconBg: "#DBEAFE", iconColor: "#1E40AF",
-        pulls: [G("schedule", "hours"), G("schedule", "lesson-length"), G("schedule", "self-service"), G("schedule", "calendar"), G("schedule", "reminders")],
+        pulls: [G("schedule", "hours"), G("schedule", "first-lesson-only"), G("schedule", "lesson-length"), G("schedule", "self-service"), G("schedule", "calendar"), G("schedule", "reminders")],
       },
       {
         id: "rates-coverage", label: "Rates & coverage",
