@@ -459,8 +459,27 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
   const signOut = async () => {
-    await clearAuthPersistence('instructor');
-    await supabase.auth.signOut();
+    try {
+      await clearAuthPersistence('instructor');
+    } catch (err) {
+      console.warn(`${AUTH_LOG_PREFIX} clearAuthPersistence failed`, err);
+    }
+    try {
+      // Local scope avoids hangs when the refresh token is already invalid
+      // and is enough to clear the browser session.
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch (err) {
+      console.warn(`${AUTH_LOG_PREFIX} supabase signOut failed`, err);
+    }
+    // Force-clear local state in case the auth listener doesn't fire.
+    setUser(null);
+    setSession(null);
+    setInstructor(null);
+    setSubscription(null);
+    setLoading(false);
+    if (window.location.pathname.startsWith('/instructor')) {
+      navigate('/instructor-app/login', { replace: true });
+    }
   };
 
   const resetPassword = async (email: string) => {
