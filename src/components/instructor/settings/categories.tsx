@@ -205,6 +205,7 @@ export function useSettingsCategories(): SettingsCategory[] {
       iconColor: "#7C3AED",
       sections: [
         { id: "hours", title: "Working hours", render: () => <WorkingHoursEditor instructorId={id} /> },
+        { id: "first-lesson-only", title: "Book first lesson only", description: "Let pupils reserve a start date and arrange lesson times later", render: () => <StartDateOnlyBookingEditor instructorId={id} /> },
         { id: "calendar", title: "Calendar sync", render: () => <IcsCalendarSync instructorId={id} /> },
         { id: "reminders", title: "Lesson reminders", render: () => <ReminderSettings instructorId={id} /> },
       ],
