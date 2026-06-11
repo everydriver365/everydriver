@@ -47,7 +47,7 @@ export function DailyManifest({ instructorId }: DailyManifestProps) {
         // Fetch today's lessons
         const { data: lessonData } = await supabase
           .from("scheduled_lessons")
-          .select("id, start_time, end_time, duration_minutes, pickup_location, status, price, pupil:pupils!inner(name, phone)")
+          .select("id, start_time, duration_minutes, pickup_location, status, price, pupil:pupils!inner(name, phone)")
           .eq("instructor_id", instructorId)
           .eq("lesson_date", today)
           .order("start_time", { ascending: true });
