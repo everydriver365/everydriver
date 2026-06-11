@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
       currency: "GBP",
       status: "pending",
       checkout_url: checkoutUrl,
-      metadata: { orderReference },
+      metadata: { orderReference, reservationId: body.reservationId || null },
     });
 
     return new Response(
