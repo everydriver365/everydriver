@@ -147,6 +147,9 @@ export default function InstructorPendingScheduling() {
           </CardContent>
         </Card>
 
+        <ReservationsAwaitingSchedulingCard instructorId={instructorId} />
+
+
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-12">
