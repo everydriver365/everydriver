@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { IcsCalendarSync } from "@/components/instructor/IcsCalendarSync";
 import { SquareConnectSettings } from "@/components/instructor/SquareConnectSettings";
+import { RyftPayoutsCard } from "@/components/instructor/RyftPayoutsCard";
 import { AccountingExport } from "@/components/instructor/accounting-export/AccountingExport";
 import { IntegrationStatusBadge, IntegrationStatusKind } from "@/components/instructor/integrations/IntegrationStatusBadge";
 import { IntegrationInstructions } from "@/components/instructor/integrations/IntegrationInstructions";
