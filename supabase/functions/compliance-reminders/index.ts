@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Resend } from "npm:resend@4.0.1";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     const authToken = Deno.env.get("TWILIO_AUTH_TOKEN")!;
     const fromNumber = Deno.env.get("TWILIO_PHONE_NUMBER")!;
     const messagingSid = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY")!);
+    
 
     let sentCount = 0;
 
@@ -108,13 +108,19 @@ Deno.serve(async (req) => {
       // Send email
       if (instructor.email) {
         try {
-          await resend.emails.send({
-            from: "EveryDriver <noreply@everydriver.co.uk>",
-            reply_to: "hello@everydriver.co.uk",
-            to: [instructor.email],
+          await sendBrandedEmail({
+            to: instructor.email,
             subject: "Document Expiry Reminder - EveryDriver",
-            html: `<h2>Document Expiry Reminder</h2><p>Hi ${instructor.name},</p><p>The following documents need your attention:</p><ul>${expiringDocs.map((d) => `<li><strong>${d.label}</strong>: ${d.daysLeft <= 0 ? "<span style='color:red'>EXPIRED</span>" : `${d.daysLeft} days remaining`}</li>`).join("")}</ul><p>Please update them at your earliest convenience.</p>`,
-          });
+            heading: "Document Expiry Reminder",
+            preview: "Documents need your attention",
+            intro: `Hi ${instructor.name},`,
+            paragraphs: [
+              "The following documents need your attention:",
+              ...expiringDocs.map((d) => `• ${d.label}: ${d.daysLeft <= 0 ? "EXPIRED" : `${d.daysLeft} days remaining`}`),
+              "Please update them at your earliest convenience.",
+            ],
+            idempotencyKey: `compliance-batch-${instructor.id}-${today}`,
+          }, supabase);
         } catch (e) {
           console.error(`Email failed for ${instructor.name}:`, e);
         }

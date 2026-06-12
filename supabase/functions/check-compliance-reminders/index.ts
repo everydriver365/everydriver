@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,7 +14,6 @@ interface ComplianceItem {
   expiryField: string;
 }
 
-// Instructor-level compliance items
 const instructorComplianceItems: ComplianceItem[] = [
   { type: "adi_badge", label: "ADI Badge", expiryField: "adi_badge_expiry" },
   { type: "car_insurance", label: "Car Insurance", expiryField: "car_insurance_expiry" },
@@ -22,7 +22,6 @@ const instructorComplianceItems: ComplianceItem[] = [
   { type: "dbs_certificate", label: "DBS Certificate", expiryField: "dbs_certificate_expiry" },
 ];
 
-// Vehicle-level compliance items
 interface VehicleComplianceItem {
   type: string;
   label: string;
@@ -37,30 +36,6 @@ const vehicleComplianceItems: VehicleComplianceItem[] = [
 
 const reminderDays = [30, 14, 7, 1];
 
-async function sendEmail(resendApiKey: string, to: string, subject: string, html: string) {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "EveryDriver <notifications@everydriver.co.uk>",
-      reply_to: "hello@everydriver.co.uk",
-      to: [to],
-      subject,
-      html,
-    }),
-  });
-  
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Resend error: ${error}`);
-  }
-  
-  return response.json();
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -69,7 +44,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    
     const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioPhone = Deno.env.get("TWILIO_PHONE_NUMBER");
@@ -133,29 +108,24 @@ serve(async (req) => {
           category: "system", channel: "sms", importance: "important",
         });
 
-        // Send email if Resend is configured
-        if (emailGate.allow && resendApiKey && instructor.email) {
+        if (emailGate.allow && instructor.email) {
           try {
-            const emailHtml = `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: ${isUrgent ? '#dc2626' : '#3b82f6'};">${item.label} Expiry ${urgencyText}</h2>
-                <p>Hi ${instructor.name},</p>
-                <p>This is a reminder that your <strong>${item.label}</strong> expires on <strong>${new Date(expiryDateStr).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong>.</p>
-                ${isUrgent ? '<p style="color: #dc2626; font-weight: bold;">⚠️ You must renew this before it expires to continue teaching legally.</p>' : ''}
-                <p>Please ensure you renew it before the expiry date to avoid any disruption to your teaching.</p>
-                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-                <p style="color: #6b7280; font-size: 12px;">This is an automated reminder from EveryDriver. Log in to your instructor portal to update your compliance dates.</p>
-              </div>
-            `;
+            const expFmt = new Date(expiryDateStr).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            await sendBrandedEmail({
+              to: instructor.email,
+              subject: `${urgencyText}: Your ${item.label} expires ${daysUntilExpiry === 1 ? "tomorrow" : `in ${daysUntilExpiry} days`}`,
+              heading: `${item.label} Expiry ${urgencyText}`,
+              preview: `${item.label} expires ${expFmt}`,
+              intro: `Hi ${instructor.name},`,
+              paragraphs: [
+                `This is a reminder that your ${item.label} expires on ${expFmt}.`,
+                ...(isUrgent ? ["You must renew this before it expires to continue teaching legally."] : []),
+                "Please ensure you renew it before the expiry date to avoid any disruption to your teaching.",
+              ],
+              footerNote: "Automated reminder from EveryDriver. Log in to your instructor portal to update your compliance dates.",
+              idempotencyKey: `compliance-${instructor.id}-${item.type}-${expiryDateStr}-${daysUntilExpiry}`,
+            }, supabase);
 
-            await sendEmail(
-              resendApiKey,
-              instructor.email,
-              `${urgencyText}: Your ${item.label} expires ${daysUntilExpiry === 1 ? "tomorrow" : `in ${daysUntilExpiry} days`}`,
-              emailHtml
-            );
-
-            // Log the reminder
             await supabase.from("compliance_reminders").insert({
               instructor_id: instructor.id,
               reminder_type: item.type,
@@ -165,7 +135,6 @@ serve(async (req) => {
             });
 
             remindersSent++;
-            console.log(`Email sent to ${instructor.email} for ${item.label} (${daysUntilExpiry} days)`);
           } catch (emailError) {
             console.error(`Failed to send email to ${instructor.email}:`, emailError);
           }
@@ -285,29 +254,24 @@ serve(async (req) => {
           category: "system", channel: "sms", importance: "important",
         });
 
-        // Send email if Resend is configured
-        if (vEmailGate.allow && resendApiKey && instructor.email) {
+        if (vEmailGate.allow && instructor.email) {
           try {
-            const emailHtml = `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: ${isUrgent ? '#dc2626' : '#3b82f6'};">${item.label} Expiry ${urgencyText}</h2>
-                <p>Hi ${instructor.name},</p>
-                <p>This is a reminder that the <strong>${item.label}</strong> for your vehicle <strong>${vehicleLabel}</strong> expires on <strong>${new Date(expiryDateStr).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong>.</p>
-                ${isUrgent ? '<p style="color: #dc2626; font-weight: bold;">⚠️ You must renew this before it expires to continue using this vehicle for teaching.</p>' : ''}
-                <p>Please ensure you renew it before the expiry date to avoid any disruption to your teaching.</p>
-                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-                <p style="color: #6b7280; font-size: 12px;">This is an automated reminder from EveryDriver. Log in to your instructor portal to update your vehicle compliance dates.</p>
-              </div>
-            `;
+            const expFmt = new Date(expiryDateStr).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            await sendBrandedEmail({
+              to: instructor.email,
+              subject: `${urgencyText}: ${item.label} for ${vehicle.registration} expires ${daysUntilExpiry === 1 ? "tomorrow" : `in ${daysUntilExpiry} days`}`,
+              heading: `${item.label} Expiry ${urgencyText}`,
+              preview: `${vehicleLabel} ${item.label} expires ${expFmt}`,
+              intro: `Hi ${instructor.name},`,
+              paragraphs: [
+                `This is a reminder that the ${item.label} for your vehicle ${vehicleLabel} expires on ${expFmt}.`,
+                ...(isUrgent ? ["You must renew this before it expires to continue using this vehicle for teaching."] : []),
+                "Please ensure you renew it before the expiry date to avoid any disruption to your teaching.",
+              ],
+              footerNote: "Automated reminder from EveryDriver. Log in to your instructor portal to update your vehicle compliance dates.",
+              idempotencyKey: `vehicle-compliance-${vehicle.id}-${item.type}-${expiryDateStr}-${daysUntilExpiry}`,
+            }, supabase);
 
-            await sendEmail(
-              resendApiKey,
-              instructor.email,
-              `${urgencyText}: ${item.label} for ${vehicle.registration} expires ${daysUntilExpiry === 1 ? "tomorrow" : `in ${daysUntilExpiry} days`}`,
-              emailHtml
-            );
-
-            // Log the reminder with vehicle_id
             await supabase.from("compliance_reminders").insert({
               instructor_id: instructor.id,
               vehicle_id: vehicle.id,
@@ -318,7 +282,6 @@ serve(async (req) => {
             });
 
             remindersSent++;
-            console.log(`Vehicle email sent to ${instructor.email} for ${vehicle.registration} ${item.label} (${daysUntilExpiry} days)`);
           } catch (emailError) {
             console.error(`Failed to send vehicle email to ${instructor.email}:`, emailError);
           }

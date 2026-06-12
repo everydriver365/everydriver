@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PushDataType, NotifyCategory, NotifyImportance, PupilNotifyType } from "../_shared/notification-types.ts";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -41,17 +42,8 @@ function emailSubject(tier: Tier, amount: string): string {
   }
 }
 
-function emailHtml(tier: Tier, pupilName: string, amount: string, instructorName: string): string {
-  const heading = tier === 1 ? "Payment reminder" : tier === 2 ? "Payment overdue" : "Final reminder";
-  const message = smsBody(tier, pupilName, amount, instructorName);
-  return `
-    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>${heading}</h2>
-      <p>${message}</p>
-      <p>Thank you.</p>
-      <p style="color: #666; font-size: 12px;">- ${instructorName} via EveryDriver</p>
-    </div>
-  `;
+function emailHeading(tier: Tier): string {
+  return tier === 1 ? "Payment reminder" : tier === 2 ? "Payment overdue" : "Final reminder";
 }
 
 function pushBody(tier: Tier, amount: string, instructorName: string): string {
@@ -83,7 +75,7 @@ serve(async (req) => {
     const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    
 
     // Find active pupils owing at least the minimum threshold.
     const { data: debtors, error: debtorsError } = await supabase
@@ -216,23 +208,19 @@ serve(async (req) => {
       }
 
       // 2) Email
-      if (resendApiKey && pupil.email) {
+      if (pupil.email) {
         try {
-          const response = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${resendApiKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              from: "EveryDriver <noreply@everydriver.co.uk>",
-              reply_to: "hello@everydriver.co.uk",
-              to: [pupil.email],
-              subject: emailSubject(tier, formattedAmount),
-              html: emailHtml(tier, pupil.name, formattedAmount, instructorName),
-            }),
-          });
-          if (response.ok) {
+          const result = await sendBrandedEmail({
+            to: pupil.email,
+            subject: emailSubject(tier, formattedAmount),
+            heading: emailHeading(tier),
+            preview: `${formattedAmount} outstanding with ${instructorName}`,
+            intro: smsBody(tier, pupil.name, formattedAmount, instructorName),
+            paragraphs: ["Thank you."],
+            footerNote: `${instructorName} via EveryDriver`,
+            idempotencyKey: `payment-reminder-${pupil.id}-${tier}-${new Date().toISOString().slice(0,10)}`,
+          }, supabase);
+          if (result.enqueued > 0) {
             emailSent++;
             await supabase.from("payment_reminder_log").insert({
               pupil_id: pupil.id,
@@ -242,7 +230,6 @@ serve(async (req) => {
               amount_owed: amountOwed,
             });
           }
-          await response.text();
         } catch (e) {
           console.error(`Email failed for ${pupil.name}:`, e);
         }

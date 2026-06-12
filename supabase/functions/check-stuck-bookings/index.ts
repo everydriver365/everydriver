@@ -1,12 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Lessons stuck in awaiting_initial_payment for longer than this trigger an admin alert.
 const STUCK_THRESHOLD_MINUTES = 30;
 
 serve(async (req) => {
@@ -17,7 +17,6 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const cutoff = new Date(Date.now() - STUCK_THRESHOLD_MINUTES * 60_000).toISOString();
@@ -39,7 +38,6 @@ serve(async (req) => {
       );
     }
 
-    // Look up pupil + instructor names in bulk
     const pupilIds = [...new Set(stuck.map((l) => l.pupil_id).filter(Boolean))];
     const instructorIds = [...new Set(stuck.map((l) => l.instructor_id).filter(Boolean))];
 
@@ -66,7 +64,6 @@ serve(async (req) => {
       );
       const message = `Booking stuck awaiting initial payment for ${ageMins} mins — ${pupilName} with ${instructorName} (lesson ${lesson.id})`;
 
-      // 1. admin_alerts row
       await supabase.from("admin_alerts").insert({
         alert_type: "stuck_initial_payment",
         instructor_id: lesson.instructor_id,
@@ -81,7 +78,6 @@ serve(async (req) => {
         },
       });
 
-      // 2. instructor notification so they can chase the pupil
       if (lesson.instructor_id) {
         await supabase.from("instructor_notifications").insert({
           instructor_id: lesson.instructor_id,
@@ -93,35 +89,29 @@ serve(async (req) => {
         });
       }
 
-      // 3. admin email
-      if (resendApiKey && adminEmails.length > 0) {
+      if (adminEmails.length > 0) {
         try {
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${resendApiKey}`,
-            },
-            body: JSON.stringify({
-              from: "EveryDriver <noreply@everydriver.co.uk>",
-              reply_to: "hello@everydriver.co.uk",
-              to: adminEmails,
-              subject: `⚠️ Stuck booking — ${pupilName} (${ageMins}m)`,
-              html: `<h2>Booking stuck in awaiting_initial_payment</h2>
-<p><strong>Pupil:</strong> ${pupilName}<br/>
-<strong>Instructor:</strong> ${instructorName}<br/>
-<strong>Lesson start:</strong> ${lesson.start_time}<br/>
-<strong>Created:</strong> ${lesson.created_at}<br/>
-<strong>Age:</strong> ${ageMins} minutes</p>
-<p>Lesson ID: <code>${lesson.id}</code></p>`,
-            }),
-          });
+          await sendBrandedEmail({
+            to: adminEmails,
+            subject: `Stuck booking — ${pupilName} (${ageMins}m)`,
+            heading: "Booking stuck awaiting initial payment",
+            preview: `${pupilName} booking waiting ${ageMins} minutes for payment`,
+            intro: `A booking has been waiting ${ageMins} minutes for the initial payment.`,
+            details: [
+              { label: "Pupil", value: pupilName },
+              { label: "Instructor", value: instructorName },
+              { label: "Lesson start", value: String(lesson.start_time) },
+              { label: "Created", value: String(lesson.created_at) },
+              { label: "Age", value: `${ageMins} minutes` },
+              { label: "Lesson ID", value: lesson.id },
+            ],
+            idempotencyKey: `stuck-booking-${lesson.id}`,
+          }, supabase);
         } catch (e) {
           console.error("admin email failed", lesson.id, e);
         }
       }
 
-      // 4. mark as alerted so we don't fire again
       await supabase
         .from("scheduled_lessons")
         .update({ stuck_payment_alerted_at: new Date().toISOString() })

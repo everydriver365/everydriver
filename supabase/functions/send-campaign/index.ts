@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Resend } from "npm:resend@4.0.1";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -113,19 +113,18 @@ Deno.serve(async (req) => {
         }
       }
     } else if (campaign.channel === "email") {
-      const resend = new Resend(Deno.env.get("RESEND_API_KEY")!);
-
       for (const r of recipients) {
         if (!r.email) continue;
         try {
-          await resend.emails.send({
-            from: "EveryDriver <noreply@everydriver.co.uk>",
-            reply_to: "hello@everydriver.co.uk",
-            to: [r.email],
+          const result = await sendBrandedEmail({
+            to: r.email,
             subject: campaign.subject || "Message from EveryDriver",
-            html: `<p>${campaign.message.replace(/\n/g, "<br/>")}</p>`,
-          });
-          sent++;
+            heading: campaign.subject || "Message from EveryDriver",
+            intro: r.name ? `Hi ${r.name},` : null,
+            paragraphs: campaign.message.split(/\n+/).filter(Boolean),
+            idempotencyKey: `campaign-${campaignId}-${r.email}`,
+          }, supabase);
+          if (result.enqueued > 0) sent++;
         } catch (e) {
           console.error(`Failed to send email to ${r.email}:`, e);
         }
