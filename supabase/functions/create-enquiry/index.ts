@@ -40,7 +40,6 @@ serve(async (req) => {
     const enquiry = parseResult.data;
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // 1. Create the enquiry
@@ -89,38 +88,50 @@ serve(async (req) => {
       adminEmails = [fallback];
     }
 
-    // 3. Send email notification to admins
+    // 3. Send email notification to admins via Lovable Emails (verified subdomain + logged)
     let emailSent = false;
-    if (resendApiKey && adminEmails.length > 0) {
-      try {
-        const isCallback = enquiry.courseType === "callback" || enquiry.courseType === "general";
-        
-        const emailResponse = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${resendApiKey}`,
-          },
-          body: JSON.stringify({
-            from: "EveryDriver <noreply@everydriver.co.uk>",
-            reply_to: "hello@everydriver.co.uk",
-            to: adminEmails,
-            subject: isCallback 
-              ? `📞 New Callback Request from ${enquiry.name}`
-              : `📝 New Bespoke Course Enquiry from ${enquiry.name}`,
-            html: buildEnquiryEmailHtml(enquiry, isCallback),
-          }),
-        });
+    {
+      const isCallback = enquiry.courseType === "callback" || enquiry.courseType === "general";
+      const templateData = {
+        name: enquiry.name,
+        email: enquiry.email,
+        phone: enquiry.phone,
+        postcode: enquiry.postcode.toUpperCase(),
+        courseType: enquiry.courseType,
+        requestedHours: enquiry.requestedHours,
+        preferredTiming: enquiry.preferredTiming,
+        additionalNotes: enquiry.additionalNotes,
+        isCallback,
+      };
 
-        if (emailResponse.ok) {
-          emailSent = true;
-          console.log("Admin notification email sent");
-        } else {
-          const errorData = await emailResponse.text();
-          console.error("Resend API error:", errorData);
+      for (const adminEmail of adminEmails) {
+        try {
+          const r = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${supabaseServiceKey}`,
+              apikey: supabaseServiceKey,
+            },
+            body: JSON.stringify({
+              templateName: "admin-enquiry-notification",
+              recipientEmail: adminEmail,
+              idempotencyKey: `enquiry-${newEnquiry.id}-${adminEmail}`,
+              templateData,
+            }),
+          });
+
+          if (r.ok) {
+            emailSent = true;
+          } else {
+            console.error(
+              `send-transactional-email failed for ${adminEmail} (${r.status}):`,
+              await r.text(),
+            );
+          }
+        } catch (emailError) {
+          console.error(`send-transactional-email error for ${adminEmail}:`, emailError);
         }
-      } catch (emailError) {
-        console.error("Error sending admin email:", emailError);
       }
     }
 
