@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { setRememberMe } from "@/lib/sessionPersistence";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import everyDriverLogoAsset from "@/assets/everydriver-logo-jun7-v3.png.asset.json";
 
 const FONT = `Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
 const NAVY = "#0F2044";
