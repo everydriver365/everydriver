@@ -226,6 +226,40 @@ export function Drive365Header() {
       </div>
 
 
+      {/* Secondary nav bar */}
+      <div className="hidden lg:block w-full" style={{ background: "#EAF0FF" }}>
+        <div className="mx-auto flex h-[40px] items-center justify-center gap-8 px-[28px]">
+          <Link
+            to="/contact?type=callback"
+            className="text-[#0A1628] transition-colors hover:text-[#3E57D9]"
+            style={{ fontSize: 13, fontWeight: 600 }}
+          >
+            Request a Callback
+          </Link>
+          <Link
+            to="/contact?type=bespoke"
+            className="text-[#0A1628] transition-colors hover:text-[#3E57D9]"
+            style={{ fontSize: 13, fontWeight: 600 }}
+          >
+            Bespoke Course Request
+          </Link>
+          <Link
+            to="/courses"
+            className="text-[#0A1628] transition-colors hover:text-[#3E57D9]"
+            style={{ fontSize: 13, fontWeight: 600 }}
+          >
+            Plan a Course
+          </Link>
+          <Link
+            to="/test-swap"
+            className="text-[#0A1628] transition-colors hover:text-[#3E57D9]"
+            style={{ fontSize: 13, fontWeight: 600 }}
+          >
+            Test Swap
+          </Link>
+        </div>
+      </div>
+
       {/* Promo bar removed — managed via admin CMS PromoBanner */}
     </header>
   );
