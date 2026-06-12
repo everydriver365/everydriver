@@ -1,4 +1,5 @@
 import { lazy, ComponentType } from "react";
+import { bootProbeLog } from "@/lib/bootProbe";
 
 /**
  * Wraps React.lazy with automatic retry logic for failed dynamic imports.
@@ -20,7 +21,9 @@ async function retryImport<T extends ComponentType<any>>(
 ): Promise<{ default: T }> {
   try {
     return await factory();
-  } catch (error) {
+  } catch (error: any) {
+    const msg = error?.message || String(error);
+    bootProbeLog(`chunk fail (${retries} left): ${msg.slice(0, 140)}`);
     if (retries > 0) {
       await new Promise((resolve) => setTimeout(resolve, delay));
       return retryImport(factory, retries - 1, delay * 1.5);
@@ -30,13 +33,14 @@ async function retryImport<T extends ComponentType<any>>(
     const key = `lazy-reload-${factory.toString().slice(0, 80)}`;
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, "1");
+      bootProbeLog("chunk fail — forcing reload");
       window.location.reload();
       // Return a never-resolving promise so React doesn't render the error
       return new Promise(() => {});
     }
 
-    // Already reloaded once — clear flag and let error boundary handle it
     sessionStorage.removeItem(key);
+    bootProbeLog(`chunk fail FINAL: ${msg.slice(0, 200)}`);
     throw error;
   }
 }
