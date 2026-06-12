@@ -1343,7 +1343,7 @@ export default function BookingSummary() {
 
             {/* Course Info */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold truncate">{courseName}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold truncate text-white">{courseName}</h1>
               <div className="flex items-center gap-3 mt-1">
                 <Avatar className="h-7 w-7 border-2 border-white/20">
                   <AvatarImage src={instructor.profile_image_url || undefined} />
