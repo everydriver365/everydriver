@@ -75,10 +75,18 @@ serve(async (req) => {
     const { data: siteSettings } = await supabase
       .from("site_settings")
       .select("admin_notification_emails")
-      .single();
-    
-    if (siteSettings?.admin_notification_emails) {
-      adminEmails = siteSettings.admin_notification_emails;
+      .not("admin_notification_emails", "is", null)
+      .limit(1)
+      .maybeSingle();
+
+    if (Array.isArray(siteSettings?.admin_notification_emails)) {
+      adminEmails = (siteSettings!.admin_notification_emails as string[]).filter(
+        (e) => typeof e === "string" && e.includes("@"),
+      );
+    }
+    if (adminEmails.length === 0) {
+      const fallback = Deno.env.get("ADMIN_ENQUIRY_EMAIL") || "enquiries@everydriver.co.uk";
+      adminEmails = [fallback];
     }
 
     // 3. Send email notification to admins
