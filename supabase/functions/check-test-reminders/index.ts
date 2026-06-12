@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,25 +20,6 @@ interface PupilRow {
   theory_test_passed: boolean | null;
   test_date: string | null;
   test_passed: boolean | null;
-}
-
-async function sendEmail(resendApiKey: string, to: string, subject: string, html: string) {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "EveryDriver <notifications@everydriver.co.uk>",
-      reply_to: "hello@everydriver.co.uk",
-      to: [to],
-      subject,
-      html,
-    }),
-  });
-  if (!res.ok) throw new Error(`Resend error: ${await res.text()}`);
-  return res.json();
 }
 
 serve(async (req) => {
