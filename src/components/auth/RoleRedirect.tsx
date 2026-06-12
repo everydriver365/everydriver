@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Shield, Users, GraduationCap, Building2, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { bootProbeLog } from "@/lib/bootProbe";
 
 interface RoleInfo {
   role: string;
@@ -56,43 +57,56 @@ export function RoleRedirect() {
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
+      bootProbeLog("RoleRedirect: getUser…");
       let user: any = null;
       try {
         const res = await supabase.auth.getUser();
         user = res.data.user;
-      } catch (e) {
+        bootProbeLog(`RoleRedirect: getUser ok user=${user?.id ? "yes" : "no"}`);
+      } catch (e: any) {
+        bootProbeLog(`RoleRedirect: getUser FAILED ${e?.message || e}`);
         console.error("[RoleRedirect] getUser failed", e);
       }
       if (cancelled) return;
       if (!user) {
+        bootProbeLog("RoleRedirect: no user → /");
         navigate("/", { replace: true });
         return;
       }
 
+      bootProbeLog("RoleRedirect: query user_roles…");
       let userRoles: string[] = [];
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", user.id);
+        if (error) bootProbeLog(`user_roles err ${error.message}`);
         userRoles = (data ?? []).map((r) => r.role as string);
-      } catch (e) {
+        bootProbeLog(`RoleRedirect: roles=[${userRoles.join(",")}]`);
+      } catch (e: any) {
+        bootProbeLog(`RoleRedirect: user_roles THREW ${e?.message || e}`);
         console.error("[RoleRedirect] user_roles query failed", e);
       }
       if (cancelled) return;
 
       const goTo = async (role: string) => {
+        bootProbeLog(`RoleRedirect: goTo role=${role}`);
         if (role === "pupil") {
           try {
             const path = await resolvePupilPath(user.id);
+            bootProbeLog(`RoleRedirect: nav ${path}`);
             navigate(path, { replace: true });
           } catch {
+            bootProbeLog("RoleRedirect: nav /pupil (fallback)");
             navigate("/pupil", { replace: true });
           }
           return;
         }
         const info = ROLE_MAP[role];
-        navigate(info?.path ?? "/instructor", { replace: true });
+        const target = info?.path ?? "/instructor";
+        bootProbeLog(`RoleRedirect: nav ${target}`);
+        navigate(target, { replace: true });
       };
 
       // Honour explicit portal hint when the user has that role.

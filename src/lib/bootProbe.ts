@@ -115,5 +115,5 @@ export function markBootProbeMounted(): void {
   hideTimer = window.setTimeout(() => {
     const el = document.getElementById(PROBE_ID);
     if (el) el.remove();
-  }, 4000);
+  }, 15000);
 }
