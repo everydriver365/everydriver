@@ -187,24 +187,8 @@ async function runAllRevocations(
   return out;
 }
 
-// (Email templates inlined into sendBrandedEmail calls below.)
+// (Email content inlined into sendBrandedEmail calls below.)
 
-
-function renderPupilPurgeEmail(): string {
-  return `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1a1a1a;">
-  <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #1a1a1a;">
-    <h1 style="font-size: 22px; margin: 0;">Your driving lesson data has been deleted</h1>
-    <p style="color: #666; font-size: 13px; margin: 8px 0 0;">${APP_NAME}</p>
-  </div>
-  <div style="padding: 24px 0;">
-    <p style="font-size: 15px;">Your driving instructor has closed their ${APP_NAME} account, and your lesson, scheduling, and progress data linked to them has been removed.</p>
-    <p style="font-size: 15px;">Your ${APP_NAME} login (if you have one) is unaffected — you can still sign in and use the app with any other instructor.</p>
-    <p style="font-size: 14px; color: #444;">If you have any questions, contact <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>
-  </div>
-  <div style="border-top: 1px solid #eee; padding-top: 16px; font-size: 12px; color: #999; text-align: center;">${APP_NAME}</div>
-</div>`;
-}
 
 // ---------- worker ----------
 interface DeletionRow {
