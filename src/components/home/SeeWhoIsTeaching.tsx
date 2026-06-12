@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import everydriverLogo from "@/assets/everydriver-logo-jun7-v3.png.asset.json";
+import everydriverLogo from "@/assets/ed-logo-teaching-tile.png.asset.json";
 
 interface InstructorRow {
   id: string;
