@@ -85,7 +85,14 @@ export function installBootProbe(): void {
     /* ignore */
   }
 
-  window.addEventListener("error", (e) => {
+  window.addEventListener("error", (e: any) => {
+    const tgt = e?.target;
+    // Resource load errors (script/img/link) — capture src/href
+    if (tgt && tgt !== window && (tgt.src || tgt.href)) {
+      const url = (tgt.src || tgt.href || "").toString();
+      bootProbeLog(`RES-ERR <${tgt.tagName}> ${url.slice(-90)}`);
+      return;
+    }
     const msg = e?.error?.message || e?.message || "unknown error";
     const src = e?.filename ? ` @ ${e.filename}:${e.lineno || "?"}` : "";
     bootProbeLog(`ERROR ${msg}${src}`);
@@ -93,7 +100,7 @@ export function installBootProbe(): void {
     if (typeof stack === "string") {
       stack.split("\n").slice(0, 3).forEach((s) => bootProbeLog(`  ${s.trim()}`));
     }
-  });
+  }, true);
 
   window.addEventListener("unhandledrejection", (e) => {
     const r = (e as PromiseRejectionEvent).reason;
