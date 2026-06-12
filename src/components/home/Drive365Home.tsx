@@ -331,11 +331,12 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
           .d365-hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
           .d365-hero-right { display: flex; flex-direction: column; gap: 16px; }
-          .d365-welcome { background: #EAF0FF; padding: 24px; border-radius: 15px; }
-          .d365-welcome-eyebrow { font-size: 10px; font-weight: 700; color: #E8641A; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
-          .d365-welcome h1 { font-size: 40px; line-height: 1.1; font-weight: 800; color: #0A1628; letter-spacing: -1.5px; margin: 0 0 14px; font-family: Inter, "Helvetica Neue", system-ui, sans-serif; }
-          .d365-welcome p { font-size: 15px; line-height: 1.55; color: #4B5563; margin: 0; }
-          .d365-welcome p b { color: #0A0A0A; font-weight: 700; }
+          .d365-welcome { background: #E8EEFB; padding: 2.75rem 2rem; border: 1.5px solid #d6e0f5; border-radius: 20px; max-width: 760px; margin: 0 auto; font-family: 'Poppins', sans-serif; text-align: center; }
+          .d365-welcome-eyebrow { font-size: 12px; font-weight: 700; color: #D12E2E; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 10px; font-family: 'Poppins', sans-serif; }
+          .d365-welcome h1 { font-size: 38px; line-height: 1.2; font-weight: 800; color: #0F2044; letter-spacing: -0.5px; margin: 0 0 14px; font-family: 'Poppins', sans-serif; }
+          .d365-welcome p { font-size: 15px; line-height: 1.7; color: #666666; margin: 0 auto; max-width: 520px; font-family: 'Poppins', sans-serif; }
+          .d365-welcome p b { color: #0F2044; font-weight: 700; }
+          @media (max-width: 520px) { .d365-welcome h1 { font-size: 28px; } }
           .d365-cta { width: 100%; background: #0F2044; color: #FFFFFF; border: none; border-radius: 10px; padding: 16px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 120ms ease; font-family: inherit; }
           .d365-cta:hover { background: #1A3370; }
           .d365-cta-icon { width: 22px; height: 22px; border-radius: 999px; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center; }
