@@ -1,7 +1,6 @@
 import { useState, KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
-import { useTypewriter } from "@/hooks/useTypewriter";
 
 const UK_POSTCODE_RE = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/;
 
@@ -10,17 +9,6 @@ export function PostcodeSearch() {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
-  const placeholderText = useTypewriter({
-    phrases: [
-      "Enter your postcode (e.g. SW1A 1AA)",
-      "Find driving instructors near you",
-      "Compare prices in your area",
-      "Book your first lesson today",
-    ],
-    typingSpeed: 70,
-    deletingSpeed: 35,
-    pauseBetween: 1800,
-  });
 
   const submit = () => {
     const v = value.trim().toUpperCase();
@@ -45,7 +33,34 @@ export function PostcodeSearch() {
 
   return (
     <div style={{ marginTop: 20 }}>
-      <div style={{ display: "flex", width: "100%" }}>
+      <style>{`
+        .pcs-row { display: flex; flex-direction: row; gap: 10px; max-width: 560px; margin: 0 auto; width: 100%; }
+        .pcs-input {
+          flex: 1; min-width: 0; background: #ffffff;
+          border: 1.5px solid #d6e0f5; border-radius: 10px;
+          padding: 14px 16px; font-size: 14px; color: #0F2044;
+          outline: none; font-family: 'Poppins', sans-serif;
+          transition: border-color 120ms ease;
+          box-sizing: border-box;
+        }
+        .pcs-input::placeholder { color: #9CA3AF; }
+        .pcs-input:focus { border-color: #0070C0; }
+        .pcs-btn {
+          background: #D12E2E; color: #ffffff; border: none;
+          border-radius: 10px; padding: 14px 28px;
+          font-size: 14px; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.04em; cursor: pointer;
+          display: inline-flex; align-items: center; justify-content: center;
+          gap: 8px; font-family: 'Poppins', sans-serif;
+          transition: background 120ms ease; white-space: nowrap;
+        }
+        .pcs-btn:hover { background: #b52626; }
+        @media (max-width: 520px) {
+          .pcs-row { flex-direction: column; }
+          .pcs-btn { width: 100%; }
+        }
+      `}</style>
+      <div className="pcs-row">
         <input
           type="text"
           value={value}
@@ -53,55 +68,17 @@ export function PostcodeSearch() {
           onKeyDown={onKey}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder={focused || value ? "Enter your postcode (e.g. SW1A 1AA)" : placeholderText}
+          placeholder="Find driving instructors near you"
           aria-label="Postcode"
-          style={{
-            flex: "1 1 70%",
-            background: "#FFFFFF",
-            border: focused ? "2px solid #1A6FD4" : "1.5px solid #1A6FD4",
-            borderRight: "none",
-            borderRadius: "2px 0 0 2px",
-            padding: focused ? "13px 15px" : "13.5px 15.5px",
-            height: 48,
-            fontSize: 14,
-            color: "#0A0A0A",
-            outline: "none",
-            fontFamily: "inherit",
-            boxSizing: "border-box",
-          }}
+          className="pcs-input"
         />
-        <button
-          type="button"
-          onClick={submit}
-          style={{
-            flex: "0 0 30%",
-            background: "#E8641A",
-            color: "#FFFFFF",
-            border: "none",
-            borderRadius: "0 2px 2px 0",
-            padding: "14px 24px",
-            height: 48,
-            fontSize: 14,
-            fontWeight: 700,
-            letterSpacing: "1px",
-            textTransform: "uppercase",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            fontFamily: "inherit",
-            transition: "background 120ms ease",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#D15A10")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "#E8641A")}
-        >
+        <button type="button" onClick={submit} className="pcs-btn">
           SEARCH
           <Search size={14} color="#FFFFFF" strokeWidth={2.5} />
         </button>
       </div>
       {error && (
-        <div style={{ color: "#EF4444", fontSize: 12, marginTop: 4, textAlign: "left" }}>
+        <div style={{ color: "#EF4444", fontSize: 12, marginTop: 6, textAlign: "center" }}>
           {error}
         </div>
       )}
