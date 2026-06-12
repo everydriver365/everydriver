@@ -118,18 +118,21 @@ serve(async (req) => {
       const emailGate = await shouldSendToInstructor(supabase, instructor.id, {
         category: "system", channel: "email", importance: "important",
       });
-      if (emailGate.allow && resendApiKey && instructor.email) {
+      if (emailGate.allow && instructor.email) {
         try {
-          const html = `
-            <div style="font-family: Arial, sans-serif; max-width:600px;margin:0 auto;">
-              <h2 style="color:${days === 1 ? "#dc2626" : "#3b82f6"};">${label} ${whenText}</h2>
-              <p>Hi ${instructor.name},</p>
-              <p><strong>${pupil.name}</strong> has a <strong>${label.toLowerCase()}</strong> booked for <strong>${formattedDate}</strong>${days === 1 ? " (tomorrow)" : ""}.</p>
-              <p>Make sure they're prepared and you've blocked out the time.</p>
-              <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;"/>
-              <p style="color:#6b7280;font-size:12px;">Automated reminder from EveryDriver.</p>
-            </div>`;
-          await sendEmail(resendApiKey, instructor.email, title, html);
+          await sendBrandedEmail({
+            to: instructor.email,
+            subject: title,
+            heading: `${label} ${whenText}`,
+            preview: `${pupil.name} ${label.toLowerCase()} ${formattedDate}`,
+            intro: `Hi ${instructor.name},`,
+            paragraphs: [
+              `${pupil.name} has a ${label.toLowerCase()} booked for ${formattedDate}${days === 1 ? " (tomorrow)" : ""}.`,
+              "Make sure they're prepared and you've blocked out the time.",
+            ],
+            footerNote: "Automated reminder from EveryDriver.",
+            idempotencyKey: `test-reminder-${pupil.id}-${kind}-${dateStr}-${days}`,
+          }, supabase);
           await supabase.from("test_reminders_log").insert({
             instructor_id: instructor.id,
             pupil_id: pupil.id,
