@@ -7,9 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ADMIN_EMAIL = Deno.env.get("ADMIN_ENQUIRY_EMAIL") || "enquiries@drive365.co.uk";
+const ADMIN_EMAIL = Deno.env.get("ADMIN_ENQUIRY_EMAIL") || "enquiries@everydriver.co.uk";
 const ADMIN_BASE = "https://everydriver.co.uk";
-const BRAND_LOGO_URL = "https://everydriver.co.uk/drive365-logo.png";
+const BRAND_LOGO_URL = "https://everydriver.co.uk/everydriver-logo-full.svg";
 
 const D365_PRIMARY = "#142040";
 const D365_ACCENT = "#2B7BC8";
@@ -62,7 +62,7 @@ serve(async (req) => {
     const text = renderText(enquiry, instructor);
 
     const result = await resend.emails.send({
-      from: "EveryDriver Enquiries <enquiries@notifications.drive365.co.uk>",
+      from: "EveryDriver Enquiries <enquiries@notify.everydriver.co.uk>",
       to: [ADMIN_EMAIL],
       reply_to: enquiry.pupil_email,
       subject,

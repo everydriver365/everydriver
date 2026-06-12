@@ -1,31 +1,92 @@
-## Plan
 
-1. **Fix the broken enquiries count query**
-   - Update the instructor notification/enquiries hook so:
-     - `booking_enquiries` filters by `instructor_id`
-     - `course_enquiries` filters by `assigned_instructor_id`
-   - This matches the live database schema and stops the repeated backend error that is still being logged.
+# EveryDriver Rebrand + Job Alerts for Enquiries
 
-2. **Stop page switches getting stuck behind lazy-loading spinners**
-   - Replace the `fallback={null}` wrappers on the instructor router pages with a small, real loading state.
-   - Tighten `lazyWithRetry` so a failed page chunk does not leave React waiting forever after retries/reload.
-   - Apply this to Schedule, Pupils, Payments, Inbox, Reports, and Availability routers.
+Three workstreams. Joseph Lewis data merge is parked.
 
-3. **Make key page data loads fail-safe**
-   - Add/confirm `try/catch/finally` guards on the main Schedule and Pupils data fetches so any failed database read releases loading and shows an empty/error state instead of an endless spinner.
-   - Keep this scoped to instructor desktop/mobile page loading only.
+---
 
-4. **Fix the remaining health-check backend error**
-   - Update `tile-health-check` so message counts go through `conversations` rather than filtering `messages.instructor_id`, because `messages` has no `instructor_id` column.
-   - Redeploy that function after code changes.
+## 1. Email domain — unblock all transactional mail
 
-5. **Validate after implementation**
-   - Re-check recent backend errors for:
-     - `booking_enquiries.assigned_instructor_id`
-     - `course_enquiries.instructor_id`
-     - `messages.instructor_id`
-   - Open `/instructor/schedule` and `/instructor/pupils` in preview and confirm they no longer stay on a spinner.
+Both workspace domains (`drive365.co.uk`, `drivinglessonswinchester.com`) are `provisioning_failed`, so **no admin/instructor/pupil email leaves the platform**.
 
-## Technical notes
+- Provision `notify.everydriver.co.uk` as the verified sender subdomain via the email setup dialog (DNS NS records added at the registrar).
+- Once verified, set platform-wide constants:
+  - `FROM_EMAIL = "EveryDriver <notify@notify.everydriver.co.uk>"`
+  - `ADMIN_ENQUIRY_EMAIL = "enquiries@everydriver.co.uk"`
 
-The current evidence points to two separate issues: stale/wrong database column references causing backend errors, and route-level lazy loading that can leave a page transition stuck with only a spinner or blank fallback. The fix addresses both rather than masking the spinner only.
+*Blocker:* user must add DNS when prompted. Nothing downstream delivers until verification succeeds.
+
+---
+
+## 2. Kill Drive365 branding from notification functions
+
+Sweep these and replace every `drive365.co.uk` / `notifications.drive365.co.uk` sender, reply-to default, and Drive365 logo URL:
+
+- `notify-admin-enquiry`
+- `notify-booking-enquiry`
+- `notify-test-swap-match`
+- `notify-public-test-swap-request`
+- `notify-lessons-scheduled`
+- `send-lesson-reminders`
+- `send-transactional-email`
+- any other `*notify*` / `send-*` function caught in a final grep pass
+
+Swap sender to the EveryDriver address, swap logo to `/everydriver-logo-full.svg`. Template structure unchanged.
+
+*Out of scope here:* marketing/landing pages still referencing Drive365 — separate sweep.
+
+---
+
+## 3. Job Alerts for new enquiries
+
+Real-time alert on every new enquiry (mini-website form, public booking page, course enquiry, contact form) visible in **instructor mobile app**, **admin desktop**, and **admin mobile login**, plus a dedicated **"Job Alert"** notification type.
+
+### 3a. Data model & trigger
+- Add `public.fan_out_enquiry_alert()` SECURITY DEFINER function.
+- AFTER INSERT trigger on `booking_enquiries` and `course_enquiries`:
+  - Insert `instructor_notifications` row, `type = 'job_offer'`, title `"New Job Alert"`, message includes hours / transmission / postcode / date, `action_url` deep-linking to the enquiry.
+  - Insert `admin_alerts` row, `type = 'enquiry'`, regardless of whether an instructor was matched (so unrouted enquiries are still visible).
+- Trigger fires from any source — no edge-function dependency.
+
+### 3b. Edge-function reliability
+- `notify-booking-enquiry` and `notify-admin-enquiry`: write `admin_alerts` row up-front so the alert exists even when email fails. On email failure, log `severity = warning` to `admin_alerts` instead of swallowing the error.
+- Push payload uses existing `PushDataType.JOB_OFFER`. Title `"New Job Alert"`, body postcode + hours + date.
+
+### 3c. Instructor mobile app
+- `useNewEnquiriesCount` already counts `booking_enquiries` + `course_enquiries` for the instructor. Wire it into `useCombinedNotificationCount` so the bell badge increments.
+- Notifications sheet gets a "Job Alerts" section at the top, listing unread `job_offer` rows, tap → `/instructor/inbox?tab=enquiries`.
+- Native push with sound (reuses `useChatNotifications.playSound()`).
+- No mobile *layout* changes — only badge counts and the new section row, per the explicit request for an alert in the mobile app.
+
+### 3d. Admin desktop + admin mobile login
+- New realtime subscription on `admin_alerts` filtered to `type = 'enquiry'`.
+- Bell in `AdminHeader` (shared between desktop and mobile admin) with unread count, popover listing recent enquiries (source · instructor · postcode · "Open").
+- Toast on receipt while admin is logged in.
+- New admin dashboard widget: **"Unrouted / failed enquiries (24h)"** — counts `admin_alerts` rows where `metadata.email_sent = false`, so the next failure is visible immediately.
+
+---
+
+## Technical details
+
+- Trigger: SECURITY DEFINER, `search_path = public`, idempotent on `(source_table, source_id)`.
+- `admin_alerts` and `instructor_notifications` added to `supabase_realtime` publication if not already present.
+- Confirm `service_role` INSERT grants on both tables.
+- Push uses existing `PushDataType.JOB_OFFER` — no new client enums.
+
+---
+
+## Order of execution
+
+```text
+1. User adds DNS for notify.everydriver.co.uk  ← BLOCKING
+2. Verify domain, set FROM_EMAIL / ADMIN_ENQUIRY_EMAIL constants
+3. Rebrand 7 edge functions, redeploy
+4. Migration: fan_out_enquiry_alert + triggers + realtime publication
+5. Frontend: instructor bell badge + Job Alerts section,
+   admin bell + unrouted-enquiries widget
+6. End-to-end test: submit a test enquiry to a real instructor, confirm
+   (a) admin_alerts row, (b) instructor_notifications row,
+   (c) push received, (d) admin bell increments, (e) email delivered
+```
+
+Joseph Lewis merge can be picked up later as a one-off data fix.

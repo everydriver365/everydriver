@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Bell, Mail, MessageCircle, Headphones, Shield, CreditCard } from "lucide-react";
+import { Bell, Mail, MessageCircle, Headphones, Shield, CreditCard, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface AdminNotificationBellProps {
   onNavigate: (section: string) => void;
@@ -18,6 +19,7 @@ interface AdminNotificationBellProps {
 interface Counts {
   emails: number;
   enquiries: number;
+  jobAlerts: number;
   instructorMessages: number;
   liveChats: number;
   pendingPayouts: number;
@@ -25,21 +27,23 @@ interface Counts {
 
 export function AdminNotificationBell({ onNavigate }: AdminNotificationBellProps) {
   const [counts, setCounts] = useState<Counts>({
-    emails: 0, enquiries: 0, instructorMessages: 0, liveChats: 0, pendingPayouts: 0,
+    emails: 0, enquiries: 0, jobAlerts: 0, instructorMessages: 0, liveChats: 0, pendingPayouts: 0,
   });
 
   const fetchCounts = useCallback(async () => {
     try {
-      const [instructorUnreadRes, bespokeRes, callbackRes, payoutsRes] = await Promise.all([
+      const [instructorUnreadRes, bespokeRes, callbackRes, payoutsRes, jobAlertsRes] = await Promise.all([
         supabase.from("admin_messages").select("id", { count: "exact", head: true }).eq("sender_type", "instructor").is("read_at", null),
         supabase.from("course_enquiries").select("id", { count: "exact", head: true }).eq("status", "pending").not("course_type", "in", '("callback","general")'),
         supabase.from("course_enquiries").select("id", { count: "exact", head: true }).eq("status", "pending").in("course_type", ["callback", "general"]),
         supabase.from("payment_history").select("id", { count: "exact", head: true }).eq("payout_status", "pending").is("deleted_at", null),
+        supabase.from("admin_alerts").select("id", { count: "exact", head: true }).eq("alert_type", "enquiry").eq("is_read", false),
       ]);
 
       setCounts({
         emails: 0,
         enquiries: (bespokeRes.count || 0) + (callbackRes.count || 0),
+        jobAlerts: jobAlertsRes.count || 0,
         instructorMessages: instructorUnreadRes.count || 0,
         liveChats: 0,
         pendingPayouts: payoutsRes.count || 0,
@@ -56,13 +60,22 @@ export function AdminNotificationBell({ onNavigate }: AdminNotificationBellProps
       .on("postgres_changes", { event: "*", schema: "public", table: "admin_messages" }, fetchCounts)
       .on("postgres_changes", { event: "*", schema: "public", table: "course_enquiries" }, fetchCounts)
       .on("postgres_changes", { event: "*", schema: "public", table: "payment_history" }, fetchCounts)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "admin_alerts", filter: "alert_type=eq.enquiry" }, (payload) => {
+        fetchCounts();
+        const meta = (payload.new as { metadata?: { pupil_name?: string; postcode?: string; source?: string } })?.metadata ?? {};
+        toast({
+          title: "New Job Alert",
+          description: `${meta.pupil_name ?? "New enquiry"}${meta.postcode ? ` · ${meta.postcode}` : ""}${meta.source ? ` · ${meta.source}` : ""}`,
+        });
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [fetchCounts]);
 
-  const total = counts.emails + counts.enquiries + counts.instructorMessages + counts.liveChats + counts.pendingPayouts;
+  const total = counts.emails + counts.enquiries + counts.jobAlerts + counts.instructorMessages + counts.liveChats + counts.pendingPayouts;
 
   const items = [
+    { label: "Job Alerts", icon: Briefcase, count: counts.jobAlerts, section: "enquiries" },
     { label: "Enquiries", icon: MessageCircle, count: counts.enquiries, section: "enquiries" },
     { label: "Instructor Support", icon: Shield, count: counts.instructorMessages, section: "instructor-messages" },
     { label: "Visitor Chats", icon: Headphones, count: counts.liveChats, section: "live-chat" },
@@ -97,7 +110,7 @@ export function AdminNotificationBell({ onNavigate }: AdminNotificationBellProps
         </div>
         {items.filter(i => i.count > 0).map((item) => (
           <DropdownMenuItem
-            key={item.section}
+            key={item.label}
             onClick={() => onNavigate(item.section)}
             className="cursor-pointer flex items-center gap-3 py-2.5"
           >
@@ -123,3 +136,4 @@ export function AdminNotificationBell({ onNavigate }: AdminNotificationBellProps
     </DropdownMenu>
   );
 }
+
