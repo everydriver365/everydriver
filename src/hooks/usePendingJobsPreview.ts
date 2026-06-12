@@ -30,17 +30,52 @@ export function usePendingJobsPreview(instructorId: string | undefined) {
   return useQuery({
     queryKey: ["pending-jobs-preview", instructorId],
     queryFn: async (): Promise<JobPreview | null> => {
-      // Fetch first pending job offer
-      const { data: enquiry, error } = await supabase
-        .from("course_enquiries")
-        .select("id, course_type, requested_hours, created_at")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Most recent pending job from either pool (course_enquiries) or
+      // direct mini-site enquiry (booking_enquiries, RLS-scoped to me).
+      const [poolRes, directRes] = await Promise.all([
+        supabase
+          .from("course_enquiries")
+          .select("id, course_type, requested_hours, created_at")
+          .eq("status", "pending")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("booking_enquiries")
+          .select("id, course_name, course_hours, created_at")
+          .eq("status", "new")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
 
-      if (error) throw error;
+      if (poolRes.error) throw poolRes.error;
+      if (directRes.error) throw directRes.error;
+
+      const pool = poolRes.data
+        ? {
+            id: poolRes.data.id,
+            course_type: poolRes.data.course_type,
+            requested_hours: poolRes.data.requested_hours,
+            created_at: poolRes.data.created_at,
+          }
+        : null;
+      const direct = directRes.data
+        ? {
+            id: directRes.data.id,
+            course_type: directRes.data.course_name || "Direct enquiry",
+            requested_hours: directRes.data.course_hours != null ? Number(directRes.data.course_hours) : null,
+            created_at: directRes.data.created_at,
+          }
+        : null;
+
+      const enquiry =
+        pool && direct
+          ? (new Date(pool.created_at).getTime() >= new Date(direct.created_at).getTime() ? pool : direct)
+          : (pool ?? direct);
       if (!enquiry) return null;
+
+
 
       // Fetch instructor's hourly rate for payment calculation
       let hourlyRate = 35; // Default
