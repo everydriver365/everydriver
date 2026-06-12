@@ -27,7 +27,11 @@ interface JobEnquiry {
   additional_notes: string | null;
   created_at: string;
   status: string;
+  source: "course_enquiry" | "booking_enquiry";
+  pupil_email?: string | null;
+  pupil_phone?: string | null;
 }
+
 
 export default function InstructorJobs() {
   const { instructor: authInstructor } = useInstructorAuth();
@@ -153,14 +157,58 @@ export default function InstructorJobs() {
 
   const fetchJobs = async () => {
     try {
-      const { data, error } = await supabase
-        .from("course_enquiries")
-        .select("*")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
+      const [poolRes, directRes] = await Promise.all([
+        supabase
+          .from("course_enquiries")
+          .select("*")
+          .eq("status", "pending")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("booking_enquiries")
+          .select("id, pupil_name, pupil_postcode, pupil_email, pupil_phone, course_name, course_hours, message, created_at, status")
+          .eq("status", "new")
+          .order("created_at", { ascending: false }),
+      ]);
 
-      if (error) throw error;
-      setJobs(data || []);
+      if (poolRes.error) throw poolRes.error;
+      if (directRes.error) throw directRes.error;
+
+      const pool: JobEnquiry[] = (poolRes.data ?? []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        postcode: r.postcode,
+        address: r.address,
+        course_type: r.course_type,
+        preferred_timing: r.preferred_timing,
+        requested_hours: r.requested_hours,
+        additional_notes: r.additional_notes,
+        created_at: r.created_at,
+        status: r.status,
+        source: "course_enquiry",
+        pupil_email: r.email ?? null,
+        pupil_phone: r.phone ?? null,
+      }));
+
+      const direct: JobEnquiry[] = (directRes.data ?? []).map((r: any) => ({
+        id: r.id,
+        name: r.pupil_name,
+        postcode: r.pupil_postcode ?? "",
+        address: r.pupil_postcode ?? "",
+        course_type: r.course_name || "Direct enquiry",
+        preferred_timing: "Flexible",
+        requested_hours: r.course_hours != null ? Number(r.course_hours) : null,
+        additional_notes: r.message ?? null,
+        created_at: r.created_at,
+        status: r.status,
+        source: "booking_enquiry",
+        pupil_email: r.pupil_email ?? null,
+        pupil_phone: r.pupil_phone ?? null,
+      }));
+
+      const merged = [...pool, ...direct].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+      setJobs(merged);
     } catch (error) {
       console.error("Error fetching jobs:", error);
     } finally {
@@ -172,35 +220,55 @@ export default function InstructorJobs() {
     if (!instructorId) return;
     setProcessing(true);
     try {
-      // Update the enquiry status
-      const { error: enquiryError } = await supabase
-        .from("course_enquiries")
-        .update({ 
-          status: "accepted",
-          assigned_instructor_id: instructorId 
-        })
-        .eq("id", job.id);
+      if (job.source === "course_enquiry") {
+        const { error: enquiryError } = await supabase
+          .from("course_enquiries")
+          .update({ status: "accepted", assigned_instructor_id: instructorId })
+          .eq("id", job.id);
+        if (enquiryError) throw enquiryError;
 
-      if (enquiryError) throw enquiryError;
+        const { error: pupilError } = await supabase
+          .from("pupils")
+          .insert({
+            instructor_id: instructorId,
+            name: job.name,
+            address: job.address,
+            postcode: job.postcode,
+            course_type: job.course_type,
+            prepaid_hours: job.requested_hours || 10,
+            enquiry_id: job.id,
+            notes: job.additional_notes || undefined,
+          });
+        if (pupilError) throw pupilError;
+      } else {
+        // Direct mini-site enquiry — already tied to this instructor.
+        const { data: newPupil, error: pupilError } = await supabase
+          .from("pupils")
+          .insert({
+            instructor_id: instructorId,
+            name: job.name,
+            postcode: job.postcode || undefined,
+            email: job.pupil_email || undefined,
+            phone: job.pupil_phone || undefined,
+            notes: job.additional_notes || undefined,
+          })
+          .select("id")
+          .single();
+        if (pupilError) throw pupilError;
 
-      // Create a new pupil from this enquiry
-      const { error: pupilError } = await supabase
-        .from("pupils")
-        .insert({
-          instructor_id: instructorId,
-          name: job.name,
-          address: job.address,
-          postcode: job.postcode,
-          course_type: job.course_type,
-          prepaid_hours: job.requested_hours || 10,
-          enquiry_id: job.id,
-          notes: job.additional_notes || undefined
-        });
+        const { error: enquiryError } = await supabase
+          .from("booking_enquiries")
+          .update({
+            status: "accepted",
+            contacted_at: new Date().toISOString(),
+            converted_pupil_id: newPupil?.id ?? null,
+          })
+          .eq("id", job.id);
+        if (enquiryError) throw enquiryError;
+      }
 
-      if (pupilError) throw pupilError;
-      
       toast.success("Job accepted! Pupil added to your list.");
-      setJobs(jobs.filter(j => j.id !== job.id));
+      setJobs(jobs.filter((j) => j.id !== job.id));
       setSelectedJob(null);
     } catch (error) {
       console.error("Error accepting job:", error);
@@ -213,15 +281,16 @@ export default function InstructorJobs() {
   const handleDeclineJob = async (job: JobEnquiry) => {
     setProcessing(true);
     try {
+      const table = job.source === "course_enquiry" ? "course_enquiries" : "booking_enquiries";
       const { error } = await supabase
-        .from("course_enquiries")
+        .from(table)
         .update({ status: "declined" })
         .eq("id", job.id);
 
       if (error) throw error;
-      
+
       toast.success("Job declined");
-      setJobs(jobs.filter(j => j.id !== job.id));
+      setJobs(jobs.filter((j) => j.id !== job.id));
       setSelectedJob(null);
     } catch (error) {
       console.error("Error declining job:", error);
@@ -230,6 +299,7 @@ export default function InstructorJobs() {
       setProcessing(false);
     }
   };
+
 
   // Calculate earnings based on instructor rate
   const calculateEarnings = (hours: number) => {
