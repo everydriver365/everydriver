@@ -1,47 +1,51 @@
-Update the desktop homepage hero search block in `src/components/home/Drive365Home.tsx` and the shared `src/components/home/PostcodeSearch.tsx` to match the provided brand spec.
+## Problem
 
-### Scope
-Only the desktop hero/welcome section and its search row. Mobile homepage (`MobileHomepage`) and all downstream sections remain untouched.
+On the published site you press **Log in** and the form just sits there / resets — you never reach a portal. The Supabase auth logs show the sign-in actually **succeeds** (200 on `/token`), so the credentials and backend are fine. The failure is happening **after** sign-in, on the client.
 
-### Changes
+## Likely root cause
 
-1. **Hero container (`Drive365Home.tsx`)**
-   - Change `.d365-welcome` background from `#EAF0FF` to `#E8EEFB`.
-   - Add border `1.5px solid #d6e0f5` and `border-radius: 20px`.
-   - Update padding to `2.75rem 2rem` (approx 44px 32px).
-   - Set `max-width: 760px` and centre the container.
-   - Ensure `font-family: 'Poppins', sans-serif` is applied.
+In `src/pages/UnifiedLogin.tsx` there's a name collision:
 
-2. **Eyebrow label**
-   - Keep text "Find your instructor".
-   - Style: `12px`, bold, uppercase, `letter-spacing: 0.14em`, colour `#D12E2E`.
+```ts
+import { setRememberMe } from "@/lib/sessionPersistence";   // helper
+...
+const [rememberMe, setRememberMe] = useState(false);        // ← shadows the import
+...
+setRememberMe(rememberMe);  // calls the React state setter, NOT the persistence helper
+navigate("/auth/redirect", { replace: true });
+```
 
-3. **Headline**
-   - Keep text "See who's teaching you before you book."
-   - Style: `38px`, `font-weight: 800`, colour `#0F2044`, `line-height: 1.2`.
-   - Responsive: scale down to `~28px` under `520px` viewport width.
+Two consequences:
 
-4. **Subtext**
-   - Keep text "Every instructor verified. Real reviews. Real pass rates. You choose who teaches you. All bookings backed by us."
-   - Style: `15px`, grey `#666`, `line-height: 1.7`, `max-width: 520px`, centred.
-   - Make the phrase "All bookings backed by us." bold and navy `#0F2044`.
+1. The persistence helper never runs, so the "Remember me" preference isn't stored. `enforceRememberMeOnBoot()` then runs on the next page and, if the in-tab `sessionStorage` sentinel isn't seen (which can happen on the published custom domain because of cross-host nav from `everydriver.co.uk` ↔ Lovable origins, hard reload, or a wrapped app context), calls `supabase.auth.signOut({scope:"local"})`, wiping the session you just created. Result: you land on `/auth/redirect`, `getUser()` returns null, and `RoleRedirect` bounces you back to `/`.
+2. Even when it doesn't sign you out, the spinner state can read stale because the setter is being mis-used.
 
-5. **Search row (`PostcodeSearch.tsx`)**
-   - Flex row with `gap: 10px`, `max-width: 560px`.
-   - Stacks vertically under `520px`.
-   - **Input:** white `#fff` background, border `1.5px solid #d6e0f5`, `border-radius: 10px`, padding `14px 16px`, `14px Poppins`, placeholder "Find driving instructors near you", focus border turns blue `#0070C0`.
-   - **Button:** background `#D12E2E`, white text, `border-radius: 10px`, padding `14px 28px`, `14px bold uppercase "SEARCH"` with `Search` icon, `letter-spacing: 0.04em`, hover `#b52626`.
-   - Remove the current sharp-cornered input/button split styling.
+The dev preview "works" because the iframe keeps the sentinel alive across the same tab/session, masking the bug.
 
-6. **Pay-later row**
-   - Text "Book now, pay later with" — `12px`, `#888`.
-   - Two pill badges inline:
-     - "Klarna" — background `#FFB3C7`, navy text `#17120F`, `11px` bold, `border-radius: 6px`, padding `4px 10px`.
-     - "Clearpay" — background `#B2FCE4`, navy text `#000E18`, `11px` bold, `border-radius: 6px`, padding `4px 10px`.
-   - Use Poppins font for the pills.
+## Fix
 
-### Technical notes
-- `PostcodeSearch.tsx` is only consumed by `Drive365Home.tsx`, so global changes there are safe.
-- Keep the existing postcode validation and `useTypewriter` hook behaviour.
-- Keep the existing `navigate(`/courses?postcode=${encodeURIComponent(v)}`)` logic.
-- Do not modify mobile layout rules in `Drive365Home.tsx` or `MobileHomepage`.
+1. **Rename the local state** in `UnifiedLogin.tsx` so it stops shadowing the import:
+   - `useState(false)` → `[rememberChecked, setRememberChecked]`
+   - Toggle handler and switch markup updated to the new names
+   - Call the imported `setRememberMe(rememberChecked)` **before** navigating
+
+2. **Persist *before* navigate** (and `await` nothing that could race): same line, just with the right function bound.
+
+3. **Add a one-shot diagnostic log** (kept lightweight, wrapped in `try/catch`) inside the login `handleLogin` and at the top of `RoleRedirect` so that if anything else is wrong on your custom domain we can see it in the published console without another round-trip:
+   - log whether `signInWithPassword` returned a session
+   - log whether `getUser()` resolves to a user on `/auth/redirect`
+
+4. **No other files changed.** The route table, `RoleRedirect`, and `enforceRememberMeOnBoot` logic are correct — only `UnifiedLogin.tsx` is buggy.
+
+## Verification
+
+After publishing the fix:
+- Hard refresh `everydriver.co.uk/login`, log in with your credentials
+- Expected: you land on `/instructor` (your account's primary role) within ~1s
+- If it still fails, the new console probes will tell us exactly which step (sign-in, getUser, user_roles query) is failing and I'll address that next.
+
+## Out of scope
+
+- No design changes to the login page
+- No changes to other login pages (`Drive365Login`, `InstructorPortalLogin`, `AdminLogin`) — they don't have this shadow bug
+- No backend / RLS changes
