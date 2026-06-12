@@ -1,49 +1,56 @@
-## What we know
+## Diagnosis
 
-- TestFlight (Despia WebView): white screen after splash, no login.
-- Safari on the same phone, same URL: works fine.
-- We already shipped the boot probe (`src/lib/bootProbe.ts`), but you're seeing **nothing** — no green-on-black text top-left.
+The app renders correctly in the preview/Safari path, so the React page is not globally broken.
 
-A blank white screen with **no probe text at all** means one of three things, in order of likelihood:
+The TestFlight symptom — splash screen disappears, then a blank white WebView — matches Despia’s documented failure mode for apps using PWA/service-worker caching. This project currently has two service-worker paths:
 
-1. **The JS bundle never executes.** Despia is showing `everydriver.co.uk` but something (CSP header, wrong target URL, SW from a previous PWA visit hijacking the response) stops `index-*.js` from running. The probe code never runs, so nothing appears.
-2. **`detectNativeWrapper()` returns false inside Despia**, so the probe self-disables. The current detector relies on `window.Despia` / UA containing "Despia" / iOS-without-Safari. Despia's WKWebView UA on some iOS versions *does* include "Safari", which would defeat heuristic #3 — and if Despia doesn't inject `window.Despia`, the probe gives up silently.
-3. The probe runs but React throws before mount and the error overlay is being painted under the splash (less likely — Despia dismisses splash on first paint).
+- `vite-plugin-pwa` in `vite.config.ts`, using Workbox, auto-update, `clientsClaim`, navigation fallback, and cached JS/CSS/HTML.
+- Manual push-notification service worker registration via `/sw.js`.
+
+That combination is risky inside a Despia/WKWebView wrapper because the WebView can keep serving stale/broken cached `index.html` or asset responses before React ever gets a chance to clear caches.
 
 ## Plan
 
-### Step 1 — Make the boot probe unconditional (one small file change)
+### 1. Disable Workbox/PWA service-worker generation
 
-Change `src/lib/bootProbe.ts` so it **always installs** on any device (not gated by `detectNativeWrapper()`), but keeps auto-hiding 4s after React mounts so regular browser users still don't see it in production. This rules out cause #2 completely and guarantees we get diagnostic text on screen in TestFlight.
+Remove `VitePWA(...)` from `vite.config.ts` and remove the `vite-plugin-pwa` import.
 
-Also: render the probe immediately at the very top of `<body>` by injecting the `<div id="__boot_probe">` straight into `index.html` (a static HTML node, not JS-created) so it's visible **even if the JS bundle never runs**. Then `bootProbeLog()` just appends text to that pre-existing node. If JS never starts, you'll see the static "waiting for JS…" placeholder text — which proves cause #1.
+Why: Despia’s own docs call PWA build plugins the #1 cause of OTA update/blank-screen problems. This app does not need Workbox navigation caching for TestFlight, and push notifications already use the separate `/sw.js` worker.
 
-### Step 2 — Add a one-shot "I'm alive" beacon to `index.html`
+### 2. Keep the manual push worker, but prevent it from hijacking pages/assets
 
-Inline a tiny `<script>` in `index.html` (before the module script) that writes `HTML loaded @ <time>` into the probe div. This runs **before** any module — if you see only this line and nothing else, the module bundle is being blocked by CSP / SW / network. If you don't even see this line, Despia isn't loading `everydriver.co.uk` at all (target-URL misconfig in Despia dashboard).
+Update `public/sw.js` so it remains push-only:
 
-### Step 3 — Republish and reinstall
+- No `clients.claim()` during activate.
+- No fetch handler.
+- No page/navigation caching.
 
-1. I publish.
-2. You **delete the EveryDriver TestFlight app from the iPhone** and reinstall it from TestFlight. (Deleting is required to wipe the WKWebView storage / any SW left over from a prior PWA install — without this, Despia may keep loading the broken cached bundle.)
-3. Open the app and screenshot the top-left text.
+Why: this lets browser push continue to work where supported, without letting the worker control app startup in WKWebView.
 
-### Step 4 — Apply the matching fix
+### 3. Move the WebView cache wipe to the earliest safe point
 
-Based on what the screenshot shows:
+Update `src/main.tsx` so when `detectNativeWrapper()` is true:
 
-- **Only "HTML loaded" appears** → CSP on SiteGround is blocking `/assets/*.js`, OR a leftover service worker is intercepting. Fix in code: have the wrapper-only branch in `main.tsx` run the SW + Cache Storage wipe **before** anything else, including before `installBundleRefresh()`, and skip `installBundleRefresh()` entirely under the wrapper (Despia auto-pulls latest on cold start, so the hash-check loop is unsafe and redundant there). I'll also list the exact SiteGround response-header to relax if CSP is the cause — that's a hosting change, not a code change.
-- **"HTML loaded" + "JS started" + an ERROR line** → I'll fix the specific failing call (commonly a missing polyfill: `crypto.randomUUID`, `structuredClone`, or top-level `localStorage` access in private mode).
-- **"React mounted" appears but screen still white** → React is up but a route guard is rendering nothing for the unauthenticated state in the wrapper. I'll fix the wrapper-specific render path.
-- **Nothing appears at all** → Despia's "Target URL" setting is wrong (probably still pointing at the Lovable preview URL or `http://` instead of `https://`). Not a code fix — I'll give you the exact Despia setting to change.
+- unregister service workers and delete Cache Storage immediately after imports resolve;
+- skip `installBundleRefresh()` entirely in the wrapper;
+- keep `installBundleRefresh()` for regular browsers/PWAs only if needed.
 
-## Out of scope
+Why: the current code installs bundle refresh before the wrapper cache wipe, which can contribute to reload loops or stale-bundle checks inside Despia.
 
-- No changes to the instructor auth flow (Safari proves it works).
-- No mobile UI / styling changes.
-- No Capacitor config changes (Despia doesn't use `capacitor.config.ts`).
+### 4. Keep the visible boot probe temporarily
 
-## What I need from you
+Leave the HTML/JS boot probe in place for this next TestFlight check.
 
-1. Approve this plan.
-2. After I ship, **delete the app from the iPhone**, then reinstall from TestFlight and screenshot the top-left text on launch.
+Expected result after publish + deleting/reinstalling the TestFlight app:
+
+- If the app opens normally, we then remove the diagnostic probe in a follow-up cleanup.
+- If it still whitescreens, the probe should now show whether Despia loaded HTML, module JS, or React.
+
+## After implementation
+
+You’ll need to:
+
+1. Publish/update the frontend.
+2. Delete the TestFlight app from the iPhone.
+3. Reinstall from TestFlight.
+4. Open it and confirm whether the login/home screen appears, or send the boot-probe text if it still blanks.

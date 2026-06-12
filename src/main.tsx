@@ -25,19 +25,14 @@ bootProbeLog("imports resolved");
 // Honour the "Remember me" choice before any auth-gated UI mounts.
 void enforceRememberMeOnBoot();
 
-// Wire cache-busting: re-check the bundle hash on app resume / tab visible
-// without registering a second global auth listener.
-installBundleRefresh();
-
-if (import.meta.env.DEV) {
-  installQueryBudget();
-}
+const __isWrapper = typeof window !== "undefined" && detectNativeWrapper();
 
 // When the app is loaded inside a native wrapper (Despia / Capacitor / WebView)
-// unregister any service workers AND clear Cache Storage so cached assets from
-// a previous browser/PWA visit don't pin the wrapper to a stale bundle.
+// unregister any service workers AND clear Cache Storage FIRST — before any
+// bundle-refresh logic runs — so cached assets from a previous browser/PWA
+// visit don't pin the wrapper to a stale bundle or hijack page navigations.
 // Native push and asset delivery are handled by the wrapper itself.
-if (typeof window !== "undefined" && detectNativeWrapper()) {
+if (__isWrapper) {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.getRegistrations().then((regs) => {
       regs.forEach((r) => r.unregister().catch(() => {}));
@@ -48,8 +43,6 @@ if (typeof window !== "undefined" && detectNativeWrapper()) {
       keys.forEach((k) => caches.delete(k).catch(() => {}));
     }).catch(() => {});
   }
-  // Expose build time for in-app diagnostics — check `window.__BUILD_TIME__`
-  // in the WebView console to confirm which bundle is actually running.
   try {
     (window as unknown as { __BUILD_TIME__?: string }).__BUILD_TIME__ =
       typeof __BUILD_TIME__ === "string" ? __BUILD_TIME__ : undefined;
@@ -58,6 +51,18 @@ if (typeof window !== "undefined" && detectNativeWrapper()) {
   } catch {
     /* ignore */
   }
+}
+
+// Wire cache-busting only in browsers / PWAs. Despia auto-pulls the latest
+// published bundle on cold start, so the in-app hash-check + hard-reload loop
+// is both redundant and unsafe inside the WebView (likely cause of the
+// TestFlight white screen after splash).
+if (!__isWrapper) {
+  installBundleRefresh();
+}
+
+if (import.meta.env.DEV) {
+  installQueryBudget();
 }
 
 // Configure native status bar to match the page background instead of black.
