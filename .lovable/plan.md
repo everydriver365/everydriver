@@ -1,56 +1,37 @@
 ## Diagnosis
 
-The app renders correctly in the preview/Safari path, so the React page is not globally broken.
+Emails are not failing because DNS is missing. The domain check shows `notify.everydriver.co.uk` is verified and ready.
 
-The TestFlight symptom — splash screen disappears, then a blank white WebView — matches Despia’s documented failure mode for apps using PWA/service-worker caching. This project currently has two service-worker paths:
+The failure in the email log is:
 
-- `vite-plugin-pwa` in `vite.config.ts`, using Workbox, auto-update, `clientsClaim`, navigation fallback, and cached JS/CSS/HTML.
-- Manual push-notification service worker registration via `/sw.js`.
+```text
+403 no_matching_sender: No sender domain matches the requested sender domain
+```
 
-That combination is risky inside a Despia/WKWebView wrapper because the WebView can keep serving stale/broken cached `index.html` or asset responses before React ever gets a chance to clear caches.
+Recent email attempts are reaching the queue, then ending in `dlq` after retries. The queued email payload is using `notify.everydriver.co.uk`, but the workspace/project email configuration currently reports the project as configured to use `everydriver.co.uk`. That mismatch is why the sender lookup rejects the send.
+
+I also found that `auth-email-hook` is not present in the codebase, so custom auth email templates have not actually been scaffolded/deployed yet.
 
 ## Plan
 
-### 1. Disable Workbox/PWA service-worker generation
+1. Reconcile the email sender configuration
+   - Re-run the managed email infrastructure setup so the project sender config, queue worker, and backend secrets are refreshed against the currently verified EveryDriver email domain.
+   - Confirm the configured sender domain matches what the app email function uses.
 
-Remove `VitePWA(...)` from `vite.config.ts` and remove the `vite-plugin-pwa` import.
+2. Set up auth email templates properly
+   - Scaffold the managed auth email templates for signup confirmation, password reset, magic link, invite, email change, and re-authentication.
+   - Apply EveryDriver branding to the generated templates.
+   - Deploy the auth email hook.
 
-Why: Despia’s own docs call PWA build plugins the #1 cause of OTA update/blank-screen problems. This app does not need Workbox navigation caching for TestFlight, and push notifications already use the separate `/sw.js` worker.
+3. Fix app email sender mismatch if still present
+   - If the scaffold/config still points app emails at the wrong domain, update the app email sender configuration to use the verified sender domain consistently.
+   - Deploy the affected email functions.
 
-### 2. Keep the manual push worker, but prevent it from hijacking pages/assets
+4. Validate with live evidence
+   - Send or trigger a single test email.
+   - Check the email log for a latest deduplicated `sent` row rather than `dlq`.
+   - Check queue/function logs for any remaining rejection.
 
-Update `public/sw.js` so it remains push-only:
+## Expected result
 
-- No `clients.claim()` during activate.
-- No fetch handler.
-- No page/navigation caching.
-
-Why: this lets browser push continue to work where supported, without letting the worker control app startup in WKWebView.
-
-### 3. Move the WebView cache wipe to the earliest safe point
-
-Update `src/main.tsx` so when `detectNativeWrapper()` is true:
-
-- unregister service workers and delete Cache Storage immediately after imports resolve;
-- skip `installBundleRefresh()` entirely in the wrapper;
-- keep `installBundleRefresh()` for regular browsers/PWAs only if needed.
-
-Why: the current code installs bundle refresh before the wrapper cache wipe, which can contribute to reload loops or stale-bundle checks inside Despia.
-
-### 4. Keep the visible boot probe temporarily
-
-Leave the HTML/JS boot probe in place for this next TestFlight check.
-
-Expected result after publish + deleting/reinstalling the TestFlight app:
-
-- If the app opens normally, we then remove the diagnostic probe in a follow-up cleanup.
-- If it still whitescreens, the probe should now show whether Despia loaded HTML, module JS, or React.
-
-## After implementation
-
-You’ll need to:
-
-1. Publish/update the frontend.
-2. Delete the TestFlight app from the iPhone.
-3. Reinstall from TestFlight.
-4. Open it and confirm whether the login/home screen appears, or send the boot-probe text if it still blanks.
+Auth emails and app emails should send through EveryDriver once the sender domain used by the queued payload matches the verified domain in the backend email configuration.
