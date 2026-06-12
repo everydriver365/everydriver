@@ -19,7 +19,7 @@ serve(async (req) => {
     const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    // Email sending uses sendBrandedEmail (Lovable Emails).
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const today = new Date();
