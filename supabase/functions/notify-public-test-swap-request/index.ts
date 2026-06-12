@@ -11,8 +11,8 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM = "EveryDriver Test Swap <noreply@drive365.co.uk>";
-const ADMIN_BCC = Deno.env.get("ADMIN_ENQUIRY_EMAIL") || "enquiries@drive365.co.uk";
+const FROM = "EveryDriver Test Swap <noreply@notify.everydriver.co.uk>";
+const ADMIN_BCC = Deno.env.get("ADMIN_ENQUIRY_EMAIL") || "enquiries@everydriver.co.uk";
 
 const D365_PRIMARY = "#142040";
 const D365_ACCENT = "#2B7BC8";
