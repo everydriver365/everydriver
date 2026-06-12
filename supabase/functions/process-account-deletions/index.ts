@@ -288,11 +288,18 @@ async function processOne(
     const instructorEmail = await aesDecryptEmail(row.contact_email_encrypted, emailKey);
     if (instructorEmail) {
       try {
-        await sendEmail(
-          instructorEmail,
-          "Your account has been permanently deleted",
-          renderInstructorPurgeEmail(),
-        );
+        await sendBrandedEmail({
+          to: instructorEmail,
+          subject: "Your account has been permanently deleted",
+          heading: "Your account has been permanently deleted",
+          intro: `Your ${APP_NAME} instructor account and personal data have been permanently deleted as requested.`,
+          paragraphs: [
+            "What was deleted:\n• Your login and account profile\n• Your pupils, lesson schedule, calendar, and operational data\n• Linked accounts with Google, Square, GoCardless and other providers",
+            "What was retained:\n• Anonymised financial records (payments, invoices, MTD submissions) retained for 6 years as required by HMRC\n• A non-identifying audit log entry confirming the deletion was completed",
+            `Questions? Contact ${SUPPORT_EMAIL}.`,
+          ],
+          idempotencyKey: `acct-del-done-${row.id}`,
+        }, admin);
       } catch (e) {
         console.error("[process-account-deletions] instructor email failed:", e);
       }
@@ -306,12 +313,23 @@ async function processOne(
       const { data: u } = await admin.auth.admin.getUserById(pupilAuthId);
       const pupilEmail = u?.user?.email;
       if (pupilEmail) {
-        await sendEmail(pupilEmail, "Your driving lesson data has been deleted", renderPupilPurgeEmail());
+        await sendBrandedEmail({
+          to: pupilEmail,
+          subject: "Your driving lesson data has been deleted",
+          heading: "Your driving lesson data has been deleted",
+          intro: `Your driving instructor has closed their ${APP_NAME} account, and your lesson, scheduling, and progress data linked to them has been removed.`,
+          paragraphs: [
+            `Your ${APP_NAME} login (if you have one) is unaffected — you can still sign in and use the app with any other instructor.`,
+            `Questions? Contact ${SUPPORT_EMAIL}.`,
+          ],
+          idempotencyKey: `acct-del-pupil-${row.id}-${pupilAuthId}`,
+        }, admin);
       }
     } catch (e) {
       console.error("[process-account-deletions] pupil email failed:", e);
     }
   }
+
 
   return { ok: true };
 }
