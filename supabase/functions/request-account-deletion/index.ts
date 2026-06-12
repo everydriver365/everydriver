@@ -4,6 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +13,7 @@ const corsHeaders = {
 };
 
 const APP_NAME = "EveryDriver";
-const FROM_ADDRESS = "EveryDriver <info@everydriver.co.uk>";
+
 const GRACE_DAYS = 30;
 
 // ---------- crypto helpers ----------
@@ -53,63 +54,8 @@ async function signCancelJwt(payload: Record<string, unknown>, secret: string): 
   return `${unsigned}.${b64urlEncode(sig)}`;
 }
 
-// ---------- email helpers ----------
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-}
+// Email sending now uses the unified sendBrandedEmail helper below.
 
-function renderEmailHtml(opts: {
-  scheduledDate: string;
-  cancelUrl: string;
-}): string {
-  return `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1a1a1a;">
-  <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #dc2626;">
-    <h1 style="color: #1a1a1a; font-size: 22px; margin: 0;">Account deletion requested</h1>
-    <p style="color: #666; font-size: 13px; margin: 8px 0 0;">${APP_NAME}</p>
-  </div>
-  <div style="padding: 24px 0;">
-    <p style="font-size: 15px;">We've received a request to delete your ${APP_NAME} instructor account.</p>
-    <p style="font-size: 15px;">Your account is scheduled for permanent deletion on <strong>${escapeHtml(opts.scheduledDate)}</strong>.</p>
-    <h3 style="font-size: 16px; margin: 24px 0 8px;">What will be deleted</h3>
-    <ul style="font-size: 14px; color: #444; line-height: 1.6;">
-      <li>Your account and all lesson, pupil, and scheduling data</li>
-    </ul>
-    <h3 style="font-size: 16px; margin: 20px 0 8px;">What will be retained</h3>
-    <ul style="font-size: 14px; color: #444; line-height: 1.6;">
-      <li>Financial records (payments, invoices) — anonymised and retained for 6 years as required by HMRC</li>
-    </ul>
-    <div style="text-align: center; margin: 32px 0;">
-      <a href="${escapeHtml(opts.cancelUrl)}"
-         style="display: inline-block; background: #dc2626; color: #fff; padding: 14px 28px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 15px;">
-        Cancel deletion
-      </a>
-    </div>
-    <p style="font-size: 13px; color: #666;">You have <strong>30 days</strong> to cancel this request. After ${escapeHtml(opts.scheduledDate)}, this cannot be undone.</p>
-    <p style="font-size: 13px; color: #666;">If you didn't request this, click the cancel link above immediately and contact support.</p>
-  </div>
-  <div style="border-top: 1px solid #eee; padding-top: 16px; font-size: 12px; color: #999; text-align: center;">
-    ${APP_NAME}
-  </div>
-</div>`;
-}
-
-async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-  if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
-  const resp = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from: FROM_ADDRESS, to: [to], subject, html }),
-  });
-  if (!resp.ok) {
-    const txt = await resp.text();
-    throw new Error(`Resend send failed: ${resp.status} ${txt}`);
-  }
-}
 
 // ---------- handler ----------
 serve(async (req) => {
@@ -302,19 +248,27 @@ serve(async (req) => {
     // T+0 confirmation email
     try {
       const scheduledDate = purgeAt.toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
+        day: "numeric", month: "long", year: "numeric",
       });
-      await sendEmail(
-        contactEmail,
-        "Account deletion requested — you have 30 days to cancel",
-        renderEmailHtml({ scheduledDate, cancelUrl }),
-      );
+      await sendBrandedEmail({
+        to: contactEmail,
+        subject: "Account deletion requested — you have 30 days to cancel",
+        heading: "Account deletion requested",
+        intro: `We've received a request to delete your ${APP_NAME} instructor account. Your account is scheduled for permanent deletion on ${scheduledDate}.`,
+        paragraphs: [
+          "What will be deleted:\n• Your account and all lesson, pupil, and scheduling data",
+          "What will be retained:\n• Financial records (payments, invoices) — anonymised and retained for 6 years as required by HMRC",
+          `You have 30 days to cancel this request. After ${scheduledDate}, this cannot be undone.`,
+          "If you didn't request this, click the cancel link below immediately and contact support.",
+        ],
+        ctaLabel: "Cancel deletion",
+        ctaUrl: cancelUrl,
+        idempotencyKey: `acct-del-confirm-${inserted.id}`,
+      }, admin);
     } catch (emailErr) {
       console.error("[request-account-deletion] email send failed:", emailErr);
-      // Do not fail the request — deletion is already scheduled; admin can re-send.
     }
+
 
     return new Response(
       JSON.stringify({
