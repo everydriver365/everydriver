@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Shield, Users, GraduationCap, Building2, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { bootProbeLog } from "@/lib/bootProbe";
 
 interface RoleInfo {
   role: string;
