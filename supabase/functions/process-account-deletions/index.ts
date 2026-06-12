@@ -9,6 +9,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,9 +18,9 @@ const corsHeaders = {
 };
 
 const APP_NAME = "EveryDriver";
-const FROM_ADDRESS = "EveryDriver <info@everydriver.co.uk>";
 const SUPPORT_EMAIL = "support@everydriver.co.uk";
 const MAX_PER_RUN = 10;
+
 
 // ---------- helpers ----------
 function escapeHtml(s: string): string {
@@ -58,19 +59,8 @@ async function aesDecryptEmail(stored: string, keyMaterial: string): Promise<str
   }
 }
 
-async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-  if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
-  const resp = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM_ADDRESS, to: [to], subject, html }),
-  });
-  if (!resp.ok) {
-    const txt = await resp.text();
-    throw new Error(`Resend send failed: ${resp.status} ${txt}`);
-  }
-}
+// Emails sent via sendBrandedEmail (Lovable Emails).
+
 
 // ---------- provider revocation (best effort) ----------
 type RevocationOutcome = "success" | "failure" | "skipped";
@@ -197,32 +187,8 @@ async function runAllRevocations(
   return out;
 }
 
-// ---------- email templates ----------
-function renderInstructorPurgeEmail(): string {
-  return `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1a1a1a;">
-  <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #1a1a1a;">
-    <h1 style="font-size: 22px; margin: 0;">Your account has been permanently deleted</h1>
-    <p style="color: #666; font-size: 13px; margin: 8px 0 0;">${APP_NAME}</p>
-  </div>
-  <div style="padding: 24px 0;">
-    <p style="font-size: 15px;">Your ${APP_NAME} instructor account and personal data have been permanently deleted as requested.</p>
-    <h3 style="font-size: 16px; margin: 20px 0 8px;">What was deleted</h3>
-    <ul style="font-size: 14px; color: #444; line-height: 1.6;">
-      <li>Your login and account profile</li>
-      <li>Your pupils, lesson schedule, calendar, and operational data</li>
-      <li>Linked accounts with Google, Square, GoCardless and other providers</li>
-    </ul>
-    <h3 style="font-size: 16px; margin: 20px 0 8px;">What was retained</h3>
-    <ul style="font-size: 14px; color: #444; line-height: 1.6;">
-      <li>Anonymised financial records (payments, invoices, MTD submissions) retained for 6 years as required by HMRC</li>
-      <li>A non-identifying audit log entry confirming the deletion was completed</li>
-    </ul>
-    <p style="font-size: 14px; color: #444;">If you have any questions, contact <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>
-  </div>
-  <div style="border-top: 1px solid #eee; padding-top: 16px; font-size: 12px; color: #999; text-align: center;">${APP_NAME}</div>
-</div>`;
-}
+// (Email templates inlined into sendBrandedEmail calls below.)
+
 
 function renderPupilPurgeEmail(): string {
   return `
