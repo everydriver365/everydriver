@@ -47,36 +47,6 @@
   </head>
 
   <body>
-    <div id="__boot_probe" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:rgba(0,0,0,0.85);color:#0f0;font:11px/1.35 -apple-system,monospace;padding:6px 8px;max-height:60vh;overflow:auto;white-space:pre-wrap;pointer-events:auto;word-break:break-word;">Boot probe: waiting for JS…</div>
-    <script>
-      (function () {
-        var el = document.getElementById("__boot_probe");
-        function ts() {
-          var d = new Date();
-          return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0")+"."+String(d.getMilliseconds()).padStart(3,"0");
-        }
-        function log(msg) {
-          if (!el) return;
-          el.textContent = el.textContent + "\n[" + ts() + "] " + msg;
-        }
-        window.__bootLog = log;
-        if (el) {
-          el.textContent = "[" + ts() + "] HTML loaded; UA=" + (navigator.userAgent||"").slice(0,90);
-          log("url=" + location.href);
-          log("modules supported=" + ("noModule" in HTMLScriptElement.prototype));
-        }
-        window.addEventListener("error", function (e) {
-          var src = e && e.filename ? " @ " + e.filename + ":" + (e.lineno||"?") : "";
-          var msg = (e && (e.message || (e.error && e.error.message))) || "unknown";
-          log("ERROR " + msg + src);
-        }, true);
-        window.addEventListener("unhandledrejection", function (e) {
-          var r = e && e.reason;
-          var msg = (r && r.message) || (typeof r === "string" ? r : "rejection");
-          log("UNHANDLED " + msg);
-        });
-      })();
-    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"
       onload="window.__bootLog && window.__bootLog('module script load event fired')"
