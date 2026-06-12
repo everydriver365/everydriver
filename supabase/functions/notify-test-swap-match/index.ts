@@ -149,8 +149,9 @@ async function notifyInstructor(
     importance: NotifyImportance.IMPORTANT,
   });
   if (emailGate.allow && instructor?.email) {
-    await sendEmail(instructor as any, title, message);
+    await sendEmail(supabase, instructor as any, title, message, `tsm-${instructorId}-${title.slice(0, 40)}`);
   }
+
 }
 
 serve(async (req) => {
