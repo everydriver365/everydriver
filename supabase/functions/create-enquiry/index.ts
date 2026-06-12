@@ -40,7 +40,6 @@ serve(async (req) => {
     const enquiry = parseResult.data;
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // 1. Create the enquiry
@@ -70,7 +69,9 @@ serve(async (req) => {
       );
     }
 
-    // 2. Get admin notification emails from site_settings
+    const isCallback = enquiry.courseType === "callback" || enquiry.courseType === "general";
+
+    // 2. Resolve admin notification recipients
     let adminEmails: string[] = [];
     const { data: siteSettings } = await supabase
       .from("site_settings")
@@ -89,43 +90,81 @@ serve(async (req) => {
       adminEmails = [fallback];
     }
 
-    // 3. Send email notification to admins (direct Resend until Lovable Emails domain is verified)
-    let emailSent = false;
-    if (resendApiKey && adminEmails.length > 0) {
+    // The Contact page packs visitor email/phone into `address`/`phone` fields.
+    // Recover them so templates show clean data.
+    const visitorEmail = enquiry.email
+      || (enquiry.address && enquiry.address.includes("@") ? enquiry.address : null);
+    const visitorPhone = enquiry.phone || null;
+
+    const adminTemplateData = {
+      name: enquiry.name,
+      email: visitorEmail,
+      phone: visitorPhone,
+      postcode: enquiry.postcode,
+      courseType: enquiry.courseType,
+      requestedHours: enquiry.requestedHours,
+      preferredTiming: enquiry.preferredTiming,
+      additionalNotes: enquiry.additionalNotes ?? null,
+      isCallback,
+    };
+
+    // 3. Enqueue admin notifications via Lovable Emails
+    let adminEmailsSent = 0;
+    for (const recipient of adminEmails) {
       try {
-        const isCallback = enquiry.courseType === "callback" || enquiry.courseType === "general";
-
-        const emailResponse = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${resendApiKey}`,
-          },
-          body: JSON.stringify({
-            from: "EveryDriver <noreply@everydriver.co.uk>",
-            reply_to: "hello@everydriver.co.uk",
-            to: adminEmails,
-            subject: isCallback
-              ? `📞 New Callback Request from ${enquiry.name}`
-              : `📝 New Bespoke Course Enquiry from ${enquiry.name}`,
-            html: buildEnquiryEmailHtml(enquiry, isCallback),
-          }),
-        });
-
-        if (emailResponse.ok) {
-          emailSent = true;
-          console.log("Admin notification email sent");
+        const { error: sendErr } = await supabase.functions.invoke(
+          "send-transactional-email",
+          {
+            body: {
+              templateName: "admin-enquiry-notification",
+              recipientEmail: recipient,
+              idempotencyKey: `enquiry-admin-${newEnquiry.id}-${recipient}`,
+              templateData: adminTemplateData,
+              purpose: "transactional",
+            },
+          }
+        );
+        if (sendErr) {
+          console.error(`Admin email enqueue failed for ${recipient}:`, sendErr);
         } else {
-          const errorData = await emailResponse.text();
-          console.error("Resend API error:", errorData);
+          adminEmailsSent++;
         }
-      } catch (emailError) {
-        console.error("Error sending admin email:", emailError);
+      } catch (err) {
+        console.error(`Admin email exception for ${recipient}:`, err);
       }
     }
 
-    // 4. Notify instructors (skip for callbacks/general)
-    const isCallback = enquiry.courseType === "callback" || enquiry.courseType === "general";
+    // 4. Enqueue visitor confirmation when we have their email
+    let confirmationSent = false;
+    if (visitorEmail) {
+      try {
+        const { error: confirmErr } = await supabase.functions.invoke(
+          "send-transactional-email",
+          {
+            body: {
+              templateName: "contact-enquiry-confirmation",
+              recipientEmail: visitorEmail,
+              idempotencyKey: `enquiry-confirm-${newEnquiry.id}`,
+              templateData: {
+                name: enquiry.name,
+                isCallback,
+                message: enquiry.additionalNotes ?? null,
+              },
+              purpose: "transactional",
+            },
+          }
+        );
+        if (confirmErr) {
+          console.error("Visitor confirmation enqueue failed:", confirmErr);
+        } else {
+          confirmationSent = true;
+        }
+      } catch (err) {
+        console.error("Visitor confirmation exception:", err);
+      }
+    }
+
+    // 5. Notify instructors (skip for callbacks/general)
     let notifiedCount = 0;
 
     if (!isCallback) {
@@ -176,7 +215,10 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Enquiry created. Email sent: ${emailSent}, Instructors notified: ${notifiedCount}`);
+    const emailSent = adminEmailsSent > 0;
+    console.log(
+      `Enquiry ${newEnquiry.id}. Admin emails enqueued: ${adminEmailsSent}/${adminEmails.length}, Visitor confirmation: ${confirmationSent}, Instructors notified: ${notifiedCount}`
+    );
 
     return new Response(
       JSON.stringify({
@@ -184,6 +226,7 @@ serve(async (req) => {
         enquiryId: newEnquiry.id,
         notified: notifiedCount,
         emailSent,
+        confirmationSent,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -195,38 +238,3 @@ serve(async (req) => {
     );
   }
 });
-
-function buildEnquiryEmailHtml(enquiry: z.infer<typeof enquirySchema>, isCallback: boolean): string {
-  return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); padding: 20px; border-radius: 8px 8px 0 0;">
-        <h1 style="color: white; margin: 0; font-size: 24px;">
-          ${isCallback ? "📞 New Callback Request" : "📝 New Course Enquiry"}
-        </h1>
-      </div>
-      <div style="background: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-        <h2 style="color: #374151; margin-top: 0;">Contact Details</h2>
-        <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 8px 0; color: #6b7280; width: 120px;">Name:</td><td style="padding: 8px 0; color: #111827; font-weight: 600;">${enquiry.name}</td></tr>
-          <tr><td style="padding: 8px 0; color: #6b7280;">Contact:</td><td style="padding: 8px 0; color: #111827;">${enquiry.postcode}</td></tr>
-          <tr><td style="padding: 8px 0; color: #6b7280;">Email:</td><td style="padding: 8px 0; color: #111827;">${enquiry.address}</td></tr>
-        </table>
-        ${!isCallback ? `
-        <h2 style="color: #374151; margin-top: 24px;">Course Requirements</h2>
-        <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 8px 0; color: #6b7280; width: 120px;">Course Type:</td><td style="padding: 8px 0; color: #111827; font-weight: 600;">${enquiry.courseType.replace("-", " ")}</td></tr>
-          <tr><td style="padding: 8px 0; color: #6b7280;">Hours:</td><td style="padding: 8px 0; color: #111827;">${enquiry.requestedHours} hours</td></tr>
-          <tr><td style="padding: 8px 0; color: #6b7280;">Timing:</td><td style="padding: 8px 0; color: #111827;">${enquiry.preferredTiming.replace("-", " ")}</td></tr>
-        </table>
-        ` : ""}
-        ${enquiry.additionalNotes ? `
-        <h2 style="color: #374151; margin-top: 24px;">Message</h2>
-        <p style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; color: #374151; margin: 0;">${enquiry.additionalNotes}</p>
-        ` : ""}
-        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
-          <p style="color: #6b7280; font-size: 14px;">View and manage this enquiry in the Admin Portal.</p>
-        </div>
-      </div>
-    </div>
-  `;
-}
