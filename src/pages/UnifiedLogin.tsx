@@ -120,7 +120,7 @@ export default function UnifiedLogin() {
       >
         <div style={{ textAlign: "center", marginBottom: "1.75rem" }}>
           <img
-            src="/everydriver-logo-full.svg"
+            src={everyDriverLogoAsset.url}
             alt="EveryDriver"
             style={{ height: 38, display: "block", margin: "0 auto" }}
           />
