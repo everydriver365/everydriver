@@ -104,6 +104,7 @@ serve(async (req) => {
             },
             body: JSON.stringify({
               from: "EveryDriver <noreply@everydriver.co.uk>",
+              reply_to: "hello@everydriver.co.uk",
               to: adminEmails,
               subject: `⚠️ Stuck booking — ${pupilName} (${ageMins}m)`,
               html: `<h2>Booking stuck in awaiting_initial_payment</h2>

@@ -70,6 +70,7 @@ serve(async (req) => {
             },
             body: JSON.stringify({
               from: "noreply@everydriver.co.uk",
+              reply_to: "hello@everydriver.co.uk",
               to: checkout.pupil_email,
               subject: "Complete Your Driving Lesson Booking",
               html: `<p>Hi ${checkout.pupil_name || "there"},</p><p>You started booking lessons with ${instructorName} but didn't complete your booking.</p><p>Don't miss out — secure your spot today!</p>`,

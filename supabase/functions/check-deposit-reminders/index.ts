@@ -15,6 +15,7 @@ async function sendEmail(resendApiKey: string, to: string, subject: string, html
     },
     body: JSON.stringify({
       from: "EveryDriver <noreply@everydriver.co.uk>",
+      reply_to: "hello@everydriver.co.uk",
       to: [to],
       subject,
       html,

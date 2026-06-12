@@ -172,7 +172,7 @@ serve(async (req) => {
           </div>`;
 
         const emailRes = await resend.emails.send({
-          from: "EveryDriver <enquiries@notify.everydriver.co.uk>",
+          from: "EveryDriver <enquiries@everydriver.co.uk>",
           to: [instructor.email],
           reply_to: enquiry.pupil_email,
           subject: `New enquiry — ${enquiry.pupil_name}`,
@@ -209,7 +209,7 @@ serve(async (req) => {
           </div>`;
 
         const pupilRes = await resend.emails.send({
-          from: "EveryDriver <enquiries@notify.everydriver.co.uk>",
+          from: "EveryDriver <enquiries@everydriver.co.uk>",
           to: [enquiry.pupil_email],
           reply_to: instructor.email || undefined,
           subject: `Thanks — we've passed your enquiry to ${instructor.name}`,

@@ -250,6 +250,7 @@ serve(async (req) => {
         const firstName = pupil.name?.split(" ")[0] || "there";
         await resend.emails.send({
           from: "EveryDriver <noreply@everydriver.co.uk>",
+          reply_to: "hello@everydriver.co.uk",
           to: cleanEmail,
           subject: "Your Password Reset Code",
           html: `

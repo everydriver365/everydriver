@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
       try {
         await resend.emails.send({
           from: "EveryDriver <noreply@everydriver.co.uk>",
+          reply_to: "hello@everydriver.co.uk",
           to: [inst.email],
           subject: "Your DBS Update Service subscription expires in 30 days",
           html: `

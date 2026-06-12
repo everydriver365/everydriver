@@ -307,6 +307,7 @@ serve(async (req) => {
 
     const emailResult = await resend.emails.send({
       from: "EveryDriver <noreply@everydriver.co.uk>",
+      reply_to: "hello@everydriver.co.uk",
       to: [pupilEmail],
       subject: `Welcome! Your driving lessons with ${instructor.name || "your instructor"} are confirmed`,
       html,

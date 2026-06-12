@@ -95,6 +95,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             from: "EveryDriver <noreply@everydriver.co.uk>",
+            reply_to: "hello@everydriver.co.uk",
             to: adminEmails,
             subject: isCallback 
               ? `📞 New Callback Request from ${enquiry.name}`
