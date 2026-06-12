@@ -1,92 +1,46 @@
 
-# EveryDriver Rebrand + Job Alerts for Enquiries
+# Plan: Switch Resend sends to everydriver.co.uk branding
 
-Three workstreams. Joseph Lewis data merge is parked.
+## Goal
+Once `everydriver.co.uk` is verified in Resend, every email the app sends should come from a branded `@everydriver.co.uk` address, and replies should land in your active `hello@everydriver.co.uk` inbox at SiteGround.
 
----
+## Prerequisites (you do these, outside the code)
+1. In Resend → Domains → add `everydriver.co.uk` (EU region).
+2. In SiteGround DNS Zone Editor, add the 3 records Resend shows (MX + SPF on `send`, DKIM on `resend._domainkey`). Skip the `_dmarc` one — already present.
+3. Click **Verify** in Resend, wait for green tick.
+4. Reply **"verified"** in chat.
 
-## 1. Email domain — unblock all transactional mail
+## What I will change in the code (after you say "verified")
 
-Both workspace domains (`drive365.co.uk`, `drivinglessonswinchester.com`) are `provisioning_failed`, so **no admin/instructor/pupil email leaves the platform**.
+### 1. Centralise sender config
+Create a single shared helper used by every Resend-calling edge function so the from/reply-to is defined in exactly one place:
 
-- Provision `notify.everydriver.co.uk` as the verified sender subdomain via the email setup dialog (DNS NS records added at the registrar).
-- Once verified, set platform-wide constants:
-  - `FROM_EMAIL = "EveryDriver <notify@notify.everydriver.co.uk>"`
-  - `ADMIN_ENQUIRY_EMAIL = "enquiries@everydriver.co.uk"`
+- `FROM_EMAIL = "EveryDriver <noreply@everydriver.co.uk>"`
+- `REPLY_TO   = "hello@everydriver.co.uk"`
 
-*Blocker:* user must add DNS when prompted. Nothing downstream delivers until verification succeeds.
+If we later want a different from-name per email type (e.g. `bookings@`, `payments@`), it's a one-line change in this helper.
 
----
+### 2. Update all Resend-using edge functions
+Sweep `supabase/functions/**` for any function that calls Resend (currently sending from `onboarding@resend.dev` or similar test addresses) and update each to:
+- Import the shared helper
+- Set `from: FROM_EMAIL`
+- Set `reply_to: REPLY_TO`
 
-## 2. Kill Drive365 branding from notification functions
+Functions known to send mail (booking confirmations, payment receipts, instructor notifications, contact form, password/reset flows that go through Resend, etc.) — I'll enumerate them once exploring the folder and update each in one batch.
 
-Sweep these and replace every `drive365.co.uk` / `notifications.drive365.co.uk` sender, reply-to default, and Drive365 logo URL:
+### 3. Deploy
+Deploy all touched edge functions in a single `deploy_edge_functions` call.
 
-- `notify-admin-enquiry`
-- `notify-booking-enquiry`
-- `notify-test-swap-match`
-- `notify-public-test-swap-request`
-- `notify-lessons-scheduled`
-- `send-lesson-reminders`
-- `send-transactional-email`
-- any other `*notify*` / `send-*` function caught in a final grep pass
+### 4. Test
+- Trigger one real send (e.g. contact form or a test booking) from the live site.
+- Confirm the email lands in your inbox showing **From: EveryDriver `<noreply@everydriver.co.uk>`**.
+- Hit Reply, confirm it auto-fills `hello@everydriver.co.uk`.
+- Query `email_send_log` to confirm `status = sent`.
 
-Swap sender to the EveryDriver address, swap logo to `/everydriver-logo-full.svg`. Template structure unchanged.
+## Out of scope
+- No changes to auth emails (Supabase handles those separately; they're not on Resend).
+- No changes to the Lovable Emails infrastructure on `notify.everydriver.co.uk` — that stays disabled/unused; we're not removing the NS records unless you ask.
+- No new mailboxes — `hello@everydriver.co.uk` is your existing SiteGround inbox.
 
-*Out of scope here:* marketing/landing pages still referencing Drive365 — separate sweep.
-
----
-
-## 3. Job Alerts for new enquiries
-
-Real-time alert on every new enquiry (mini-website form, public booking page, course enquiry, contact form) visible in **instructor mobile app**, **admin desktop**, and **admin mobile login**, plus a dedicated **"Job Alert"** notification type.
-
-### 3a. Data model & trigger
-- Add `public.fan_out_enquiry_alert()` SECURITY DEFINER function.
-- AFTER INSERT trigger on `booking_enquiries` and `course_enquiries`:
-  - Insert `instructor_notifications` row, `type = 'job_offer'`, title `"New Job Alert"`, message includes hours / transmission / postcode / date, `action_url` deep-linking to the enquiry.
-  - Insert `admin_alerts` row, `type = 'enquiry'`, regardless of whether an instructor was matched (so unrouted enquiries are still visible).
-- Trigger fires from any source — no edge-function dependency.
-
-### 3b. Edge-function reliability
-- `notify-booking-enquiry` and `notify-admin-enquiry`: write `admin_alerts` row up-front so the alert exists even when email fails. On email failure, log `severity = warning` to `admin_alerts` instead of swallowing the error.
-- Push payload uses existing `PushDataType.JOB_OFFER`. Title `"New Job Alert"`, body postcode + hours + date.
-
-### 3c. Instructor mobile app
-- `useNewEnquiriesCount` already counts `booking_enquiries` + `course_enquiries` for the instructor. Wire it into `useCombinedNotificationCount` so the bell badge increments.
-- Notifications sheet gets a "Job Alerts" section at the top, listing unread `job_offer` rows, tap → `/instructor/inbox?tab=enquiries`.
-- Native push with sound (reuses `useChatNotifications.playSound()`).
-- No mobile *layout* changes — only badge counts and the new section row, per the explicit request for an alert in the mobile app.
-
-### 3d. Admin desktop + admin mobile login
-- New realtime subscription on `admin_alerts` filtered to `type = 'enquiry'`.
-- Bell in `AdminHeader` (shared between desktop and mobile admin) with unread count, popover listing recent enquiries (source · instructor · postcode · "Open").
-- Toast on receipt while admin is logged in.
-- New admin dashboard widget: **"Unrouted / failed enquiries (24h)"** — counts `admin_alerts` rows where `metadata.email_sent = false`, so the next failure is visible immediately.
-
----
-
-## Technical details
-
-- Trigger: SECURITY DEFINER, `search_path = public`, idempotent on `(source_table, source_id)`.
-- `admin_alerts` and `instructor_notifications` added to `supabase_realtime` publication if not already present.
-- Confirm `service_role` INSERT grants on both tables.
-- Push uses existing `PushDataType.JOB_OFFER` — no new client enums.
-
----
-
-## Order of execution
-
-```text
-1. User adds DNS for notify.everydriver.co.uk  ← BLOCKING
-2. Verify domain, set FROM_EMAIL / ADMIN_ENQUIRY_EMAIL constants
-3. Rebrand 7 edge functions, redeploy
-4. Migration: fan_out_enquiry_alert + triggers + realtime publication
-5. Frontend: instructor bell badge + Job Alerts section,
-   admin bell + unrouted-enquiries widget
-6. End-to-end test: submit a test enquiry to a real instructor, confirm
-   (a) admin_alerts row, (b) instructor_notifications row,
-   (c) push received, (d) admin bell increments, (e) email delivered
-```
-
-Joseph Lewis merge can be picked up later as a one-off data fix.
+## Reply when ready
+Say **"verified"** once Resend shows the domain green, and I'll execute steps 1–4.
