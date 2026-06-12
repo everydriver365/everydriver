@@ -62,7 +62,7 @@ serve(async (req) => {
     const text = renderText(enquiry, instructor);
 
     const result = await resend.emails.send({
-      from: "EveryDriver Enquiries <enquiries@notify.everydriver.co.uk>",
+      from: "EveryDriver Enquiries <enquiries@everydriver.co.uk>",
       to: [ADMIN_EMAIL],
       reply_to: enquiry.pupil_email,
       subject,

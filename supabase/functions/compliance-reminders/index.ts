@@ -110,6 +110,7 @@ Deno.serve(async (req) => {
         try {
           await resend.emails.send({
             from: "EveryDriver <noreply@everydriver.co.uk>",
+            reply_to: "hello@everydriver.co.uk",
             to: [instructor.email],
             subject: "Document Expiry Reminder - EveryDriver",
             html: `<h2>Document Expiry Reminder</h2><p>Hi ${instructor.name},</p><p>The following documents need your attention:</p><ul>${expiringDocs.map((d) => `<li><strong>${d.label}</strong>: ${d.daysLeft <= 0 ? "<span style='color:red'>EXPIRED</span>" : `${d.daysLeft} days remaining`}</li>`).join("")}</ul><p>Please update them at your earliest convenience.</p>`,

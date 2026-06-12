@@ -90,7 +90,8 @@ serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "EveryDriver <noreply@notify.everydriver.co.uk>",
+            from: "EveryDriver <noreply@everydriver.co.uk>",
+            reply_to: "hello@everydriver.co.uk",
             to: pupil.email,
             subject: "Your Driving Lessons Are Scheduled! 🚗",
             html: emailHtml,

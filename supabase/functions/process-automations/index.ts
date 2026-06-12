@@ -98,6 +98,7 @@ serve(async (req) => {
                 },
                 body: JSON.stringify({
                   from: "noreply@everydriver.co.uk",
+                  reply_to: "hello@everydriver.co.uk",
                   to: context.pupil_email,
                   subject: config.subject || `Update from your instructor`,
                   html: `<p>${message.replace(/\n/g, "<br>")}</p>`,

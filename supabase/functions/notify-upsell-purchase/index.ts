@@ -147,6 +147,7 @@ serve(async (req) => {
     // Send email notification to team
     const emailResponse = await resend.emails.send({
       from: "EveryDriver <notifications@everydriver.co.uk>",
+      reply_to: "hello@everydriver.co.uk",
       to: [teamEmail],
       subject: `🎯 New Upsell Purchase: ${data.upsellName} - ${data.pupilName}`,
       html: emailHtml,
