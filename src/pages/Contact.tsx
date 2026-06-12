@@ -115,78 +115,334 @@ export default function Contact() {
     );
   }
 
-  // Bespoke / Callback variants keep existing layout
-  if (isBespoke || isCallback) {
+  // ── Request a Callback (Drive365 branded) ─────────────────────────
+  if (isCallback) {
+    const tabs = [
+      { label: "Request a Callback", href: "/contact?type=callback", active: true },
+      { label: "Bespoke Course Request", href: "/contact?type=bespoke", active: false },
+      { label: "Plan a Course", href: "/search", active: false },
+      { label: "Test Swap", href: "/test-swap", active: false },
+    ];
+
+    const tabBase: React.CSSProperties = {
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "14px 16px",
+      fontSize: 13,
+      fontWeight: 700,
+      fontFamily: "'Poppins', sans-serif",
+      whiteSpace: "nowrap",
+      textDecoration: "none",
+      borderBottom: "2px solid transparent",
+      color: "#888",
+      transition: "color 0.15s, border-color 0.15s",
+      flexShrink: 0,
+    };
+
+    const tabActive: React.CSSProperties = {
+      color: "#D12E2E",
+      borderBottom: "2px solid #D12E2E",
+    };
+
+    const inputBase: React.CSSProperties = {
+      background: "#fafbfc",
+      border: "1.5px solid #e8edf2",
+      borderRadius: 8,
+      fontSize: 13,
+      fontFamily: "'Poppins', sans-serif",
+      padding: "10px 12px",
+      width: "100%",
+      outline: "none",
+      color: "#0F2044",
+      boxSizing: "border-box",
+    };
+
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      e.currentTarget.style.borderColor = "#0070C0";
+    };
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      e.currentTarget.style.borderColor = "#e8edf2";
+    };
+
+    return (
+      <MainLayout>
+        {CONTACT_SEO}
+        <style>{`
+          @media (max-width: 479px) {
+            .callback-name-grid { grid-template-columns: 1fr !important; }
+          }
+          @media (min-width: 480px) {
+            .callback-name-grid { grid-template-columns: 1fr 1fr !important; }
+          }
+        `}</style>
+        <div style={{ fontFamily: "'Poppins', sans-serif" }}>
+          {/* Tab Navigation */}
+          <div style={{ background: "#fff", borderBottom: "1.5px solid #e8edf2" }}>
+            <div style={{ maxWidth: 600, margin: "0 auto", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+              <div style={{ display: "flex", width: "max-content", margin: "0 auto" }}>
+                {tabs.map((tab) => (
+                  <Link
+                    key={tab.label}
+                    to={tab.href}
+                    style={tab.active ? { ...tabBase, ...tabActive } : tabBase}
+                  >
+                    {tab.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div style={{ maxWidth: 600, margin: "0 auto", padding: "40px 16px 80px" }}>
+            {/* Header */}
+            <div style={{ textAlign: "center", marginBottom: 32 }}>
+              <div
+                style={{
+                  width: 54,
+                  height: 54,
+                  borderRadius: 14,
+                  background: "#FCEBEB",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px",
+                }}
+              >
+                <Phone style={{ width: 24, height: 24, color: "#D12E2E" }} />
+              </div>
+              <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0F2044", margin: "0 0 8px" }}>
+                Request a Callback
+              </h1>
+              <p style={{ fontSize: 14, color: "#888", margin: 0 }}>
+                Leave your details and we'll call you back
+              </p>
+            </div>
+
+            {/* Form Card */}
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 14,
+                border: "1.5px solid #e8edf2",
+                padding: "1.75rem",
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: 17,
+                  fontWeight: 700,
+                  color: "#0F2044",
+                  margin: "0 0 20px",
+                }}
+              >
+                Your details
+              </h2>
+              <form onSubmit={handleCallbackSubmit} className="space-y-4">
+                {/* Name row */}
+                <div className="callback-name-grid grid gap-4">
+                  <div>
+                    <label
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#0F2044",
+                        display: "block",
+                        marginBottom: 6,
+                      }}
+                    >
+                      First name <span style={{ color: "#D12E2E" }}>*</span>
+                    </label>
+                    <input
+                      required
+                      placeholder="First name"
+                      value={formData.firstName}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, firstName: e.target.value }))
+                      }
+                      style={inputBase}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#0F2044",
+                        display: "block",
+                        marginBottom: 6,
+                      }}
+                    >
+                      Last name <span style={{ color: "#D12E2E" }}>*</span>
+                    </label>
+                    <input
+                      required
+                      placeholder="Last name"
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, lastName: e.target.value }))
+                      }
+                      style={inputBase}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
+                    />
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "#0F2044",
+                      display: "block",
+                      marginBottom: 6,
+                    }}
+                  >
+                    Phone number <span style={{ color: "#D12E2E" }}>*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="07123 456789"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                    }
+                    style={inputBase}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "#0F2044",
+                      display: "block",
+                      marginBottom: 6,
+                    }}
+                  >
+                    Email{" "}
+                    <span style={{ color: "#888", fontWeight: 400 }}>(optional)</span>
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="john@example.com"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, email: e.target.value }))
+                    }
+                    style={inputBase}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                  />
+                </div>
+
+                {/* Message */}
+                <div>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "#0F2044",
+                      display: "block",
+                      marginBottom: 6,
+                    }}
+                  >
+                    What would you like to discuss?{" "}
+                    <span style={{ color: "#888", fontWeight: 400 }}>(optional)</span>
+                  </label>
+                  <textarea
+                    placeholder="Tell us briefly what you'd like to talk about..."
+                    value={formData.message}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, message: e.target.value }))
+                    }
+                    style={{ ...inputBase, minHeight: 100, resize: "vertical" }}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                  />
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  style={{
+                    width: "100%",
+                    background: "#D12E2E",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    padding: "12px 16px",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    fontFamily: "'Poppins', sans-serif",
+                    cursor: isSubmitting ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    transition: "background 0.15s",
+                    opacity: isSubmitting ? 0.7 : 1,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSubmitting) e.currentTarget.style.background = "#b52626";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSubmitting) e.currentTarget.style.background = "#D12E2E";
+                  }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <PhoneOutgoing className="h-4 w-4" />
+                      Request callback
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // ── Bespoke Course Request (existing layout) ──────────────────────
+  if (isBespoke) {
     return (
       <MainLayout>
         {CONTACT_SEO}
         <div className="container py-8 pb-24">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
-              {isBespoke ? (
-                <>
-                  <FileEdit className="h-12 w-12 text-primary mx-auto mb-4" />
-                  <h1 className="text-3xl font-bold">Bespoke Course Request</h1>
-                  <p className="text-muted-foreground mt-2">
-                    Tell us what you're looking for and we'll match you with the perfect instructor
-                  </p>
-                </>
-              ) : (
-                <>
-                  <Phone className="h-12 w-12 text-primary mx-auto mb-4" />
-                  <h1 className="text-3xl font-bold">Request a Callback</h1>
-                  <p className="text-muted-foreground mt-2">
-                    Leave your details and we'll call you back
-                  </p>
-                </>
-              )}
+              <FileEdit className="h-12 w-12 text-primary mx-auto mb-4" />
+              <h1 className="text-3xl font-bold">Bespoke Course Request</h1>
+              <p className="text-muted-foreground mt-2">
+                Tell us what you're looking for and we'll match you with the perfect instructor
+              </p>
             </div>
-
-            {isBespoke ? (
-              <div className="max-w-lg mx-auto">
-                <Card>
-                  <CardContent className="p-6">
-                    <h2 className="text-lg font-semibold mb-4">Request a Bespoke Course</h2>
-                    <BespokeEnquiryForm />
-                  </CardContent>
-                </Card>
-              </div>
-            ) : (
-              <div className="max-w-lg mx-auto">
-                <Card>
-                  <CardContent className="p-6">
-                    <h2 className="text-lg font-semibold mb-4">Request a Callback</h2>
-                    <form className="space-y-4" onSubmit={handleCallbackSubmit}>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label htmlFor="firstName">First name *</Label>
-                          <Input id="firstName" placeholder="John" required value={formData.firstName} onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))} />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="lastName">Last name *</Label>
-                          <Input id="lastName" placeholder="Smith" required value={formData.lastName} onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))} />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone number *</Label>
-                        <Input id="phone" type="tel" placeholder="07123 456789" required value={formData.phone} onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email (optional)</Label>
-                        <Input id="email" type="email" placeholder="john@example.com" value={formData.email} onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="message">What would you like to discuss? (optional)</Label>
-                        <Textarea id="message" placeholder="Tell us briefly what you'd like to talk about..." rows={3} value={formData.message} onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))} />
-                      </div>
-                      <Button type="submit" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</>) : ("Request Callback")}
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+            <div className="max-w-lg mx-auto">
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold mb-4">Request a Bespoke Course</h2>
+                  <BespokeEnquiryForm />
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </MainLayout>
