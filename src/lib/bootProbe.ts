@@ -2,13 +2,9 @@
  * Boot probe — visible diagnostic overlay used to debug white-screen-on-launch
  * inside native wrappers (Despia / WKWebView) where we can't open devtools.
  *
- * Only renders when running inside a wrapper. Auto-hides 4s after React signals
- * a successful mount via `markBootProbeMounted()`. Errors keep it visible.
- *
- * In a regular browser this is a complete no-op.
+ * Auto-hides 4s after React signals a successful mount via
+ * `markBootProbeMounted()`. Errors keep it visible.
  */
-
-import { detectNativeWrapper } from "@/hooks/useIsNativeWrapper";
 
 const PROBE_ID = "__boot_probe";
 const MAX_LINES = 12;
@@ -77,7 +73,6 @@ export function bootProbeLog(line: string): void {
 
 export function installBootProbe(): void {
   if (typeof window === "undefined") return;
-  if (!detectNativeWrapper()) return;
   enabled = true;
 
   bootProbeLog("JS started");

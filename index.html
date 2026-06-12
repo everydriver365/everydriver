@@ -47,6 +47,17 @@
   </head>
 
   <body>
+    <div id="__boot_probe" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:rgba(0,0,0,0.85);color:#0f0;font:11px/1.35 -apple-system,monospace;padding:6px 8px;max-height:50vh;overflow:auto;white-space:pre-wrap;pointer-events:auto;word-break:break-word;">Boot probe: waiting for JS…</div>
+    <script>
+      (function () {
+        var el = document.getElementById("__boot_probe");
+        if (el) {
+          var d = new Date();
+          var t = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") + ":" + String(d.getSeconds()).padStart(2, "0") + "." + String(d.getMilliseconds()).padStart(3, "0");
+          el.textContent = "[" + t + "] HTML loaded; waiting for module JS…";
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
