@@ -852,7 +852,9 @@ export default function Index() {
                 </Link>
               ))}
             </div>
-          ) : null}
+          ) : (
+            <p className="text-center text-sm text-muted-foreground py-8">Latest articles coming soon.</p>
+          )}
 
           <div className="text-center mt-10">
             <Link to="/news">
