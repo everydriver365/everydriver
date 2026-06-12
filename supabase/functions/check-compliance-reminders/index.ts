@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,7 +14,6 @@ interface ComplianceItem {
   expiryField: string;
 }
 
-// Instructor-level compliance items
 const instructorComplianceItems: ComplianceItem[] = [
   { type: "adi_badge", label: "ADI Badge", expiryField: "adi_badge_expiry" },
   { type: "car_insurance", label: "Car Insurance", expiryField: "car_insurance_expiry" },
@@ -22,7 +22,6 @@ const instructorComplianceItems: ComplianceItem[] = [
   { type: "dbs_certificate", label: "DBS Certificate", expiryField: "dbs_certificate_expiry" },
 ];
 
-// Vehicle-level compliance items
 interface VehicleComplianceItem {
   type: string;
   label: string;
@@ -36,30 +35,6 @@ const vehicleComplianceItems: VehicleComplianceItem[] = [
 ];
 
 const reminderDays = [30, 14, 7, 1];
-
-async function sendEmail(resendApiKey: string, to: string, subject: string, html: string) {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "EveryDriver <notifications@everydriver.co.uk>",
-      reply_to: "hello@everydriver.co.uk",
-      to: [to],
-      subject,
-      html,
-    }),
-  });
-  
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Resend error: ${error}`);
-  }
-  
-  return response.json();
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
