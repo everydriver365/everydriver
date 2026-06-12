@@ -307,7 +307,8 @@ export default function About() {
         <div
           className="mx-auto px-4 pb-16"
           style={{ maxWidth: "900px" }}
-        > -        <div
+        >
+          <div
           style={{
             background: "#0F2044",
             borderRadius: "14px",
