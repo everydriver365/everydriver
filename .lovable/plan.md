@@ -1,37 +1,43 @@
-## Goal
-Get app emails (enquiries, auth, receipts, etc.) actually delivering by aligning the Lovable Emails sender domain with the domain you've already verified DNS for.
+## The new blocker
+SiteGround Site Tools (your DNS host for `everydriver.co.uk`) won't let you add NS records on a subdomain like `notify`. That's the exact mechanism Lovable Emails uses to delegate `notify.everydriver.co.uk` and manage SPF/DKIM/DMARC automatically. So the original plan (delegate `notify.everydriver.co.uk` to `ns5/ns6.lovable.cloud`) can't be completed at SiteGround.
 
-## The exact mismatch
-- Lovable Emails domain registered: **`notify.drive365.co.uk`** — status: **Failed** (provisioning timed out, DNS never verified).
-- `send-transactional-email` is hard-coded to send from: **`notify.everydriver.co.uk`** (lines 16/20 of the function).
-- Result: every send is rejected with *"No sender domain matches the requested sender domain"* — which is exactly what `email_send_log` is showing.
-- The Resend verification you completed is on `everydriver.co.uk` but isn't wired into Lovable Emails, so it doesn't help.
+Three viable ways forward — pick one.
 
-## What I'll do
+## Option 1 — Move DNS for `everydriver.co.uk` to Cloudflare (recommended)
+Cloudflare is free and fully supports subdomain NS delegation. Once DNS is there, the original plan works unchanged.
 
-### 1. Set up `notify.everydriver.co.uk` as the Lovable email domain
-Open the email-domain setup dialog so you can add **`notify.everydriver.co.uk`**. Lovable will give you 2 NS records to add at your `everydriver.co.uk` DNS provider (just like before). Lovable then manages SPF/DKIM/DMARC inside that delegated subdomain automatically — no conflict with the Resend setup on the root domain.
+Steps:
+1. Create a free Cloudflare account, add `everydriver.co.uk`, import existing records (Cloudflare auto-pulls most), turn proxy OFF for mail-related records.
+2. At your domain registrar (where you bought the domain), change the authoritative nameservers from SiteGround's to the two Cloudflare nameservers Cloudflare gives you.
+3. Wait for nameserver change to propagate (usually <1h, up to 24h).
+4. Re-add the existing Resend records on the root `everydriver.co.uk` in Cloudflare so Resend keeps working until we retire it.
+5. In Lovable, add `notify.everydriver.co.uk` — Lovable shows 2 NS records. Add them in Cloudflare (proxy OFF). Verification typically completes in minutes.
+6. I revert `create-enquiry` back to using `send-transactional-email` (same code path as every other app email), test an enquiry, confirm `email_send_log` shows `sent`/`delivered`.
+7. Remove the failed `notify.drive365.co.uk` entry. Optionally remove `RESEND_API_KEY` + Resend DNS records once we've confirmed nothing else uses them.
 
-Why `notify.everydriver.co.uk` and not the root?
-- The send function is already pointing at this exact subdomain, so zero code changes needed.
-- The root `everydriver.co.uk` is already verified in Resend; reusing the same name in Lovable would conflict (Lovable's NS delegation would fight Resend's records).
+Pros: every email type (enquiries, auth, receipts, reminders) fixed with one DNS change, no code rewrites, no SiteGround limitation ever again, Cloudflare also gives you faster DNS + analytics. Cons: one-time DNS migration; ~1h of attention.
 
-### 2. Wait for verification, then confirm
-Once DNS propagates (usually minutes, up to 72h), I'll re-check the domain status and trigger a test enquiry to confirm `email_send_log` shows `sent`/`delivered`.
+## Option 2 — Use a different subdomain that SiteGround *will* delegate, or move just one subdomain to Cloudflare
+Some SiteGround plans allow NS records via the "DNS Zone Editor" if the subdomain doesn't already exist as an A/CNAME. Worth a 2-minute test:
+- In SiteGround Site Tools → DNS Zone Editor, try adding NS record with Name `notify`, Value `ns5.lovable.cloud`, then a second NS record with same name pointing to `ns6.lovable.cloud`.
+- If it accepts both: we're done — proceed straight to Lovable verification + code revert as in Option 1 steps 5–7.
+- If it rejects: fall back to Option 1.
 
-### 3. Decommission the Resend path
-- Delete the direct-Resend code I added to `create-enquiry` and revert it to use `send-transactional-email` like all other app emails.
-- Optionally remove the `RESEND_API_KEY` secret and the Resend DNS records on the root `everydriver.co.uk` if you don't use Resend for anything else. (I'll list what's safe to remove before you delete anything.)
+I'll also try alternative subdomain names (`mail`, `send`, `e`) in case it's a name-specific restriction.
 
-### 4. Clean up the failed drive365 domain
-Remove the failed `notify.drive365.co.uk` entry so it stops appearing as a broken domain in Project Settings → Email.
+Pros: keeps DNS at SiteGround. Cons: depends on SiteGround plan; may still hit the same wall.
 
-## What you'll need to do
-- **One thing only:** add the 2 NS records Lovable gives you to your `everydriver.co.uk` DNS (same registrar you used last time). I'll prompt you with the exact values in the setup dialog.
+## Option 3 — Stay on Resend (skip Lovable Emails entirely)
+Keep the direct-Resend path I added to `create-enquiry`. Extend the same pattern to the other app emails (auth confirmations, receipts, reminders, etc.) by adding a thin `send-via-resend` edge function and pointing the existing triggers at it. Use the already-verified root `everydriver.co.uk` as the sender.
 
-## What stays the same
-- All existing templates, the send function, every trigger (enquiries, contact forms, receipts, etc.) — no rewrites.
-- Auth emails will also start working once the domain is live (currently broken for the same reason).
+Pros: no DNS change needed; root domain already verified in Resend. Cons: requires rewriting every email trigger (currently ~all use `send-transactional-email`), Lovable's auth emails revert to default Lovable templates (we can't easily route Supabase auth hooks through Resend without custom code), ongoing maintenance lives outside Lovable's email tooling, no built-in suppression list / DLQ / queue. This is the most work for the least benefit.
 
-## Outcome
-One verified sender domain, one email system, every email type fixed in a single change. Resend can be fully retired or kept for unrelated use — your call.
+**Coderick AI from the SiteGround Marketplace is not an option I'd recommend** — it's an unrelated third-party tool, doesn't integrate with Lovable Emails or your existing Supabase functions, and would just add another moving part. Ignore that suggestion from support; the real fix is the DNS host limitation, not the email provider.
+
+## My recommendation
+Option 1 (move DNS to Cloudflare). It's a one-time 30–60 min job that unblocks every email type permanently, keeps you inside Lovable's email system, and removes SiteGround as a future bottleneck for anything DNS-related (subdomain emails, multi-region setups, etc.). I'll handle every step inside Lovable; you only need to do the Cloudflare account + nameserver swap.
+
+If you'd rather not move DNS, let's spend 2 minutes testing Option 2 first before committing to Option 3.
+
+## What I need from you
+Pick one: **Option 1 (Cloudflare move)**, **Option 2 (try SiteGround NS first)**, or **Option 3 (commit to Resend)**.
