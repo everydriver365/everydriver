@@ -1,37 +1,42 @@
-## Diagnosis
+## Problem
 
-Emails are not failing because DNS is missing. The domain check shows `notify.everydriver.co.uk` is verified and ready.
+The `/contact` page's "Send us a message" and "Request a Callback" forms submit to the `create-enquiry` edge function. That function still sends admin notifications via **Resend directly**, using `from: noreply@everydriver.co.uk` (the root domain). Since your verified sender domain is `notify.everydriver.co.uk`, Resend rejects (or silently drops) these sends, but the function returns `success: true` to the form anyway — so the UI shows "Message sent!" while no email arrives.
 
-The failure in the email log is:
+Meanwhile, the auto-reply confirmation to the visitor isn't sent at all.
 
-```text
-403 no_matching_sender: No sender domain matches the requested sender domain
-```
+## Fix
 
-Recent email attempts are reaching the queue, then ending in `dlq` after retries. The queued email payload is using `notify.everydriver.co.uk`, but the workspace/project email configuration currently reports the project as configured to use `everydriver.co.uk`. That mismatch is why the sender lookup rejects the send.
+Migrate `create-enquiry` off direct Resend and onto the Lovable Emails queue, same pipeline that's already working for my admin-enquiry test.
 
-I also found that `auth-email-hook` is not present in the codebase, so custom auth email templates have not actually been scaffolded/deployed yet.
+### 1. New app email template — `contact-enquiry-admin`
+- `supabase/functions/_shared/transactional-email-templates/contact-enquiry-admin.tsx`
+- Receives: name, email, phone, courseType (callback/general/bespoke), hours, timing, message
+- Subject: "📞 New Callback from {name}" or "📝 New Enquiry from {name}"
+- Brand-consistent React Email layout (same tokens as existing templates)
+- Registered in `_shared/transactional-email-templates/registry.ts`
 
-## Plan
+### 2. New app email template — `contact-enquiry-confirmation`
+- Sent to the visitor when they provide an email
+- Subject: "We've received your message – EveryDriver"
+- Short thank-you + what to expect next
 
-1. Reconcile the email sender configuration
-   - Re-run the managed email infrastructure setup so the project sender config, queue worker, and backend secrets are refreshed against the currently verified EveryDriver email domain.
-   - Confirm the configured sender domain matches what the app email function uses.
+### 3. Update `create-enquiry/index.ts`
+- Remove the direct `fetch("https://api.resend.com/emails", ...)` block and the `RESEND_API_KEY` dependency
+- After inserting the enquiry, invoke `send-transactional-email` twice:
+  - One per admin email in `admin_notification_emails` (or fallback `enquiries@everydriver.co.uk`) with template `contact-enquiry-admin`, idempotency key `enquiry-admin-{enquiryId}-{recipientHash}`
+  - If visitor provided an email, send `contact-enquiry-confirmation` with idempotency key `enquiry-confirm-{enquiryId}`
+- Set `emailSent` based on actual invoke success (not silently swallow errors)
+- Return a proper error to the client if the enquiry insert succeeds but email enqueue fails, so the UI can show real feedback
 
-2. Set up auth email templates properly
-   - Scaffold the managed auth email templates for signup confirmation, password reset, magic link, invite, email change, and re-authentication.
-   - Apply EveryDriver branding to the generated templates.
-   - Deploy the auth email hook.
+### 4. Deploy
+- Deploy `create-enquiry` and `send-transactional-email` after template/registry changes
 
-3. Fix app email sender mismatch if still present
-   - If the scaffold/config still points app emails at the wrong domain, update the app email sender configuration to use the verified sender domain consistently.
-   - Deploy the affected email functions.
+### 5. Validate
+- Submit the live `/contact` form
+- Check `email_send_log` for both rows progressing `pending` → `sent`
+- Confirm delivery to `enquiries@everydriver.co.uk` and to the visitor address
 
-4. Validate with live evidence
-   - Send or trigger a single test email.
-   - Check the email log for a latest deduplicated `sent` row rather than `dlq`.
-   - Check queue/function logs for any remaining rejection.
-
-## Expected result
-
-Auth emails and app emails should send through EveryDriver once the sender domain used by the queued payload matches the verified domain in the backend email configuration.
+## Out of scope
+- BespokeEnquiryForm (different component – will inherit the same backend fix automatically since it uses the same function, but I'll verify its payload shape)
+- School/instructor mini-website contact forms
+- Removing the now-unused `RESEND_API_KEY` secret (leave in place unless you ask to delete it)
