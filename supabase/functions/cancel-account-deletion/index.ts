@@ -3,6 +3,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,7 +12,7 @@ const corsHeaders = {
 };
 
 const APP_NAME = "EveryDriver";
-const FROM_ADDRESS = "EveryDriver <info@everydriver.co.uk>";
+
 
 // ---------- crypto helpers ----------
 function b64urlDecode(s: string): Uint8Array {
@@ -79,38 +80,8 @@ async function aesDecryptEmail(stored: string, keyMaterial: string): Promise<str
   }
 }
 
-// ---------- email ----------
-function renderCancelledHtml(): string {
-  return `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1a1a1a;">
-  <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #10b981;">
-    <h1 style="font-size: 22px; margin: 0;">Account deletion cancelled</h1>
-    <p style="color: #666; font-size: 13px; margin: 8px 0 0;">${APP_NAME}</p>
-  </div>
-  <div style="padding: 24px 0;">
-    <p style="font-size: 15px;">Welcome back.</p>
-    <p style="font-size: 15px;">Your account deletion request has been cancelled. Your account is fully restored.</p>
-    <p style="font-size: 15px;">Please log in to continue.</p>
-  </div>
-  <div style="border-top: 1px solid #eee; padding-top: 16px; font-size: 12px; color: #999; text-align: center;">
-    ${APP_NAME}
-  </div>
-</div>`;
-}
+// Email now sent via sendBrandedEmail (Lovable Emails pipeline).
 
-async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-  if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
-  const resp = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM_ADDRESS, to: [to], subject, html }),
-  });
-  if (!resp.ok) {
-    const txt = await resp.text();
-    throw new Error(`Resend send failed: ${resp.status} ${txt}`);
-  }
-}
 
 // ---------- handler ----------
 serve(async (req) => {
@@ -219,11 +190,22 @@ serve(async (req) => {
         ? await aesDecryptEmail(row.contact_email_encrypted, EMAIL_KEY)
         : null;
       if (email) {
-        await sendEmail(email, "Account deletion cancelled — welcome back", renderCancelledHtml());
+        await sendBrandedEmail({
+          to: email,
+          subject: "Account deletion cancelled — welcome back",
+          heading: "Account deletion cancelled",
+          intro: "Welcome back. Your account deletion request has been cancelled and your account is fully restored.",
+          paragraphs: ["Please log in to continue."],
+          ctaLabel: "Log in",
+          ctaUrl: "https://everydriver.co.uk/login",
+          footerNote: APP_NAME,
+          idempotencyKey: `acct-del-cancel-${row.id}`,
+        }, admin);
       }
     } catch (emailErr) {
       console.error("[cancel-account-deletion] email send failed:", emailErr);
     }
+
 
     return new Response(
       JSON.stringify({ message: "Account deletion cancelled. Please log in to continue." }),
