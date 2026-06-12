@@ -117,6 +117,7 @@ async function checkForNewBundle(reason: string, bypassThrottle = false): Promis
 
   // eslint-disable-next-line no-console
   console.info(`[bundleRefresh] new bundle detected (${reason}); reloading`);
+  bootProbeLog(`bundleRefresh HARD RELOAD (${reason})`);
   await hardReload();
 }
 
