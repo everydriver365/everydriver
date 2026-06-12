@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PushDataType, NotifyCategory, NotifyImportance, PupilNotifyType } from "../_shared/notification-types.ts";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -41,17 +42,8 @@ function emailSubject(tier: Tier, amount: string): string {
   }
 }
 
-function emailHtml(tier: Tier, pupilName: string, amount: string, instructorName: string): string {
-  const heading = tier === 1 ? "Payment reminder" : tier === 2 ? "Payment overdue" : "Final reminder";
-  const message = smsBody(tier, pupilName, amount, instructorName);
-  return `
-    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>${heading}</h2>
-      <p>${message}</p>
-      <p>Thank you.</p>
-      <p style="color: #666; font-size: 12px;">- ${instructorName} via EveryDriver</p>
-    </div>
-  `;
+function emailHeading(tier: Tier): string {
+  return tier === 1 ? "Payment reminder" : tier === 2 ? "Payment overdue" : "Final reminder";
 }
 
 function pushBody(tier: Tier, amount: string, instructorName: string): string {

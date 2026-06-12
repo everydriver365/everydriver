@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Resend } from "npm:resend@4.0.1";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,15 +17,12 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY")!);
 
-    // today + 30 days (UTC)
     const target = new Date();
     target.setUTCHours(0, 0, 0, 0);
     target.setUTCDate(target.getUTCDate() + 30);
     const targetDate = target.toISOString().slice(0, 10);
 
-    // sent threshold: today - 25 days
     const threshold = new Date();
     threshold.setUTCDate(threshold.getUTCDate() - 25);
     const thresholdIso = threshold.toISOString();
@@ -54,36 +51,22 @@ Deno.serve(async (req) => {
       );
 
       try {
-        await resend.emails.send({
-          from: "EveryDriver <noreply@everydriver.co.uk>",
-          reply_to: "hello@everydriver.co.uk",
-          to: [inst.email],
+        await sendBrandedEmail({
+          to: inst.email,
           subject: "Your DBS Update Service subscription expires in 30 days",
-          html: `
-            <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1f;">
-              <h2 style="color:#1a1a1f;">DBS Update Service renewal reminder</h2>
-              <p>Hi ${inst.name || "there"},</p>
-              <p>Your DBS Update Service subscription is due to expire on
-                 <strong>${expiryFmt}</strong> (in 30 days).</p>
-              <p>To keep your enhanced background check continuously valid,
-                 please renew your subscription before it lapses.</p>
-              <p>
-                <a href="https://www.gov.uk/dbs-update-service"
-                   style="display:inline-block;background:#2B7BC8;color:#fff;
-                          padding:10px 16px;border-radius:8px;text-decoration:none;
-                          font-weight:600;">Renew on GOV.UK</a>
-              </p>
-              <p style="margin-top:18px;font-size:13px;color:#555;">
-                Once renewed, update your expiry date in EveryDriver:
-                <a href="https://everydriver.co/instructor/settings/profile">
-                  Update your details</a>.
-              </p>
-              <p style="margin-top:24px;font-size:12px;color:#999;">
-                — EveryDriver compliance reminders
-              </p>
-            </div>
-          `,
-        });
+          heading: "DBS Update Service renewal reminder",
+          preview: `Your DBS Update Service expires on ${expiryFmt}`,
+          intro: `Hi ${inst.name || "there"},`,
+          paragraphs: [
+            `Your DBS Update Service subscription is due to expire on ${expiryFmt} (in 30 days).`,
+            "To keep your enhanced background check continuously valid, please renew your subscription before it lapses.",
+            "Once renewed, update your expiry date in your EveryDriver instructor settings.",
+          ],
+          ctaLabel: "Renew on GOV.UK",
+          ctaUrl: "https://www.gov.uk/dbs-update-service",
+          footerNote: "EveryDriver compliance reminders",
+          idempotencyKey: `dbs-update-30d-${inst.id}-${targetDate}`,
+        }, supabase);
 
         await supabase
           .from("instructors")
