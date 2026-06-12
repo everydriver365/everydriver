@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
-import { Resend } from "npm:resend@4.0.1";
 import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
 import { PushDataType, NotifyCategory, NotifyImportance } from "../_shared/notification-types.ts";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,8 +12,8 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
 const APP_URL = "https://everydriver.co.uk";
+
 
 interface OfferEvent {
   kind: "offer_received";
@@ -56,7 +56,7 @@ function fmtDate(d?: string | null) {
   return dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
 }
 
-async function sendPush(supabase: ReturnType<typeof createClient>, instructorId: string, title: string, body: string) {
+async function sendPush(_supabase: ReturnType<typeof createClient>, instructorId: string, title: string, body: string) {
   try {
     await fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
       method: "POST",
@@ -81,33 +81,30 @@ async function sendPush(supabase: ReturnType<typeof createClient>, instructorId:
   }
 }
 
-async function sendEmail(instructor: { name?: string | null; email?: string | null }, title: string, body: string) {
-  if (!RESEND_KEY || !instructor.email) return;
+async function sendEmail(
+  supabase: ReturnType<typeof createClient>,
+  instructor: { name?: string | null; email?: string | null },
+  title: string,
+  body: string,
+  idempotencyKey: string,
+) {
+  if (!instructor.email) return;
   try {
-    const resend = new Resend(RESEND_KEY);
-    const html = `
-      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#fff;color:#111">
-        <h2 style="margin:0 0 12px;font-size:20px">🔁 ${escapeHtml(title)}</h2>
-        <p style="margin:0 0 16px;font-size:14px;color:#374151">${escapeHtml(body)}</p>
-        <a href="${APP_URL}/instructor/test-requests"
-           style="display:inline-block;background:#2B7BC8;color:#fff;padding:10px 18px;border-radius:10px;text-decoration:none;font-weight:600">
-          View test swaps
-        </a>
-        <p style="margin:24px 0 0;font-size:12px;color:#9ca3af">
-          You can change notification preferences in Settings → Notifications.
-        </p>
-      </div>`;
-    await resend.emails.send({
-      from: "EveryDriver <notifications@everydriver.co.uk>",
-      reply_to: "hello@everydriver.co.uk",
-      to: [instructor.email],
+    await sendBrandedEmail({
+      to: instructor.email,
       subject: title,
-      html,
-    });
+      heading: `🔁 ${title}`,
+      intro: body,
+      ctaLabel: "View test swaps",
+      ctaUrl: `${APP_URL}/instructor/test-requests`,
+      footerNote: "You can change notification preferences in Settings → Notifications.",
+      idempotencyKey,
+    }, supabase);
   } catch (e) {
     console.error("email send error", e);
   }
 }
+
 
 async function notifyInstructor(
   supabase: ReturnType<typeof createClient>,
