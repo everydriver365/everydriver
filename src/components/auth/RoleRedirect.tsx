@@ -91,17 +91,22 @@ export function RoleRedirect() {
       if (cancelled) return;
 
       const goTo = async (role: string) => {
+        bootProbeLog(`RoleRedirect: goTo role=${role}`);
         if (role === "pupil") {
           try {
             const path = await resolvePupilPath(user.id);
+            bootProbeLog(`RoleRedirect: nav ${path}`);
             navigate(path, { replace: true });
           } catch {
+            bootProbeLog("RoleRedirect: nav /pupil (fallback)");
             navigate("/pupil", { replace: true });
           }
           return;
         }
         const info = ROLE_MAP[role];
-        navigate(info?.path ?? "/instructor", { replace: true });
+        const target = info?.path ?? "/instructor";
+        bootProbeLog(`RoleRedirect: nav ${target}`);
+        navigate(target, { replace: true });
       };
 
       // Honour explicit portal hint when the user has that role.
