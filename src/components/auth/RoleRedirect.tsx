@@ -63,6 +63,11 @@ export function RoleRedirect() {
         const res = await supabase.auth.getUser();
         user = res.data.user;
         bootProbeLog(`RoleRedirect: getUser ok user=${user?.id ? "yes" : "no"}`);
+        try {
+          console.info("[RoleRedirect] getUser result", { hasUser: Boolean(user) });
+        } catch {
+          // Ignore logging failures.
+        }
       } catch (e: any) {
         bootProbeLog(`RoleRedirect: getUser FAILED ${e?.message || e}`);
         console.error("[RoleRedirect] getUser failed", e);

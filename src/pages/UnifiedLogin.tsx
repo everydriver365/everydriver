@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { setRememberMe } from "@/lib/sessionPersistence";
+import { setRememberMe as persistRememberMe } from "@/lib/sessionPersistence";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import everyDriverLogoAsset from "@/assets/ed-logo-jun7-login-transparent.png.asset.json";
 
@@ -28,7 +28,7 @@ export default function UnifiedLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberChecked, setRememberChecked] = useState(false);
   const [isForgot, setIsForgot] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,14 +43,22 @@ export default function UnifiedLogin() {
     }
     setLoading(true);
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
+      try {
+        console.info("[UnifiedLogin] signInWithPassword result", {
+          hasSession: Boolean(signInData?.session),
+          hasUser: Boolean(signInData?.user),
+        });
+      } catch {
+        // Ignore logging failures.
+      }
       if (signInError) {
         setError(signInError.message);
       } else {
-        setRememberMe(rememberMe);
+        persistRememberMe(rememberChecked);
         navigate("/auth/redirect", { replace: true });
       }
     } catch {
@@ -310,16 +318,16 @@ export default function UnifiedLogin() {
                   gap: 10,
                   cursor: "pointer",
                 }}
-                onClick={() => setRememberMe((v) => !v)}
+                onClick={() => setRememberChecked((v) => !v)}
               >
                 <div
                   role="switch"
-                  aria-checked={rememberMe}
+                  aria-checked={rememberChecked}
                   style={{
                     width: 38,
                     height: 22,
                     borderRadius: 11,
-                    backgroundColor: rememberMe ? BLUE : TOGGLE_OFF,
+                    backgroundColor: rememberChecked ? BLUE : TOGGLE_OFF,
                     position: "relative",
                     transition: "background 0.2s",
                     flexShrink: 0,
@@ -329,7 +337,7 @@ export default function UnifiedLogin() {
                     style={{
                       position: "absolute",
                       top: 3,
-                      left: rememberMe ? 19 : 3,
+                      left: rememberChecked ? 19 : 3,
                       width: 16,
                       height: 16,
                       borderRadius: 8,
