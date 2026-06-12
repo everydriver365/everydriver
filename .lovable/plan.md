@@ -1,43 +1,55 @@
-## The new blocker
-SiteGround Site Tools (your DNS host for `everydriver.co.uk`) won't let you add NS records on a subdomain like `notify`. That's the exact mechanism Lovable Emails uses to delegate `notify.everydriver.co.uk` and manage SPF/DKIM/DMARC automatically. So the original plan (delegate `notify.everydriver.co.uk` to `ns5/ns6.lovable.cloud`) can't be completed at SiteGround.
+## Goal
+Move DNS for `everydriver.co.uk` from SiteGround to Cloudflare so Lovable can delegate `notify.everydriver.co.uk` for email sending. Get every app email (enquiries, auth, receipts, reminders) delivering through one verified sender.
 
-Three viable ways forward — pick one.
+## Your part (DNS — done once)
 
-## Option 1 — Move DNS for `everydriver.co.uk` to Cloudflare (recommended)
-Cloudflare is free and fully supports subdomain NS delegation. Once DNS is there, the original plan works unchanged.
+### 1. Inventory current SiteGround DNS
+Before changing anything, open SiteGround Site Tools → DNS Zone Editor and screenshot the full record list. We need to recreate these in Cloudflare exactly, including:
+- A / AAAA records for the root and any subdomains in use
+- MX records (your inbox provider)
+- TXT records (SPF, DMARC, Resend verification, Google site verification, etc.)
+- CNAMEs (www, anything pointed at external services)
 
-Steps:
-1. Create a free Cloudflare account, add `everydriver.co.uk`, import existing records (Cloudflare auto-pulls most), turn proxy OFF for mail-related records.
-2. At your domain registrar (where you bought the domain), change the authoritative nameservers from SiteGround's to the two Cloudflare nameservers Cloudflare gives you.
-3. Wait for nameserver change to propagate (usually <1h, up to 24h).
-4. Re-add the existing Resend records on the root `everydriver.co.uk` in Cloudflare so Resend keeps working until we retire it.
-5. In Lovable, add `notify.everydriver.co.uk` — Lovable shows 2 NS records. Add them in Cloudflare (proxy OFF). Verification typically completes in minutes.
-6. I revert `create-enquiry` back to using `send-transactional-email` (same code path as every other app email), test an enquiry, confirm `email_send_log` shows `sent`/`delivered`.
-7. Remove the failed `notify.drive365.co.uk` entry. Optionally remove `RESEND_API_KEY` + Resend DNS records once we've confirmed nothing else uses them.
+If anything is unclear from the screenshot I'll help identify what it's for.
 
-Pros: every email type (enquiries, auth, receipts, reminders) fixed with one DNS change, no code rewrites, no SiteGround limitation ever again, Cloudflare also gives you faster DNS + analytics. Cons: one-time DNS migration; ~1h of attention.
+### 2. Create Cloudflare account and add the domain
+- Sign up free at cloudflare.com
+- Add Site → enter `everydriver.co.uk` → Free plan
+- Cloudflare auto-scans and imports most records. **Compare against your SiteGround screenshot** and add anything missing.
+- For every mail-related record (MX, SPF, DKIM, DMARC, Resend records): set the proxy toggle to **DNS only (grey cloud)**, not proxied. Same for any record Lovable's custom-domain setup added (A `185.158.133.1`, TXT `_lovable`).
 
-## Option 2 — Use a different subdomain that SiteGround *will* delegate, or move just one subdomain to Cloudflare
-Some SiteGround plans allow NS records via the "DNS Zone Editor" if the subdomain doesn't already exist as an A/CNAME. Worth a 2-minute test:
-- In SiteGround Site Tools → DNS Zone Editor, try adding NS record with Name `notify`, Value `ns5.lovable.cloud`, then a second NS record with same name pointing to `ns6.lovable.cloud`.
-- If it accepts both: we're done — proceed straight to Lovable verification + code revert as in Option 1 steps 5–7.
-- If it rejects: fall back to Option 1.
+### 3. Switch nameservers at your domain registrar
+Cloudflare gives you two nameservers (e.g. `xxx.ns.cloudflare.com`). Go to wherever you bought `everydriver.co.uk` (the registrar, not SiteGround hosting) and replace the existing nameservers with Cloudflare's two. Save.
 
-I'll also try alternative subdomain names (`mail`, `send`, `e`) in case it's a name-specific restriction.
+Propagation: usually under an hour, occasionally up to 24h. Cloudflare emails you when active.
 
-Pros: keeps DNS at SiteGround. Cons: depends on SiteGround plan; may still hit the same wall.
+### 4. Tell me when Cloudflare shows the domain as Active
+That's the signal to start the Lovable side.
 
-## Option 3 — Stay on Resend (skip Lovable Emails entirely)
-Keep the direct-Resend path I added to `create-enquiry`. Extend the same pattern to the other app emails (auth confirmations, receipts, reminders, etc.) by adding a thin `send-via-resend` edge function and pointing the existing triggers at it. Use the already-verified root `everydriver.co.uk` as the sender.
+### 5. Add the Lovable email-domain NS records
+When I prompt you, Lovable will show 2 NS records for `notify`. In Cloudflare DNS:
+- Type: NS, Name: `notify`, Target: (first Lovable NS), Proxy: DNS only
+- Type: NS, Name: `notify`, Target: (second Lovable NS), Proxy: DNS only
 
-Pros: no DNS change needed; root domain already verified in Resend. Cons: requires rewriting every email trigger (currently ~all use `send-transactional-email`), Lovable's auth emails revert to default Lovable templates (we can't easily route Supabase auth hooks through Resend without custom code), ongoing maintenance lives outside Lovable's email tooling, no built-in suppression list / DLQ / queue. This is the most work for the least benefit.
+Verification usually completes in minutes.
 
-**Coderick AI from the SiteGround Marketplace is not an option I'd recommend** — it's an unrelated third-party tool, doesn't integrate with Lovable Emails or your existing Supabase functions, and would just add another moving part. Ignore that suggestion from support; the real fix is the DNS host limitation, not the email provider.
+## My part (inside Lovable — I'll do all of this)
 
-## My recommendation
-Option 1 (move DNS to Cloudflare). It's a one-time 30–60 min job that unblocks every email type permanently, keeps you inside Lovable's email system, and removes SiteGround as a future bottleneck for anything DNS-related (subdomain emails, multi-region setups, etc.). I'll handle every step inside Lovable; you only need to do the Cloudflare account + nameserver swap.
+1. Open the email-domain setup dialog for `notify.everydriver.co.uk` and give you the exact NS values for Step 5 above.
+2. Once verification passes, remove the failed `notify.drive365.co.uk` entry so the Email panel is clean.
+3. Revert `create-enquiry` to call `send-transactional-email` like every other app email (removes the temporary direct-Resend path I added).
+4. Send a test enquiry and confirm `email_send_log` shows `sent` → `delivered`.
+5. Once the new path is proven working: remove the `RESEND_API_KEY` secret and audit the codebase for any other Resend references. Tell you what (if anything) is safe to delete from Resend's dashboard.
+6. Auth emails (signup, password reset, magic links) will start working automatically once the domain is verified — I'll confirm by triggering a test password reset.
 
-If you'd rather not move DNS, let's spend 2 minutes testing Option 2 first before committing to Option 3.
+## Safety rails
+- Resend keeps working throughout the migration because we copy its records into Cloudflare *before* switching nameservers.
+- If anything goes wrong during nameserver propagation, you can revert nameservers at the registrar back to SiteGround's originals (note these down before changing).
+- No code changes ship until DNS is verified, so the app can't get worse than it is right now.
+- The custom-domain records (`185.158.133.1`, `_lovable` TXT) get copied into Cloudflare so `everydriver.co.uk` keeps serving the site without interruption.
 
-## What I need from you
-Pick one: **Option 1 (Cloudflare move)**, **Option 2 (try SiteGround NS first)**, or **Option 3 (commit to Resend)**.
+## What you need to do right now
+1. Screenshot SiteGround Site Tools → DNS Zone Editor (full record list).
+2. Confirm where the domain is **registered** (the registrar, e.g. SiteGround themselves, GoDaddy, 123-reg). That's where the nameserver change happens.
+
+Once you've done those two things, paste the screenshot here and I'll mark up exactly what needs to move into Cloudflare and what to leave behind. Then we proceed step by step.
