@@ -52,7 +52,7 @@ const LEARNER_ALLOWED_ROUTES = [
 const SHARED_ROUTES = [
   "/", // Root path - handled by ConditionalHome, never redirect
   "/.well-known", // Apple Pay domain verification - must not redirect
-  
+  "/login", // Unified login (instructor + others) - must not cross-redirect
   "/privacy-policy",
   "/terms-of-service",
   "/about",
