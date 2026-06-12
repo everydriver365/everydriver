@@ -83,3 +83,11 @@ createRoot(document.getElementById("root")!).render(
   </ThemeProvider>
 );
 
+// Signal a successful React mount so the boot probe can auto-hide.
+// Wrapped in rAF so we run after the first paint, not just after createRoot returns.
+if (typeof requestAnimationFrame !== "undefined") {
+  requestAnimationFrame(() => markBootProbeMounted());
+} else {
+  setTimeout(() => markBootProbeMounted(), 0);
+}
+
