@@ -7,7 +7,9 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   console.log("Service Worker activated");
-  event.waitUntil(clients.claim());
+  // Intentionally NOT calling clients.claim() — this worker is push-only
+  // and must never take control of page navigations. WKWebView (Despia)
+  // gets a blank screen if a stale SW hijacks the app shell.
 });
 
 self.addEventListener("push", (event) => {
