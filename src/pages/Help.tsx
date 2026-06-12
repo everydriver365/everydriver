@@ -1,34 +1,47 @@
 import { SEOHead } from "@/components/SEOHead";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { MessageCircle, Book, Video, FileText, Headphones } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import {
+  MessageCircle,
+  Rocket,
+  Video,
+  FileText,
+  Headphones,
+  Mail,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const helpTopics = [
   {
     title: "Getting Started",
-    description: "Learn how to book your first lesson and what to expect",
-    icon: Book,
+    description: "Learn how to book your first lesson and what to expect.",
+    icon: Rocket,
     link: "/faqs",
+    chipBg: "#E6F1FB",
+    chipColor: "#0070C0",
   },
   {
     title: "Video Tutorials",
-    description: "Watch helpful guides on driving techniques",
+    description: "Watch helpful guides on driving techniques.",
     icon: Video,
     link: "#",
+    chipBg: "#FAEEDA",
+    chipColor: "#854F0B",
   },
   {
     title: "Theory Help",
-    description: "Resources for passing your theory test",
+    description: "Resources for passing your theory test.",
     icon: FileText,
     link: "/theory",
+    chipBg: "#EAF3DE",
+    chipColor: "#3B6D11",
   },
   {
     title: "Contact Support",
-    description: "Speak with our friendly support team",
+    description: "Speak with our friendly support team.",
     icon: MessageCircle,
     link: "/contact",
+    chipBg: "#FCEBEB",
+    chipColor: "#D12E2E",
   },
 ];
 
@@ -43,62 +56,285 @@ export default function Help() {
         title="Help & Support | EveryDriver"
         description="Get help with your EveryDriver account, bookings, payments and lessons. Contact our support team."
       />
-      <div className="container py-8 pb-24">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <MessageCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h1 className="text-3xl font-bold">Help Centre</h1>
-            <p className="text-muted-foreground mt-2">
+      <div
+        style={{ fontFamily: "'Poppins', sans-serif", background: "#fff" }}
+        className="py-10 pb-24"
+      >
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 1.25rem" }}>
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: "2.25rem" }}>
+            <div
+              style={{
+                width: 54,
+                height: 54,
+                borderRadius: 14,
+                background: "#E6F1FB",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 0.9rem",
+              }}
+            >
+              <MessageCircle size={26} color="#0070C0" strokeWidth={2} />
+            </div>
+            <h1
+              style={{
+                fontSize: 26,
+                fontWeight: 700,
+                color: "#0F2044",
+                marginBottom: 6,
+                fontFamily: "'Poppins', sans-serif",
+              }}
+            >
+              Help Centre
+            </h1>
+            <p
+              style={{
+                fontSize: 14,
+                color: "#666",
+                fontFamily: "'Poppins', sans-serif",
+              }}
+            >
               We're here to help you on your journey to becoming a confident driver
             </p>
           </div>
 
-          {/* Live Chat Tile */}
+          {/* Live Chat Banner */}
           <button
             onClick={openLiveChat}
-            className="mb-6 w-full rounded-xl border-2 border-accent bg-accent/10 p-5 text-left transition-all hover:bg-accent/20 hover:shadow-md active:scale-[0.98]"
+            style={{
+              width: "100%",
+              background: "#fff",
+              borderRadius: 14,
+              border: "1.5px solid #e8edf2",
+              padding: "1.1rem 1.25rem",
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              cursor: "pointer",
+              marginBottom: "1.1rem",
+              textAlign: "left",
+              transition: "border-color 0.2s ease",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "#0070C0")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.borderColor = "#e8edf2")
+            }
           >
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lg">
-                <Headphones className="h-6 w-6" />
+            <div
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 10,
+                background: "#EAF3DE",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Headphones size={20} color="#3B6D11" strokeWidth={2} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 3,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: "#0F2044",
+                    fontFamily: "'Poppins', sans-serif",
+                  }}
+                >
+                  Live Chat
+                </span>
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 600,
+                    color: "#3B6D11",
+                    background: "#EAF3DE",
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.4px",
+                    fontFamily: "'Poppins', sans-serif",
+                  }}
+                >
+                  Online now
+                </span>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold">Live Chat</h3>
-                <p className="text-sm text-muted-foreground">
-                  Chat with our support team in real-time — we're here to help!
-                </p>
-              </div>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "#666",
+                  lineHeight: 1.5,
+                  fontFamily: "'Poppins', sans-serif",
+                }}
+              >
+                Chat with our support team in real-time — we're here to help!
+              </p>
             </div>
           </button>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {helpTopics.map((topic) => (
-              <Link key={topic.title} to={topic.link}>
-                <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <topic.icon className="h-5 w-5 text-primary" />
-                      </div>
+          {/* Help Topic Grid */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: 14,
+            }}
+            className="max-[600px]:!grid-cols-1"
+          >
+            {helpTopics.map((topic) => {
+              const Icon = topic.icon;
+              return (
+                <Link
+                  key={topic.title}
+                  to={topic.link}
+                  style={{
+                    display: "block",
+                    textDecoration: "none",
+                    background: "#fff",
+                    borderRadius: 14,
+                    border: "1.5px solid #e8edf2",
+                    padding: "1.25rem",
+                    cursor: "pointer",
+                    transition: "border-color 0.2s ease",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.borderColor = "#0070C0")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.borderColor = "#e8edf2")
+                  }
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 10,
+                        background: topic.chipBg,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon size={20} color={topic.chipColor} strokeWidth={2} />
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: "#0F2044",
+                        fontFamily: "'Poppins', sans-serif",
+                      }}
+                    >
                       {topic.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">{topic.description}</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                    </span>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: "#666",
+                      lineHeight: 1.6,
+                      fontFamily: "'Poppins', sans-serif",
+                    }}
+                  >
+                    {topic.description}
+                  </p>
+                </Link>
+              );
+            })}
           </div>
 
-          <div className="mt-8 p-6 rounded-2xl bg-primary text-primary-foreground text-center">
-            <h2 className="text-xl font-semibold">Still need help?</h2>
-            <p className="mt-2 text-primary-foreground/80">
-              Our support team is available Monday to Friday, 9am - 6pm
+          {/* Bottom CTA */}
+          <div
+            style={{
+              marginTop: "1.5rem",
+              background: "#0F2044",
+              borderRadius: 14,
+              padding: "2rem",
+              textAlign: "center",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: "#7da6e0",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                marginBottom: 10,
+                fontFamily: "'Poppins', sans-serif",
+              }}
+            >
+              Still need help?
             </p>
-            <Button variant="secondary" className="mt-4" asChild>
-              <Link to="/contact">Contact Us</Link>
-            </Button>
+            <h2
+              style={{
+                fontSize: 19,
+                fontWeight: 700,
+                color: "#fff",
+                marginBottom: 8,
+                fontFamily: "'Poppins', sans-serif",
+              }}
+            >
+              We're just a message away
+            </h2>
+            <p
+              style={{
+                fontSize: 13,
+                color: "rgba(255,255,255,0.7)",
+                marginBottom: 18,
+                fontFamily: "'Poppins', sans-serif",
+              }}
+            >
+              Our support team is available Monday to Friday, 9am – 6pm.
+            </p>
+            <Link
+              to="/contact"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "#D12E2E",
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 600,
+                padding: "11px 24px",
+                borderRadius: 8,
+                textDecoration: "none",
+                fontFamily: "'Poppins', sans-serif",
+                transition: "background 0.2s ease",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "#b52626")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "#D12E2E")
+              }
+            >
+              <Mail size={16} strokeWidth={2} />
+              Contact us
+            </Link>
           </div>
         </div>
       </div>
