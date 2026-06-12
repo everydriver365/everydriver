@@ -804,7 +804,11 @@ export default function Index() {
                 })}
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div style={{ padding: "32px 0", textAlign: "center", color: "#9ca3af", fontSize: 13 }}>
+              Latest articles coming soon.
+            </div>
+          )}
         </div>
       </section>
 
