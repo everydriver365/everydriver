@@ -421,32 +421,9 @@ export default function Contact() {
     );
   }
 
-  // ── Bespoke Course Request (existing layout) ──────────────────────
+  // ── Bespoke Course Request (Drive365 branded) ─────────────────────
   if (isBespoke) {
-    return (
-      <MainLayout>
-        {CONTACT_SEO}
-        <div className="container py-8 pb-24">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <FileEdit className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h1 className="text-3xl font-bold">Bespoke Course Request</h1>
-              <p className="text-muted-foreground mt-2">
-                Tell us what you're looking for and we'll match you with the perfect instructor
-              </p>
-            </div>
-            <div className="max-w-lg mx-auto">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4">Request a Bespoke Course</h2>
-                  <BespokeEnquiryForm />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </MainLayout>
-    );
+    return <BespokeBranded />;
   }
 
   // Drive365 redesigned default contact page
