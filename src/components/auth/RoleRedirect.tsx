@@ -57,27 +57,35 @@ export function RoleRedirect() {
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
+      bootProbeLog("RoleRedirect: getUser…");
       let user: any = null;
       try {
         const res = await supabase.auth.getUser();
         user = res.data.user;
-      } catch (e) {
+        bootProbeLog(`RoleRedirect: getUser ok user=${user?.id ? "yes" : "no"}`);
+      } catch (e: any) {
+        bootProbeLog(`RoleRedirect: getUser FAILED ${e?.message || e}`);
         console.error("[RoleRedirect] getUser failed", e);
       }
       if (cancelled) return;
       if (!user) {
+        bootProbeLog("RoleRedirect: no user → /");
         navigate("/", { replace: true });
         return;
       }
 
+      bootProbeLog("RoleRedirect: query user_roles…");
       let userRoles: string[] = [];
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", user.id);
+        if (error) bootProbeLog(`user_roles err ${error.message}`);
         userRoles = (data ?? []).map((r) => r.role as string);
-      } catch (e) {
+        bootProbeLog(`RoleRedirect: roles=[${userRoles.join(",")}]`);
+      } catch (e: any) {
+        bootProbeLog(`RoleRedirect: user_roles THREW ${e?.message || e}`);
         console.error("[RoleRedirect] user_roles query failed", e);
       }
       if (cancelled) return;
