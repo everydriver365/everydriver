@@ -804,7 +804,11 @@ export default function Index() {
                 })}
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div style={{ padding: "32px 0", textAlign: "center", color: "#9ca3af", fontSize: 13 }}>
+              Latest articles coming soon.
+            </div>
+          )}
         </div>
       </section>
 
@@ -848,7 +852,9 @@ export default function Index() {
                 </Link>
               ))}
             </div>
-          ) : null}
+          ) : (
+            <p className="text-center text-sm text-muted-foreground py-8">Latest articles coming soon.</p>
+          )}
 
           <div className="text-center mt-10">
             <Link to="/news">
