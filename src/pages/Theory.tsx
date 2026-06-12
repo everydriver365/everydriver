@@ -1,7 +1,7 @@
 import { SEOHead } from "@/components/SEOHead";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { BookOpen, CheckCircle, Clock, ChevronRight, RotateCcw, Trophy, AlertTriangle } from "lucide-react";
+import { BookOpen, CheckCircle, Clock, ChevronRight, ArrowRight, RotateCcw, Trophy, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
