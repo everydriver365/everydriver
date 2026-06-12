@@ -157,6 +157,8 @@ export const publicRoutes = (
 
     {/* Conditional routes (domain-aware) */}
     <Route path="/contact" element={<ConditionalContact />} />
+    <Route path="/request-callback" element={<Navigate to="/contact?type=callback" replace />} />
+    <Route path="/bespoke-course-request" element={<Navigate to="/contact?type=bespoke" replace />} />
     <Route path="/about" element={<ConditionalAbout />} />
     <Route path="/services" element={<ConditionalServices />} />
     <Route path="/reviews" element={<ConditionalReviews />} />

@@ -76,6 +76,8 @@ export const everydriverRoutes = (
     <Route path="/help" element={<EDHelp />} />
     <Route path="/about" element={<EDAbout />} />
     <Route path="/contact" element={<EDContact />} />
+    <Route path="/request-callback" element={<Navigate to="/contact?type=callback" replace />} />
+    <Route path="/bespoke-course-request" element={<Navigate to="/contact?type=bespoke" replace />} />
     <Route path="/reviews" element={<EDReviews />} />
     <Route path="/design/course-cards" element={<CourseCardsDemo />} />
     <Route path="/services" element={<EDCourses />} />
