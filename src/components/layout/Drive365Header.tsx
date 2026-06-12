@@ -75,24 +75,23 @@ export function Drive365Header() {
   };
 
   return (
-    <header className="sticky top-0 z-[100] w-full">
+    <header className="sticky top-0 z-[100] w-full" style={{ fontFamily: "'Poppins', sans-serif" }}>
       {/* Main bar */}
       <div
         className={cn(
-          "w-full bg-[#0A1628] transition-shadow duration-200",
+          "w-full bg-[#0F2044] transition-shadow duration-200",
           scrolled && "shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
         )}
       >
-        <div className="mx-auto flex h-[56px] items-center justify-between px-[28px] max-lg:px-5">
+        <div className="mx-auto flex h-[64px] items-center justify-between" style={{ padding: "0 1.5rem" }}>
           {/* Logo — EveryDriver wordmark */}
           <Link to={homeLink} className="flex items-center shrink-0" aria-label="EveryDriver home">
-            <img src={logo} alt={logoAlt} className="h-7 -mx-1" />
+            <img src={logo} alt={logoAlt} style={{ height: 28 }} />
           </Link>
 
           {/* Center nav (desktop) */}
-          <nav className="hidden lg:flex items-center" style={{ gap: 22 }}>
+          <nav className="hidden lg:flex items-center" style={{ gap: "1.75rem" }}>
             {NAV_LINKS.map((link) => {
-              const isActive = location.pathname === link.href;
               if (link.hasDropdown) {
                 return (
                   <div key={link.href} className="relative" ref={coursesRef}>
@@ -101,8 +100,8 @@ export function Drive365Header() {
                       onClick={() => setCoursesOpen((v) => !v)}
                       aria-haspopup="menu"
                       aria-expanded={coursesOpen}
-                      className="relative flex items-center gap-1 transition-colors text-white/70 hover:text-white"
-                      style={{ fontSize: 13, fontWeight: 500 }}
+                      className="relative flex items-center gap-1 transition-colors hover:!text-white"
+                      style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.75)", fontFamily: "'Poppins', sans-serif" }}
                     >
                       {link.label}
                       <ChevronDown
@@ -120,7 +119,8 @@ export function Drive365Header() {
                               key={item.href}
                               to={item.href}
                               onClick={() => setCoursesOpen(false)}
-                              className="block px-4 py-2 text-sm text-[#0a1936] hover:bg-[#0F2044]/10 hover:text-[#0F2044] transition-colors"
+                              className="block px-4 py-2 text-sm text-[#0F2044] hover:bg-[#0F2044]/10 transition-colors"
+                              style={{ fontFamily: "'Poppins', sans-serif" }}
                             >
                               {item.label}
                             </Link>
@@ -135,11 +135,8 @@ export function Drive365Header() {
                 <Link
                   key={link.href}
                   to={link.href}
-                  className={cn(
-                    "relative transition-colors",
-                    isActive ? "text-white" : "text-white/70 hover:text-white"
-                  )}
-                  style={{ fontSize: 13, fontWeight: isActive ? 600 : 500 }}
+                  className="relative transition-colors hover:!text-white"
+                  style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.75)", fontFamily: "'Poppins', sans-serif" }}
                 >
                   {link.label}
                 </Link>
@@ -151,22 +148,25 @@ export function Drive365Header() {
           <div className="hidden lg:flex items-center gap-5 shrink-0">
             <Link
               to="/drive365/login"
-              className="transition-colors hover:text-white"
-              style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.6)" }}
+              className="transition-colors hover:!text-white"
+              style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.75)", fontFamily: "'Poppins', sans-serif" }}
             >
               Pupil login
             </Link>
             <Link
               to="/courses"
-              className="inline-flex items-center justify-center text-white transition-colors hover:brightness-110"
+              className="inline-flex items-center justify-center text-white transition-colors"
               style={{
-                background: "#E8641A",
+                background: "#D12E2E",
                 border: "none",
-                borderRadius: 6,
+                borderRadius: 8,
                 padding: "9px 18px",
                 fontSize: 13,
                 fontWeight: 700,
+                fontFamily: "'Poppins', sans-serif",
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#b52626")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#D12E2E")}
             >
               Find courses
             </Link>
@@ -176,14 +176,17 @@ export function Drive365Header() {
           <div className="flex lg:hidden items-center gap-3">
             <Link
               to="/courses"
-              className="inline-flex items-center justify-center text-white transition-colors hover:brightness-110"
+              className="inline-flex items-center justify-center text-white transition-colors"
               style={{
-                background: "#E8641A",
-                borderRadius: 6,
+                background: "#D12E2E",
+                borderRadius: 8,
                 padding: "9px 16px",
                 fontSize: 13,
                 fontWeight: 700,
+                fontFamily: "'Poppins', sans-serif",
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#b52626")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#D12E2E")}
             >
               Find courses
             </Link>
@@ -199,7 +202,7 @@ export function Drive365Header() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="lg:hidden border-t border-white/10 bg-[#0A1628]">
+          <div className="lg:hidden border-t border-white/10 bg-[#0F2044]" style={{ fontFamily: "'Poppins', sans-serif" }}>
             <div className="px-5 py-4 flex flex-col gap-1">
               {NAV_LINKS.map((link) => (
                 <Link
@@ -227,37 +230,54 @@ export function Drive365Header() {
 
 
       {/* Secondary nav bar */}
-      <div className="hidden lg:block w-full" style={{ background: "#EAF0FF" }}>
-        <div className="mx-auto flex h-[40px] items-center justify-center gap-8 px-[28px]">
-          <Link
-            to="/contact?type=callback"
-            className="text-[#0A1628] transition-colors hover:text-[#3E57D9]"
-            style={{ fontSize: 13, fontWeight: 600 }}
-          >
-            Request a Callback
-          </Link>
-          <Link
-            to="/contact?type=bespoke"
-            className="text-[#0A1628] transition-colors hover:text-[#3E57D9]"
-            style={{ fontSize: 13, fontWeight: 600 }}
-          >
-            Bespoke Course Request
-          </Link>
-          <Link
-            to="/courses"
-            className="text-[#0A1628] transition-colors hover:text-[#3E57D9]"
-            style={{ fontSize: 13, fontWeight: 600 }}
-          >
-            Plan a Course
-          </Link>
-          <Link
-            to="/test-swap"
-            className="text-[#0A1628] transition-colors hover:text-[#3E57D9]"
-            style={{ fontSize: 13, fontWeight: 600 }}
-          >
-            Test Swap
-          </Link>
+      <div
+        className="w-full"
+        style={{
+          background: "#ffffff",
+          borderBottom: "1.5px solid #e8edf2",
+          height: 46,
+          fontFamily: "'Poppins', sans-serif",
+        }}
+      >
+        <div
+          className="mx-auto flex items-center justify-center"
+          style={{
+            height: "100%",
+            gap: "2rem",
+            padding: "0 1.5rem",
+            overflowX: "auto",
+            whiteSpace: "nowrap",
+            scrollbarWidth: "none",
+          }}
+        >
+          {[
+            { href: "/contact?type=callback", label: "Request a Callback" },
+            { href: "/contact?type=bespoke", label: "Bespoke Course Request" },
+            { href: "/courses", label: "Plan a Course" },
+            { href: "/test-swap", label: "Test Swap" },
+          ].map((link) => (
+            <Link
+              key={link.label}
+              to={link.href}
+              className="d365-subnav-link"
+              style={{
+                fontSize: 12.5,
+                fontWeight: 600,
+                color: "#0F2044",
+                fontFamily: "'Poppins', sans-serif",
+                borderBottom: "2px solid transparent",
+                padding: "12px 0",
+                transition: "color 120ms ease, border-color 120ms ease",
+                textDecoration: "none",
+              }}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
+        <style>{`
+          .d365-subnav-link:hover { color: #D12E2E !important; border-bottom-color: #D12E2E !important; }
+        `}</style>
       </div>
 
       {/* Promo bar removed — managed via admin CMS PromoBanner */}
