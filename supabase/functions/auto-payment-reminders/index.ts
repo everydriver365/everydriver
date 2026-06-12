@@ -75,7 +75,7 @@ serve(async (req) => {
     const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    
 
     // Find active pupils owing at least the minimum threshold.
     const { data: debtors, error: debtorsError } = await supabase
