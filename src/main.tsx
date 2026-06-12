@@ -1,5 +1,11 @@
 // Force Vite dev server restart
 declare const __BUILD_TIME__: string;
+
+// Boot probe FIRST — before any other import side effects — so we can catch
+// errors thrown during module evaluation inside the Despia/WKWebView wrapper.
+import { installBootProbe, bootProbeLog, markBootProbeMounted } from "./lib/bootProbe";
+installBootProbe();
+
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -13,6 +19,8 @@ import { detectNativeWrapper } from "@/hooks/useIsNativeWrapper";
 import { installQueryBudget } from "@/lib/queryBudget";
 import { enforceRememberMeOnBoot } from "@/lib/sessionPersistence";
 import { installBundleRefresh } from "@/lib/bundleRefresh";
+
+bootProbeLog("imports resolved");
 
 // Honour the "Remember me" choice before any auth-gated UI mounts.
 void enforceRememberMeOnBoot();
@@ -74,4 +82,12 @@ createRoot(document.getElementById("root")!).render(
     </InstructorThemeProvider>
   </ThemeProvider>
 );
+
+// Signal a successful React mount so the boot probe can auto-hide.
+// Wrapped in rAF so we run after the first paint, not just after createRoot returns.
+if (typeof requestAnimationFrame !== "undefined") {
+  requestAnimationFrame(() => markBootProbeMounted());
+} else {
+  setTimeout(() => markBootProbeMounted(), 0);
+}
 

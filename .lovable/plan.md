@@ -1,55 +1,51 @@
 ## Goal
-Move DNS for `everydriver.co.uk` from SiteGround to Cloudflare so Lovable can delegate `notify.everydriver.co.uk` for email sending. Get every app email (enquiries, auth, receipts, reminders) delivering through one verified sender.
+The Despia TestFlight build of EveryDriver shows a white screen on launch and never reaches the instructor login. Safari on the same iPhone, same URL, works. We need to find why the WebView boot fails, then fix it — without breaking the browser/PWA experience.
 
-## Your part (DNS — done once)
+## Approach
+Two phases. Phase 1 ships a tiny visible diagnostic so the next TestFlight build *tells us* what's happening. Phase 2 applies the fix based on what we see, then removes the diagnostic.
 
-### 1. Inventory current SiteGround DNS
-Before changing anything, open SiteGround Site Tools → DNS Zone Editor and screenshot the full record list. We need to recreate these in Cloudflare exactly, including:
-- A / AAAA records for the root and any subdomains in use
-- MX records (your inbox provider)
-- TXT records (SPF, DMARC, Resend verification, Google site verification, etc.)
-- CNAMEs (www, anything pointed at external services)
+---
 
-If anything is unclear from the screenshot I'll help identify what it's for.
+## Phase 1 — Boot Probe (small, safe, shippable now)
 
-### 2. Create Cloudflare account and add the domain
-- Sign up free at cloudflare.com
-- Add Site → enter `everydriver.co.uk` → Free plan
-- Cloudflare auto-scans and imports most records. **Compare against your SiteGround screenshot** and add anything missing.
-- For every mail-related record (MX, SPF, DKIM, DMARC, Resend records): set the proxy toggle to **DNS only (grey cloud)**, not proxied. Same for any record Lovable's custom-domain setup added (A `185.158.133.1`, TXT `_lovable`).
+Add an always-on, very small overlay that's only visible inside a native wrapper (Despia / WKWebView) and only while the app is booting. It will display, top-left, in plain text:
 
-### 3. Switch nameservers at your domain registrar
-Cloudflare gives you two nameservers (e.g. `xxx.ns.cloudflare.com`). Go to wherever you bought `everydriver.co.uk` (the registrar, not SiteGround hosting) and replace the existing nameservers with Cloudflare's two. Save.
+- Build timestamp
+- "JS started" (proves the bundle executed at all)
+- "React mounted" (proves React rendered)
+- Any uncaught error message + stack (top 3 lines)
+- Whether `installBundleRefresh` triggered a hard-reload
 
-Propagation: usually under an hour, occasionally up to 24h. Cloudflare emails you when active.
+Implementation outline:
+- New file `src/lib/bootProbe.ts` that writes to a fixed `<div id="boot-probe">` injected into `index.html` (so it shows even before React mounts).
+- Hook `window.addEventListener('error', …)` and `window.addEventListener('unhandledrejection', …)` at the top of `main.tsx`, before any other imports/side effects, and pipe messages into the probe.
+- Tag `installBundleRefresh.hardReload` with a probe line so a reload loop is visibly obvious.
+- Probe auto-hides 4 seconds after React mounts successfully on a real route — so production users never see it once the bug is fixed. Inside the wrapper only.
 
-### 4. Tell me when Cloudflare shows the domain as Active
-That's the signal to start the Lovable side.
+Then: publish, ask the user to open the TestFlight app, screenshot what's on screen, send it back.
 
-### 5. Add the Lovable email-domain NS records
-When I prompt you, Lovable will show 2 NS records for `notify`. In Cloudflare DNS:
-- Type: NS, Name: `notify`, Target: (first Lovable NS), Proxy: DNS only
-- Type: NS, Name: `notify`, Target: (second Lovable NS), Proxy: DNS only
+## Phase 2 — Fix based on what the probe shows
 
-Verification usually completes in minutes.
+Three likely outcomes and the fix for each:
 
-## My part (inside Lovable — I'll do all of this)
+**A) Probe shows "hard reload" repeating, or empty white with the build timestamp visible**
+Root cause: stale service worker from previous browser visit + `bundleRefresh` loop.
+Fix: in `main.tsx`, reorder so the wrapper-only SW/cache wipe (current lines 32-42) runs *before* `installBundleRefresh()`, and skip `installBundleRefresh()` entirely when `detectNativeWrapper()` is true (Despia auto-pulls latest published bundle on cold start — the refresh check is redundant and unsafe there).
 
-1. Open the email-domain setup dialog for `notify.everydriver.co.uk` and give you the exact NS values for Step 5 above.
-2. Once verification passes, remove the failed `notify.drive365.co.uk` entry so the Email panel is clean.
-3. Revert `create-enquiry` to call `send-transactional-email` like every other app email (removes the temporary direct-Resend path I added).
-4. Send a test enquiry and confirm `email_send_log` shows `sent` → `delivered`.
-5. Once the new path is proven working: remove the `RESEND_API_KEY` secret and audit the codebase for any other Resend references. Tell you what (if anything) is safe to delete from Resend's dashboard.
-6. Auth emails (signup, password reset, magic links) will start working automatically once the domain is verified — I'll confirm by triggering a test password reset.
+**B) Probe shows an uncaught error before "React mounted"**
+Root cause: a sync import or top-level side effect throws in WKWebView (commonly: missing `globalThis.crypto.randomUUID` on old iOS, an early `localStorage` access in private mode, or a polyfill gap).
+Fix: wrap the offending call in a feature-detect / polyfill. The exact patch depends on the error line.
 
-## Safety rails
-- Resend keeps working throughout the migration because we copy its records into Cloudflare *before* switching nameservers.
-- If anything goes wrong during nameserver propagation, you can revert nameservers at the registrar back to SiteGround's originals (note these down before changing).
-- No code changes ship until DNS is verified, so the app can't get worse than it is right now.
-- The custom-domain records (`185.158.133.1`, `_lovable` TXT) get copied into Cloudflare so `everydriver.co.uk` keeps serving the site without interruption.
+**C) Probe never appears at all (totally blank)**
+Root cause: bundle isn't loading — Despia is showing its own splash and the JS never executes. Usually CSP / mixed-content / domain config inside Despia.
+Fix: not a code change — confirm Despia's "Target URL" is `https://everydriver.co.uk` (not http), and that no CSP header from SiteGround blocks the wrapper UA. I'll list the exact Despia settings to check.
 
-## What you need to do right now
-1. Screenshot SiteGround Site Tools → DNS Zone Editor (full record list).
-2. Confirm where the domain is **registered** (the registrar, e.g. SiteGround themselves, GoDaddy, 123-reg). That's where the nameserver change happens.
+## Out of scope
+- Capacitor `capacitor.config.ts` changes (Despia doesn't use it).
+- Any change to the instructor auth flow itself — Safari proves that path is fine.
+- Mobile UI / styling changes (per project Core rule: don't touch mobile layouts unless asked).
 
-Once you've done those two things, paste the screenshot here and I'll mark up exactly what needs to move into Cloudflare and what to leave behind. Then we proceed step by step.
+## What I need from you
+1. Approve this plan.
+2. After I ship Phase 1, **rebuild/republish the Despia TestFlight build** (Despia pulls fresh from `everydriver.co.uk` automatically on app launch, but if it caches the old bundle aggressively you may need to fully delete + reinstall the TestFlight app once to clear the WebView storage).
+3. Screenshot the top-left overlay on launch and send it back. I'll apply the matching fix from Phase 2.

@@ -21,6 +21,7 @@
 
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
+import { bootProbeLog } from "@/lib/bootProbe";
 
 const THROTTLE_MS = 60_000;
 const RELOAD_KEY = "__bundleRefreshLastReload";
@@ -116,6 +117,7 @@ async function checkForNewBundle(reason: string, bypassThrottle = false): Promis
 
   // eslint-disable-next-line no-console
   console.info(`[bundleRefresh] new bundle detected (${reason}); reloading`);
+  bootProbeLog(`bundleRefresh HARD RELOAD (${reason})`);
   await hardReload();
 }
 
