@@ -421,32 +421,9 @@ export default function Contact() {
     );
   }
 
-  // ── Bespoke Course Request (existing layout) ──────────────────────
+  // ── Bespoke Course Request (Drive365 branded) ─────────────────────
   if (isBespoke) {
-    return (
-      <MainLayout>
-        {CONTACT_SEO}
-        <div className="container py-8 pb-24">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <FileEdit className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h1 className="text-3xl font-bold">Bespoke Course Request</h1>
-              <p className="text-muted-foreground mt-2">
-                Tell us what you're looking for and we'll match you with the perfect instructor
-              </p>
-            </div>
-            <div className="max-w-lg mx-auto">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4">Request a Bespoke Course</h2>
-                  <BespokeEnquiryForm />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </MainLayout>
-    );
+    return <BespokeBranded />;
   }
 
   // Drive365 redesigned default contact page
@@ -605,6 +582,368 @@ export default function Contact() {
                 </button>
               </form>
             </div>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
+
+// ── Bespoke Course Request (Drive365 branded) ───────────────────────
+function BespokeBranded() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [data, setData] = useState({
+    name: "",
+    address: "",
+    postcode: "",
+    courseType: "",
+    requestedHours: "20",
+    preferredTiming: "",
+    additionalNotes: "",
+  });
+
+  const tabs = [
+    { label: "Request a Callback", href: "/contact?type=callback", active: false },
+    { label: "Bespoke Course Request", href: "/contact?type=bespoke", active: true },
+    { label: "Plan a Course", href: "/search", active: false },
+    { label: "Test Swap", href: "/test-swap", active: false },
+  ];
+
+  const tabBase: React.CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "14px 16px",
+    fontSize: 13,
+    fontWeight: 700,
+    fontFamily: "'Poppins', sans-serif",
+    whiteSpace: "nowrap",
+    textDecoration: "none",
+    borderBottom: "2px solid transparent",
+    color: "#888",
+    transition: "color 0.15s, border-color 0.15s",
+    flexShrink: 0,
+  };
+  const tabActive: React.CSSProperties = { color: "#D12E2E", borderBottom: "2px solid #D12E2E" };
+
+  const inputBase: React.CSSProperties = {
+    background: "#fafbfc",
+    border: "1.5px solid #e8edf2",
+    borderRadius: 8,
+    fontSize: 13,
+    fontFamily: "'Poppins', sans-serif",
+    padding: "10px 12px",
+    width: "100%",
+    outline: "none",
+    color: "#0F2044",
+    boxSizing: "border-box",
+  };
+  const labelStyle: React.CSSProperties = {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#0F2044",
+    display: "block",
+    marginBottom: 6,
+  };
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    e.currentTarget.style.borderColor = "#0070C0";
+  };
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    e.currentTarget.style.borderColor = "#e8edf2";
+  };
+
+  const selectStyle: React.CSSProperties = {
+    ...inputBase,
+    fontWeight: 600,
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
+    backgroundImage:
+      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 12px center",
+    backgroundSize: "16px 16px",
+    paddingRight: 36,
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.functions.invoke("create-enquiry", {
+        body: {
+          name: data.name,
+          address: data.address,
+          postcode: data.postcode,
+          courseType: data.courseType,
+          requestedHours: parseInt(data.requestedHours, 10) || 0,
+          preferredTiming: data.preferredTiming,
+          additionalNotes: data.additionalNotes || null,
+        },
+      });
+      if (error) throw error;
+      setIsSubmitted(true);
+      toast.success("Request submitted! We'll be in touch soon.");
+    } catch (err) {
+      console.error("Error submitting bespoke request:", err);
+      toast.error("Failed to submit request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isSubmitted) {
+    return (
+      <MainLayout>
+        {CONTACT_SEO}
+        <div className="container py-8 pb-24">
+          <div className="max-w-lg mx-auto">
+            <Card>
+              <CardContent className="p-8 text-center">
+                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
+                <p className="text-muted-foreground">
+                  Your bespoke course request has been submitted. We'll match you with the perfect instructor shortly.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  return (
+    <MainLayout>
+      {CONTACT_SEO}
+      <div style={{ fontFamily: "'Poppins', sans-serif" }}>
+        {/* Tab Navigation */}
+        <div style={{ background: "#fff", borderBottom: "1.5px solid #e8edf2" }}>
+          <div style={{ maxWidth: 600, margin: "0 auto", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+            <div style={{ display: "flex", width: "max-content", margin: "0 auto" }}>
+              {tabs.map((tab) => (
+                <Link key={tab.label} to={tab.href} style={tab.active ? { ...tabBase, ...tabActive } : tabBase}>
+                  {tab.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{ maxWidth: 600, margin: "0 auto", padding: "40px 16px 80px" }}>
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div
+              style={{
+                width: 54,
+                height: 54,
+                borderRadius: 14,
+                background: "#FCEBEB",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px",
+              }}
+            >
+              <FileEdit style={{ width: 24, height: 24, color: "#D12E2E" }} />
+            </div>
+            <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0F2044", margin: "0 0 8px" }}>
+              Bespoke Course Request
+            </h1>
+            <p style={{ fontSize: 14, color: "#888", margin: 0 }}>
+              Tell us what you're looking for and we'll match you with the perfect instructor
+            </p>
+          </div>
+
+          {/* Form Card */}
+          <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid #e8edf2", padding: "1.75rem" }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, color: "#0F2044", margin: "0 0 20px" }}>
+              Request a bespoke course
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Full name */}
+              <div>
+                <label style={labelStyle}>
+                  Full name <span style={{ color: "#D12E2E" }}>*</span>
+                </label>
+                <input
+                  required
+                  placeholder="John Smith"
+                  value={data.name}
+                  onChange={(e) => setData((p) => ({ ...p, name: e.target.value }))}
+                  style={inputBase}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              </div>
+
+              {/* Address with pin icon */}
+              <div>
+                <label style={labelStyle}>
+                  Address <span style={{ color: "#D12E2E" }}>*</span>
+                </label>
+                <div style={{ position: "relative" }}>
+                  <MapPin
+                    style={{
+                      position: "absolute",
+                      left: 12,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: 16,
+                      height: 16,
+                      color: "#888",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <input
+                    required
+                    placeholder="Start typing an address..."
+                    value={data.address}
+                    onChange={(e) => setData((p) => ({ ...p, address: e.target.value }))}
+                    style={{ ...inputBase, paddingLeft: 36 }}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                  />
+                </div>
+              </div>
+
+              {/* Postcode */}
+              <div>
+                <label style={labelStyle}>
+                  Postcode <span style={{ color: "#D12E2E" }}>*</span>
+                </label>
+                <input
+                  required
+                  placeholder="SO23 1AA"
+                  value={data.postcode}
+                  onChange={(e) => setData((p) => ({ ...p, postcode: e.target.value.toUpperCase() }))}
+                  style={inputBase}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              </div>
+
+              {/* Course type */}
+              <div>
+                <label style={labelStyle}>
+                  What type of course are you looking for? <span style={{ color: "#D12E2E" }}>*</span>
+                </label>
+                <select
+                  required
+                  value={data.courseType}
+                  onChange={(e) => setData((p) => ({ ...p, courseType: e.target.value }))}
+                  style={selectStyle}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                >
+                  <option value="">Select course type</option>
+                  <option value="intensive">Intensive Course</option>
+                  <option value="semi-intensive">Semi-Intensive Course</option>
+                  <option value="payg">Pay As You Go Lessons</option>
+                  <option value="refresher">Refresher Course</option>
+                </select>
+              </div>
+
+              {/* Hours */}
+              <div>
+                <label style={labelStyle}>
+                  How many hours do you need? <span style={{ color: "#D12E2E" }}>*</span>
+                </label>
+                <select
+                  required
+                  value={data.requestedHours}
+                  onChange={(e) => setData((p) => ({ ...p, requestedHours: e.target.value }))}
+                  style={selectStyle}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                >
+                  <option value="10">10 hours</option>
+                  <option value="20">20 hours</option>
+                  <option value="30">30 hours</option>
+                  <option value="40">40+ hours</option>
+                </select>
+              </div>
+
+              {/* Timing */}
+              <div>
+                <label style={labelStyle}>
+                  When would you like to start? <span style={{ color: "#D12E2E" }}>*</span>
+                </label>
+                <select
+                  required
+                  value={data.preferredTiming}
+                  onChange={(e) => setData((p) => ({ ...p, preferredTiming: e.target.value }))}
+                  style={selectStyle}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                >
+                  <option value="">Select your preferred timing</option>
+                  <option value="asap">As soon as possible</option>
+                  <option value="2weeks">Within 2 weeks</option>
+                  <option value="1month">Within a month</option>
+                  <option value="flexible">I'm flexible</option>
+                </select>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label style={labelStyle}>
+                  Additional notes <span style={{ color: "#888", fontWeight: 400 }}>(optional)</span>
+                </label>
+                <textarea
+                  placeholder="Any specific requirements, previous experience, or questions?"
+                  value={data.additionalNotes}
+                  onChange={(e) => setData((p) => ({ ...p, additionalNotes: e.target.value }))}
+                  style={{ ...inputBase, minHeight: 90, resize: "vertical" }}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  width: "100%",
+                  background: "#D12E2E",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "12px 16px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  fontFamily: "'Poppins', sans-serif",
+                  cursor: isSubmitting ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  transition: "background 0.15s",
+                  opacity: isSubmitting ? 0.7 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.background = "#b52626";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSubmitting) e.currentTarget.style.background = "#D12E2E";
+                }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Submit bespoke course request
+                  </>
+                )}
+              </button>
+            </form>
           </div>
         </div>
       </div>
