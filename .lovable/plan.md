@@ -1,46 +1,50 @@
-
-# Plan: Switch Resend sends to everydriver.co.uk branding
-
 ## Goal
-Once `everydriver.co.uk` is verified in Resend, every email the app sends should come from a branded `@everydriver.co.uk` address, and replies should land in your active `hello@everydriver.co.uk` inbox at SiteGround.
 
-## Prerequisites (you do these, outside the code)
-1. In Resend → Domains → add `everydriver.co.uk` (EU region).
-2. In SiteGround DNS Zone Editor, add the 3 records Resend shows (MX + SPF on `send`, DKIM on `resend._domainkey`). Skip the `_dmarc` one — already present.
-3. Click **Verify** in Resend, wait for green tick.
-4. Reply **"verified"** in chat.
+Now that `everydriver.co.uk` is verified in Resend, normalise every outbound email across the 23 edge functions so:
 
-## What I will change in the code (after you say "verified")
+1. All `from` addresses use the verified root domain `everydriver.co.uk` (drop the mixed `notify.everydriver.co.uk` subdomain — it isn't part of the just-verified DNS).
+2. Every email sets `reply_to: "hello@everydriver.co.uk"` (unless a more specific reply-to already exists — see below) so user replies land in the active SiteGround mailbox.
 
-### 1. Centralise sender config
-Create a single shared helper used by every Resend-calling edge function so the from/reply-to is defined in exactly one place:
+## Changes
 
-- `FROM_EMAIL = "EveryDriver <noreply@everydriver.co.uk>"`
-- `REPLY_TO   = "hello@everydriver.co.uk"`
+### 1. Unify the From domain
 
-If we later want a different from-name per email type (e.g. `bookings@`, `payments@`), it's a one-line change in this helper.
+Standardise on these three branded senders (all on the verified root domain):
 
-### 2. Update all Resend-using edge functions
-Sweep `supabase/functions/**` for any function that calls Resend (currently sending from `onboarding@resend.dev` or similar test addresses) and update each to:
-- Import the shared helper
-- Set `from: FROM_EMAIL`
-- Set `reply_to: REPLY_TO`
+| Purpose | From address |
+|---|---|
+| General transactional (reminders, receipts, welcomes, auth, backups, lessons, campaigns) | `EveryDriver <noreply@everydriver.co.uk>` |
+| Enquiry notifications | `EveryDriver Enquiries <enquiries@everydriver.co.uk>` |
+| Admin/support messages | `EveryDriver Support <support@everydriver.co.uk>` |
+| System notifications (test swap, upsell, compliance) | `EveryDriver <notifications@everydriver.co.uk>` |
 
-Functions known to send mail (booking confirmations, payment receipts, instructor notifications, contact form, password/reset flows that go through Resend, etc.) — I'll enumerate them once exploring the folder and update each in one batch.
+Files updated (all `notify.everydriver.co.uk` → `everydriver.co.uk`):
+- `notify-lessons-scheduled`
+- `notify-booking-enquiry` (both sends)
+- `send-lesson-reminders`
+- `notify-admin-enquiry`
+- `notify-test-swap-match`
+- `notify-public-test-swap-request`
+
+### 2. Add `reply_to: "hello@everydriver.co.uk"`
+
+Add a default reply-to on every Resend send call that doesn't already have one, so any user hitting "Reply" reaches the live `hello@everydriver.co.uk` mailbox at SiteGround.
+
+Existing per-message reply-to values are preserved (they're more useful):
+- `notify-booking-enquiry` → `pupil_email` / `instructor.email`
+- `notify-admin-enquiry` → `pupil_email`
+- `notify-admin-message` → `ADMIN_EMAIL`
+- `notify-public-test-swap-request` → `me.email`
+
+All other ~18 send sites get `reply_to: "hello@everydriver.co.uk"` added.
 
 ### 3. Deploy
-Deploy all touched edge functions in a single `deploy_edge_functions` call.
 
-### 4. Test
-- Trigger one real send (e.g. contact form or a test booking) from the live site.
-- Confirm the email lands in your inbox showing **From: EveryDriver `<noreply@everydriver.co.uk>`**.
-- Hit Reply, confirm it auto-fills `hello@everydriver.co.uk`.
-- Query `email_send_log` to confirm `status = sent`.
+Deploy all 23 affected edge functions in one batch after the edits.
 
 ## Out of scope
-- No changes to auth emails (Supabase handles those separately; they're not on Resend).
-- No changes to the Lovable Emails infrastructure on `notify.everydriver.co.uk` — that stays disabled/unused; we're not removing the NS records unless you ask.
-- No new mailboxes — `hello@everydriver.co.uk` is your existing SiteGround inbox.
 
-## Reply when ready
-Say **"verified"** once Resend shows the domain green, and I'll execute steps 1–4.
+- No template/copy changes.
+- No DNS changes (domain already verified).
+- No changes to the SiteGround inbox or MX records.
+- Lovable Emails / queue infrastructure remains untouched — this project sends directly via the Resend API.
