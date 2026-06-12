@@ -1,51 +1,22 @@
-## Problem
+## What's happening
 
-On the published site you press **Log in** and the form just sits there / resets — you never reach a portal. The Supabase auth logs show the sign-in actually **succeeds** (200 on `/token`), so the credentials and backend are fine. The failure is happening **after** sign-in, on the client.
+**Featured Courses** are vanishing because of the new network-placeholder seed (5,796 placeholder instructors). `useFeaturedCourses` queries `public_instructors` with only `is_active=true`, so it pulls back ~5,800 rows — PostgREST caps at the first 1,000, which are almost entirely placeholders. Placeholders have no `instructor_working_hours`, so `findFirstAvailableDate()` returns `null` for every one of them and the loop produces zero courses → the section renders the "No courses available at the moment" empty state.
 
-## Likely root cause
+This directly violates the project rule in `mem://constraints/network-placeholder-instructors` ("every admin list/count query MUST chain `.eq('is_network_placeholder', false)`") — and the same rule applies here because the homepage Featured Courses is a curated/featured surface, not the public search index.
 
-In `src/pages/UnifiedLogin.tsx` there's a name collision:
+DB check confirms: `public_instructors WHERE is_active=true` returns 5,800; with `is_network_placeholder=false` it returns just 4 (the real instructors).
 
-```ts
-import { setRememberMe } from "@/lib/sessionPersistence";   // helper
-...
-const [rememberMe, setRememberMe] = useState(false);        // ← shadows the import
-...
-setRememberMe(rememberMe);  // calls the React state setter, NOT the persistence helper
-navigate("/auth/redirect", { replace: true });
-```
+**News & Tips**: the `fetch-dvsa-news` edge function is healthy (verified live, returns `success:true` with items). The desktop and mobile news sections in `src/pages/Index.tsx` are wired to `useDVSANews()` and conditionally render only when `dvsaNews.length > 0` (otherwise `null`). If the section is missing for you, it is almost certainly because the request was momentarily slow / cached as empty in a previous load — not a code bug. I'll add a small fallback so the section keeps its heading + "View all articles" link even when the fetch is empty, so it never silently disappears.
 
-Two consequences:
+## Changes
 
-1. The persistence helper never runs, so the "Remember me" preference isn't stored. `enforceRememberMeOnBoot()` then runs on the next page and, if the in-tab `sessionStorage` sentinel isn't seen (which can happen on the published custom domain because of cross-host nav from `everydriver.co.uk` ↔ Lovable origins, hard reload, or a wrapped app context), calls `supabase.auth.signOut({scope:"local"})`, wiping the session you just created. Result: you land on `/auth/redirect`, `getUser()` returns null, and `RoleRedirect` bounces you back to `/`.
-2. Even when it doesn't sign you out, the spinner state can read stale because the setter is being mis-used.
+1. **`src/hooks/useFeaturedCourses.ts`** — add `.eq("is_network_placeholder", false)` to the `public_instructors` query (and keep all other filters). This restores the 4 real instructors at the front of the list and makes Featured Courses populate again.
 
-The dev preview "works" because the iframe keeps the sentinel alive across the same tab/session, masking the bug.
+2. **`src/pages/Index.tsx`** (News & Tips desktop + mobile sections) — instead of returning `null` when `dvsaNews.length === 0`, render a short empty state ("Latest articles coming soon") so the section heading and "View all articles" link remain visible. Pure presentation, no business-logic change.
 
-## Fix
-
-1. **Rename the local state** in `UnifiedLogin.tsx` so it stops shadowing the import:
-   - `useState(false)` → `[rememberChecked, setRememberChecked]`
-   - Toggle handler and switch markup updated to the new names
-   - Call the imported `setRememberMe(rememberChecked)` **before** navigating
-
-2. **Persist *before* navigate** (and `await` nothing that could race): same line, just with the right function bound.
-
-3. **Add a one-shot diagnostic log** (kept lightweight, wrapped in `try/catch`) inside the login `handleLogin` and at the top of `RoleRedirect` so that if anything else is wrong on your custom domain we can see it in the published console without another round-trip:
-   - log whether `signInWithPassword` returned a session
-   - log whether `getUser()` resolves to a user on `/auth/redirect`
-
-4. **No other files changed.** The route table, `RoleRedirect`, and `enforceRememberMeOnBoot` logic are correct — only `UnifiedLogin.tsx` is buggy.
+No other files, no schema/RLS changes, no edge-function changes.
 
 ## Verification
 
-After publishing the fix:
-- Hard refresh `everydriver.co.uk/login`, log in with your credentials
-- Expected: you land on `/instructor` (your account's primary role) within ~1s
-- If it still fails, the new console probes will tell us exactly which step (sign-in, getUser, user_roles query) is failing and I'll address that next.
-
-## Out of scope
-
-- No design changes to the login page
-- No changes to other login pages (`Drive365Login`, `InstructorPortalLogin`, `AdminLogin`) — they don't have this shadow bug
-- No backend / RLS changes
+- Reload `/drive365`: Featured Courses grid shows 3 cards from the 4 real instructors (sorted by soonest available date).
+- News & Tips section header is always visible; cards appear as soon as `fetch-dvsa-news` resolves.
