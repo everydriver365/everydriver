@@ -6,6 +6,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,7 +15,7 @@ const corsHeaders = {
 };
 
 const APP_NAME = "EveryDriver";
-const FROM_ADDRESS = "EveryDriver <info@everydriver.co.uk>";
+
 const GRACE_DAYS = 30;
 
 function b64urlEncode(bytes: Uint8Array): string {
@@ -48,44 +49,8 @@ async function signCancelJwt(payload: Record<string, unknown>, secret: string): 
   return `${unsigned}.${b64urlEncode(sig)}`;
 }
 
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-}
+// Email sending via sendBrandedEmail (Lovable Emails).
 
-function renderAdminInitiatedEmail(scheduledDate: string, cancelUrl: string): string {
-  return `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1a1a1a;">
-  <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #dc2626;">
-    <h1 style="font-size: 22px; margin: 0;">Your account has been scheduled for deletion by an administrator</h1>
-    <p style="color: #666; font-size: 13px; margin: 8px 0 0;">${APP_NAME}</p>
-  </div>
-  <div style="padding: 24px 0;">
-    <p style="font-size: 15px;">An administrator has scheduled your ${APP_NAME} instructor account for permanent deletion on <strong>${escapeHtml(scheduledDate)}</strong>.</p>
-    <p style="font-size: 14px; color: #444;">If you believe this is in error, you can cancel the deletion using the link below or contact support immediately.</p>
-    <div style="text-align: center; margin: 32px 0;">
-      <a href="${escapeHtml(cancelUrl)}" style="display: inline-block; background: #dc2626; color: #fff; padding: 14px 28px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 15px;">
-        Cancel deletion
-      </a>
-    </div>
-    <p style="font-size: 13px; color: #666;">Anonymised financial records will be retained for 6 years as required by HMRC. All other operational data will be permanently removed.</p>
-  </div>
-  <div style="border-top: 1px solid #eee; padding-top: 16px; font-size: 12px; color: #999; text-align: center;">${APP_NAME}</div>
-</div>`;
-}
-
-async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-  if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
-  const resp = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM_ADDRESS, to: [to], subject, html }),
-  });
-  if (!resp.ok) {
-    const txt = await resp.text();
-    throw new Error(`Resend send failed: ${resp.status} ${txt}`);
-  }
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -268,15 +233,24 @@ serve(async (req) => {
         const scheduledDate = purgeAt.toLocaleDateString("en-GB", {
           day: "numeric", month: "long", year: "numeric",
         });
-        await sendEmail(
-          contactEmail,
-          "Your account has been scheduled for deletion",
-          renderAdminInitiatedEmail(scheduledDate, cancelUrl),
-        );
+        await sendBrandedEmail({
+          to: contactEmail,
+          subject: "Your account has been scheduled for deletion",
+          heading: "Your account has been scheduled for deletion by an administrator",
+          intro: `An administrator has scheduled your ${APP_NAME} instructor account for permanent deletion on ${scheduledDate}.`,
+          paragraphs: [
+            "If you believe this is in error, you can cancel the deletion using the link below or contact support immediately.",
+            "Anonymised financial records will be retained for 6 years as required by HMRC. All other operational data will be permanently removed.",
+          ],
+          ctaLabel: "Cancel deletion",
+          ctaUrl: cancelUrl,
+          idempotencyKey: `acct-del-admin-${inserted.id}`,
+        }, admin);
       } catch (e) {
         console.error("[admin-request-account-deletion] email failed:", e);
       }
     }
+
 
     return new Response(
       JSON.stringify({

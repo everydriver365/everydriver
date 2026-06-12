@@ -1,19 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
-import { Resend } from "npm:resend@4.0.1";
 import { shouldSendToInstructor } from "../_shared/notify-gate.ts";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 const BASE_URL = "https://everydriver.co.uk";
 
-interface NotifyEnquiryBody {
-  enquiryId: string;
-}
+interface NotifyEnquiryBody { enquiryId: string }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -27,27 +24,21 @@ serve(async (req) => {
     const { enquiryId } = (await req.json()) as NotifyEnquiryBody;
     if (!enquiryId) {
       return new Response(JSON.stringify({ error: "enquiryId required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const { data: enquiry, error: eErr } = await supabase
       .from("booking_enquiries")
       .select("id, instructor_id, pupil_name, pupil_email, pupil_phone, pupil_postcode, course_name, course_hours, message, source, created_at")
-      .eq("id", enquiryId)
-      .single();
+      .eq("id", enquiryId).single();
     if (eErr || !enquiry) throw eErr || new Error("Enquiry not found");
 
     const { data: instructor, error: iErr } = await supabase
       .from("instructors")
       .select("id, name, phone, email, app_slug")
-      .eq("id", enquiry.instructor_id)
-      .single();
-    if (iErr || !instructor) {
-      console.error("Instructor lookup failed", { iErr, instructor_id: enquiry.instructor_id });
-      throw iErr || new Error("Instructor not found");
-    }
+      .eq("id", enquiry.instructor_id).single();
+    if (iErr || !instructor) throw iErr || new Error("Instructor not found");
 
     const enquiriesUrl = `${BASE_URL}/instructor/enquiries`;
     const summaryLine =
@@ -56,13 +47,10 @@ serve(async (req) => {
     const shortMsg = `📩 New enquiry: ${summaryLine}. Reply in your inbox: ${enquiriesUrl}`;
 
     const results: Record<string, unknown> = {
-      whatsappSent: false,
-      smsSent: false,
-      emailSent: false,
-      gateBlocked: null as string | null,
+      whatsappSent: false, smsSent: false, emailSent: false,
+      pupilEmailSent: false, gateBlocked: null as string | null,
     };
 
-    // Resolve gate decisions per channel up-front. New enquiries are job leads.
     const [waGate, smsGate, emailGate] = await Promise.all([
       shouldSendToInstructor(supabase, instructor.id, { category: "job", channel: "push" }),
       shouldSendToInstructor(supabase, instructor.id, { category: "job", channel: "sms" }),
@@ -72,21 +60,19 @@ serve(async (req) => {
       results.gateBlocked = waGate.reason ?? smsGate.reason ?? emailGate.reason ?? "blocked";
     }
 
-    // ---- WhatsApp / SMS via existing notify-instructor logic? Use Twilio direct + WhatsApp Business
+    // WhatsApp / SMS via Twilio + Meta (unchanged)
     const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
     const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
     const TWILIO_FROM = Deno.env.get("TWILIO_PHONE_NUMBER");
     const TWILIO_MSG_SID = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
 
-    // WhatsApp via Meta (per-instructor account first)
     let WA_TOKEN = Deno.env.get("WHATSAPP_BUSINESS_TOKEN");
     let WA_PHONE_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
     try {
       const { data: acct } = await supabase
         .from("instructor_whatsapp_accounts")
         .select("access_token, phone_number_id, status")
-        .eq("instructor_id", instructor.id)
-        .maybeSingle();
+        .eq("instructor_id", instructor.id).maybeSingle();
       if (acct?.access_token && acct?.phone_number_id && acct.status === "connected") {
         WA_TOKEN = acct.access_token;
         WA_PHONE_ID = acct.phone_number_id;
@@ -95,39 +81,25 @@ serve(async (req) => {
 
     if (waGate.allow && WA_TOKEN && WA_PHONE_ID && instructor.phone) {
       try {
-        const waRes = await fetch(
-          `https://graph.facebook.com/v20.0/${WA_PHONE_ID}/messages`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${WA_TOKEN}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              messaging_product: "whatsapp",
-              to: instructor.phone.replace(/[^\d+]/g, ""),
-              type: "text",
-              text: { body: shortMsg },
-            }),
-          },
-        );
+        const waRes = await fetch(`https://graph.facebook.com/v20.0/${WA_PHONE_ID}/messages`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${WA_TOKEN}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: instructor.phone.replace(/[^\d+]/g, ""),
+            type: "text", text: { body: shortMsg },
+          }),
+        });
         results.whatsappSent = waRes.ok;
         if (!waRes.ok) results.whatsappError = await waRes.text();
-      } catch (e) {
-        results.whatsappError = e instanceof Error ? e.message : String(e);
-      }
+      } catch (e) { results.whatsappError = e instanceof Error ? e.message : String(e); }
     }
 
-    // SMS via Twilio (always send as backup)
     if (smsGate.allow && TWILIO_SID && TWILIO_TOKEN && (TWILIO_FROM || TWILIO_MSG_SID) && instructor.phone) {
       try {
-        const params = new URLSearchParams({
-          To: instructor.phone,
-          Body: shortMsg,
-        });
+        const params = new URLSearchParams({ To: instructor.phone, Body: shortMsg });
         if (TWILIO_MSG_SID) params.set("MessagingServiceSid", TWILIO_MSG_SID);
         else if (TWILIO_FROM) params.set("From", TWILIO_FROM);
-
         const smsRes = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
           {
@@ -141,88 +113,55 @@ serve(async (req) => {
         );
         results.smsSent = smsRes.ok;
         if (!smsRes.ok) results.smsError = (await smsRes.json()).message;
-      } catch (e) {
-        results.smsError = e instanceof Error ? e.message : String(e);
-      }
+      } catch (e) { results.smsError = e instanceof Error ? e.message : String(e); }
     }
 
-    // Email via Resend
-    const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
-    if (emailGate.allow && RESEND_KEY && instructor.email) {
-      try {
-        const resend = new Resend(RESEND_KEY);
-        const html = `
-          <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#fff;color:#111">
-            <h2 style="margin:0 0 4px;font-size:20px">📩 New booking enquiry</h2>
-            <p style="margin:0 0 20px;color:#6b7280;font-size:13px">
-              Source: ${enquiry.source || "website"}
-            </p>
-            <div style="background:#F9FAFB;border-radius:12px;padding:16px;border:1px solid #E5E7EB">
-              <p style="margin:0 0 6px"><strong>${escapeHtml(enquiry.pupil_name)}</strong></p>
-              <p style="margin:0 0 4px;font-size:14px">📞 ${escapeHtml(enquiry.pupil_phone)}</p>
-              <p style="margin:0 0 4px;font-size:14px">✉️ ${escapeHtml(enquiry.pupil_email)}</p>
-              ${enquiry.pupil_postcode ? `<p style="margin:0 0 4px;font-size:14px">📍 ${escapeHtml(enquiry.pupil_postcode)}</p>` : ""}
-              ${enquiry.course_name ? `<p style="margin:8px 0 0;font-size:13px;color:#374151">Interested in: <strong>${escapeHtml(enquiry.course_name)}</strong>${enquiry.course_hours ? ` · ${enquiry.course_hours}h` : ""}</p>` : ""}
-              ${enquiry.message ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #E5E7EB;font-size:14px;white-space:pre-wrap">${escapeHtml(enquiry.message)}</div>` : ""}
-            </div>
-            <div style="margin-top:24px">
-              <a href="${enquiriesUrl}" style="display:inline-block;background:#1D4ED8;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;font-size:14px">Open enquiry inbox</a>
-            </div>
-            <p style="margin-top:16px;color:#6b7280;font-size:12px">Tip: respond within an hour to triple your conversion rate.</p>
-          </div>`;
-
-        const emailRes = await resend.emails.send({
-          from: "EveryDriver <enquiries@everydriver.co.uk>",
-          to: [instructor.email],
-          reply_to: enquiry.pupil_email,
-          subject: `New enquiry — ${enquiry.pupil_name}`,
-          html,
-        });
-        results.emailSent = !emailRes.error;
-        if (emailRes.error) results.emailError = emailRes.error.message;
-      } catch (e) {
-        results.emailError = e instanceof Error ? e.message : String(e);
-      }
+    // Instructor email via Lovable Emails
+    if (emailGate.allow && instructor.email) {
+      const r = await sendBrandedEmail({
+        to: instructor.email,
+        subject: `New enquiry — ${enquiry.pupil_name}`,
+        heading: "📩 New booking enquiry",
+        intro: `Source: ${enquiry.source || "website"}`,
+        paragraphs: enquiry.message ? [enquiry.message] : [],
+        details: [
+          { label: "Name", value: enquiry.pupil_name || "—" },
+          { label: "Phone", value: enquiry.pupil_phone || "—" },
+          { label: "Email", value: enquiry.pupil_email || "—" },
+          { label: "Postcode", value: enquiry.pupil_postcode || "—" },
+          { label: "Course", value: enquiry.course_name || "—" },
+          { label: "Hours", value: enquiry.course_hours ? `${enquiry.course_hours}h` : "—" },
+        ],
+        ctaLabel: "Open enquiry inbox",
+        ctaUrl: enquiriesUrl,
+        footerNote: "Tip: respond within an hour to triple your conversion rate.",
+        idempotencyKey: `enq-instr-${enquiry.id}`,
+      }, supabase);
+      results.emailSent = r.enqueued > 0;
+      if (r.enqueued === 0) results.emailError = r.errors.join("; ");
     }
 
-    // ---- Pupil confirmation email (always send if Resend configured)
-    if (RESEND_KEY && enquiry.pupil_email) {
-      try {
-        const resend = new Resend(RESEND_KEY);
-        const pupilFirst = (enquiry.pupil_name || "").split(/\s+/)[0] || "there";
-        const pupilHtml = `
-          <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#fff;color:#111">
-            <h2 style="margin:0 0 12px;font-size:20px;color:#142040">Thanks ${escapeHtml(pupilFirst)} — we've got your enquiry</h2>
-            <p style="margin:0 0 16px;font-size:15px;line-height:1.5">
-              We've passed your details to <strong>${escapeHtml(instructor.name)}</strong>. They'll be in touch shortly to talk through next steps${enquiry.course_name ? ` for the <strong>${escapeHtml(enquiry.course_name)}</strong>${enquiry.course_hours ? ` (${enquiry.course_hours} hours)` : ""}` : ""}.
-            </p>
-            <div style="background:#F9FAFB;border-radius:12px;padding:16px;border:1px solid #E5E7EB;font-size:14px">
-              <p style="margin:0 0 6px"><strong>Your enquiry</strong></p>
-              ${enquiry.course_name ? `<p style="margin:0 0 4px">Course: ${escapeHtml(enquiry.course_name)}${enquiry.course_hours ? ` · ${enquiry.course_hours}h` : ""}</p>` : ""}
-              ${enquiry.pupil_postcode ? `<p style="margin:0 0 4px">Pickup area: ${escapeHtml(enquiry.pupil_postcode)}</p>` : ""}
-              ${enquiry.message ? `<p style="margin:8px 0 0;white-space:pre-wrap">${escapeHtml(enquiry.message)}</p>` : ""}
-            </div>
-            <p style="margin:20px 0 0;color:#6b7280;font-size:13px">
-              If you need to reach us in the meantime, just reply to this email.
-            </p>
-            <p style="margin:24px 0 0;color:#9ca3af;font-size:12px">EveryDriver · ${escapeHtml(instructor.name)}</p>
-          </div>`;
-
-        const pupilRes = await resend.emails.send({
-          from: "EveryDriver <enquiries@everydriver.co.uk>",
-          to: [enquiry.pupil_email],
-          reply_to: instructor.email || undefined,
-          subject: `Thanks — we've passed your enquiry to ${instructor.name}`,
-          html: pupilHtml,
-        });
-        results.pupilEmailSent = !pupilRes.error;
-        if (pupilRes.error) results.pupilEmailError = pupilRes.error.message;
-      } catch (e) {
-        results.pupilEmailError = e instanceof Error ? e.message : String(e);
-      }
+    // Pupil confirmation email
+    if (enquiry.pupil_email) {
+      const pupilFirst = (enquiry.pupil_name || "").split(/\s+/)[0] || "there";
+      const r = await sendBrandedEmail({
+        to: enquiry.pupil_email,
+        subject: `Thanks — we've passed your enquiry to ${instructor.name}`,
+        heading: `Thanks ${pupilFirst} — we've got your enquiry`,
+        intro: `We've passed your details to ${instructor.name}. They'll be in touch shortly to talk through next steps${enquiry.course_name ? ` for the ${enquiry.course_name}${enquiry.course_hours ? ` (${enquiry.course_hours} hours)` : ""}` : ""}.`,
+        paragraphs: enquiry.message ? [enquiry.message] : [],
+        details: [
+          ...(enquiry.course_name ? [{ label: "Course", value: `${enquiry.course_name}${enquiry.course_hours ? ` · ${enquiry.course_hours}h` : ""}` }] : []),
+          ...(enquiry.pupil_postcode ? [{ label: "Pickup area", value: enquiry.pupil_postcode }] : []),
+        ],
+        footerNote: `EveryDriver · ${instructor.name}`,
+        idempotencyKey: `enq-pupil-${enquiry.id}`,
+      }, supabase);
+      results.pupilEmailSent = r.enqueued > 0;
+      if (r.enqueued === 0) results.pupilEmailError = r.errors.join("; ");
     }
 
-    // Push notification reuse — fire-and-forget call to notify-instructor with admin_message style
+    // Push notification (unchanged)
     try {
       await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-instructor`, {
         method: "POST",
@@ -238,9 +177,7 @@ serve(async (req) => {
         }),
       });
       results.pushTriggered = true;
-    } catch (e) {
-      results.pushError = e instanceof Error ? e.message : String(e);
-    }
+    } catch (e) { results.pushError = e instanceof Error ? e.message : String(e); }
 
     return new Response(JSON.stringify({ success: true, results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -253,12 +190,3 @@ serve(async (req) => {
     );
   }
 });
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}

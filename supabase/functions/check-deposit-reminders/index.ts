@@ -1,28 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function sendEmail(resendApiKey: string, to: string, subject: string, html: string) {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "EveryDriver <noreply@everydriver.co.uk>",
-      reply_to: "hello@everydriver.co.uk",
-      to: [to],
-      subject,
-      html,
-    }),
-  });
-  return response.ok;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -35,7 +19,7 @@ serve(async (req) => {
     const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    // Email sending uses sendBrandedEmail (Lovable Emails).
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const today = new Date();
@@ -181,10 +165,9 @@ serve(async (req) => {
       }
 
       // Send reminder email to pupil
-      if (pupil.email && resendApiKey) {
+      if (pupil.email) {
         let subject = "";
         let urgencyText = "";
-        
         if (reminderType === "14_days") {
           subject = `Payment Reminder: ${formattedAmount} due in 2 weeks`;
           urgencyText = "This is a friendly reminder that";
@@ -195,36 +178,23 @@ serve(async (req) => {
           subject = `🚨 URGENT: ${formattedAmount} payment due tomorrow`;
           urgencyText = "URGENT: This is your final reminder that";
         }
-
         try {
-          await sendEmail(
-            resendApiKey,
-            pupil.email,
+          await sendBrandedEmail({
+            to: pupil.email,
             subject,
-            `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #333;">Payment Reminder</h2>
-                <p>Hi ${pupil.name},</p>
-                <p>${urgencyText} your remaining course balance of <strong>${formattedAmount}</strong> is due by <strong>${formattedDueDate}</strong>.</p>
-                
-                <div style="background: ${reminderType === "1_day" ? "#fee2e2" : "#fef3c7"}; padding: 16px; border-radius: 8px; margin: 20px 0;">
-                  <p style="margin: 0; font-weight: bold; color: ${reminderType === "1_day" ? "#dc2626" : "#d97706"};">
-                    ⚠️ If payment is not received by ${formattedDueDate}, your booking will be cancelled and your deposit of £${pupil.deposit_paid} will be forfeited.
-                  </p>
-                </div>
-                
-                <p>Please contact your instructor <strong>${instructor.name}</strong>${instructor.phone ? ` on ${instructor.phone}` : ''} to arrange payment.</p>
-                
-                <p style="color: #666; font-size: 14px;">Thank you,<br>Your Driving School</p>
-              </div>
-            `
-          );
-          console.log(`Email sent to ${pupil.name}`);
+            heading: "Payment reminder",
+            intro: `Hi ${pupil.name}, ${urgencyText} your remaining course balance of ${formattedAmount} is due by ${formattedDueDate}.`,
+            paragraphs: [
+              `If payment is not received by ${formattedDueDate}, your booking will be cancelled and your deposit of £${pupil.deposit_paid} will be forfeited.`,
+              `Please contact your instructor ${instructor.name}${instructor.phone ? ` on ${instructor.phone}` : ""} to arrange payment.`,
+            ],
+            idempotencyKey: `dep-rem-${pupil.id}-${reminderType}-${todayStr}`,
+          }, supabase);
         } catch (emailError) {
-          console.error(`Email failed for ${pupil.name}:`, emailError);
           results.errors.push(`Email to ${pupil.name}: ${emailError}`);
         }
       }
+
 
       // Increment counter
       if (reminderType === "14_days") results.reminders_14_days++;

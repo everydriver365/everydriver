@@ -8,6 +8,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,8 +17,8 @@ const corsHeaders = {
 };
 
 const APP_NAME = "EveryDriver";
-const FROM_ADDRESS = "EveryDriver <info@everydriver.co.uk>";
 const SUPPORT_EMAIL = "support@everydriver.co.uk";
+
 
 // ---------- crypto / email helpers (mirror request-account-deletion) ----------
 function b64urlDecode(s: string): Uint8Array {
@@ -49,69 +50,8 @@ async function aesDecryptEmail(stored: string, keyMaterial: string): Promise<str
   }
 }
 
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!),
-  );
-}
+// Email content is built inline in the handler using sendBrandedEmail.
 
-async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-  if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
-  const resp = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM_ADDRESS, to: [to], subject, html }),
-  });
-  if (!resp.ok) {
-    const txt = await resp.text();
-    throw new Error(`Resend send failed: ${resp.status} ${txt}`);
-  }
-}
-
-// ---------- templates ----------
-function renderInstructorReminder(kind: "t7" | "t25" | "t29", scheduledDate: string, cancelUrl: string | null): string {
-  const title =
-    kind === "t7" ? "Reminder — your account will be deleted in 23 days" :
-    kind === "t25" ? "Final warning — your account will be deleted in 5 days" :
-    "Last chance — your account will be deleted tomorrow";
-  const cancelBlock = cancelUrl
-    ? `<div style="text-align: center; margin: 32px 0;">
-         <a href="${escapeHtml(cancelUrl)}" style="display: inline-block; background: #dc2626; color: #fff; padding: 14px 28px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 15px;">
-           Cancel deletion
-         </a>
-       </div>`
-    : `<p style="font-size: 14px; color: #444;">Cancellation is no longer available online. Please contact <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a> immediately if you need to stop this deletion.</p>`;
-  return `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1a1a1a;">
-  <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #dc2626;">
-    <h1 style="font-size: 22px; margin: 0;">${escapeHtml(title)}</h1>
-    <p style="color: #666; font-size: 13px; margin: 8px 0 0;">${APP_NAME}</p>
-  </div>
-  <div style="padding: 24px 0;">
-    <p style="font-size: 15px;">Your ${APP_NAME} instructor account is scheduled for permanent deletion on <strong>${escapeHtml(scheduledDate)}</strong>.</p>
-    <p style="font-size: 14px; color: #444;">After that date, all your operational data will be removed and cannot be recovered. Anonymised financial records will be retained for 6 years as required by HMRC.</p>
-    ${cancelBlock}
-  </div>
-  <div style="border-top: 1px solid #eee; padding-top: 16px; font-size: 12px; color: #999; text-align: center;">${APP_NAME}</div>
-</div>`;
-}
-
-function renderPupilWarning(scheduledDate: string): string {
-  return `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1a1a1a;">
-  <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #dc2626;">
-    <h1 style="font-size: 22px; margin: 0;">Your driving lesson data will be deleted in 5 days</h1>
-    <p style="color: #666; font-size: 13px; margin: 8px 0 0;">${APP_NAME}</p>
-  </div>
-  <div style="padding: 24px 0;">
-    <p style="font-size: 15px;">Your driving instructor is closing their ${APP_NAME} account on <strong>${escapeHtml(scheduledDate)}</strong>.</p>
-    <p style="font-size: 15px;">After that date, your lesson, scheduling and progress data linked to them will be removed. Your ${APP_NAME} login (if you have one) is unaffected.</p>
-    <p style="font-size: 14px; color: #444;">If you have any questions, contact <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p>
-  </div>
-  <div style="border-top: 1px solid #eee; padding-top: 16px; font-size: 12px; color: #999; text-align: center;">${APP_NAME}</div>
-</div>`;
-}
 
 // ---------- handler ----------
 interface ReminderRow {
@@ -200,7 +140,20 @@ serve(async (req) => {
               kind === "t7" ? "Reminder — your account will be deleted in 23 days" :
               kind === "t25" ? "Final warning — your account will be deleted in 5 days" :
               "Last chance — your account will be deleted tomorrow";
-            await sendEmail(email, subject, renderInstructorReminder(kind, scheduledDate, cancelUrl));
+            const result = await sendBrandedEmail({
+              to: email,
+              subject,
+              heading: subject,
+              intro: `Your ${APP_NAME} instructor account is scheduled for permanent deletion on ${scheduledDate}.`,
+              paragraphs: [
+                "After that date, all your operational data will be removed and cannot be recovered. Anonymised financial records will be retained for 6 years as required by HMRC.",
+                ...(cancelUrl ? [] : [`Cancellation is no longer available online. Please contact ${SUPPORT_EMAIL} immediately if you need to stop this deletion.`]),
+              ],
+              ctaLabel: cancelUrl ? "Cancel deletion" : null,
+              ctaUrl: cancelUrl,
+              idempotencyKey: `acct-del-rem-${r.id}-${kind}`,
+            }, admin);
+            if (result.enqueued === 0) { sentOk = false; detail = result.errors.join("; "); }
           } catch (e) {
             sentOk = false;
             detail = e instanceof Error ? e.message : String(e);
@@ -217,13 +170,24 @@ serve(async (req) => {
             .eq("instructor_id", r.instructor_id)
             .not("auth_user_id", "is", null);
           const ids = ((pupils as { auth_user_id: string }[] | null) || [])
-            .map((p) => p.auth_user_id)
-            .filter(Boolean);
+            .map((p) => p.auth_user_id).filter(Boolean);
           for (const id of ids) {
             try {
               const { data: u } = await admin.auth.admin.getUserById(id);
               const pe = u?.user?.email;
-              if (pe) await sendEmail(pe, "Your driving lesson data will be deleted in 5 days", renderPupilWarning(scheduledDate));
+              if (pe) {
+                await sendBrandedEmail({
+                  to: pe,
+                  subject: "Your driving lesson data will be deleted in 5 days",
+                  heading: "Your driving lesson data will be deleted in 5 days",
+                  intro: `Your driving instructor is closing their ${APP_NAME} account on ${scheduledDate}.`,
+                  paragraphs: [
+                    `After that date, your lesson, scheduling and progress data linked to them will be removed. Your ${APP_NAME} login (if you have one) is unaffected.`,
+                    `Questions? Contact ${SUPPORT_EMAIL}.`,
+                  ],
+                  idempotencyKey: `acct-del-pupwarn-${r.id}-${id}`,
+                }, admin);
+              }
             } catch (e) {
               console.error("[send-deletion-reminders] pupil email failed:", e);
             }
@@ -232,6 +196,7 @@ serve(async (req) => {
           console.error("[send-deletion-reminders] pupil lookup failed:", e);
         }
       }
+
 
       // Record send
       await admin

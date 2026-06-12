@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -88,25 +90,18 @@ serve(async (req) => {
             break;
           }
           case "send_email": {
-            const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-            if (RESEND_API_KEY && context?.pupil_email) {
-              await fetch("https://api.resend.com/emails", {
-                method: "POST",
-                headers: {
-                  "Authorization": `Bearer ${RESEND_API_KEY}`,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  from: "noreply@everydriver.co.uk",
-                  reply_to: "hello@everydriver.co.uk",
-                  to: context.pupil_email,
-                  subject: config.subject || `Update from your instructor`,
-                  html: `<p>${message.replace(/\n/g, "<br>")}</p>`,
-                }),
-              });
+            if (context?.pupil_email) {
+              await sendBrandedEmail({
+                to: context.pupil_email,
+                subject: config.subject || "Update from your instructor",
+                heading: config.subject || "Update from your instructor",
+                paragraphs: message ? [message] : [],
+                idempotencyKey: `automation-${automation.id}-${pupil_id || context.pupil_email}-${Date.now()}`,
+              }, supabase);
             }
             break;
           }
+
           case "move_pipeline": {
             if (config.target_stage) {
               await supabase
