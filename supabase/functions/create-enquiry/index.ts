@@ -13,7 +13,7 @@ const enquirySchema = z.object({
   address: z.string().trim().min(1, "Address is required").max(500),
   postcode: z.string().trim().min(1, "Postcode is required").max(20),
   courseType: z.string().trim().min(1, "Course type is required").max(100),
-  requestedHours: z.number().int().min(1).max(200),
+  requestedHours: z.number().int().min(0).max(200),
   preferredTiming: z.string().trim().min(1).max(100),
   additionalNotes: z.string().trim().max(2000).optional(),
   email: z.string().trim().email().max(255).optional().nullable(),
