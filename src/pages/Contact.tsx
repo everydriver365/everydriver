@@ -115,257 +115,241 @@ export default function Contact() {
     );
   }
 
-  return (
-    <MainLayout>
-      {CONTACT_SEO}
-      <div className="container py-8 pb-24">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
+  // Bespoke / Callback variants keep existing layout
+  if (isBespoke || isCallback) {
+    return (
+      <MainLayout>
+        {CONTACT_SEO}
+        <div className="container py-8 pb-24">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              {isBespoke ? (
+                <>
+                  <FileEdit className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h1 className="text-3xl font-bold">Bespoke Course Request</h1>
+                  <p className="text-muted-foreground mt-2">
+                    Tell us what you're looking for and we'll match you with the perfect instructor
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Phone className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h1 className="text-3xl font-bold">Request a Callback</h1>
+                  <p className="text-muted-foreground mt-2">
+                    Leave your details and we'll call you back
+                  </p>
+                </>
+              )}
+            </div>
+
             {isBespoke ? (
-              <>
-                <FileEdit className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h1 className="text-3xl font-bold">Bespoke Course Request</h1>
-                <p className="text-muted-foreground mt-2">
-                  Tell us what you're looking for and we'll match you with the perfect instructor
-                </p>
-              </>
-            ) : isCallback ? (
-              <>
-                <Phone className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h1 className="text-3xl font-bold">Request a Callback</h1>
-                <p className="text-muted-foreground mt-2">
-                  Leave your details and we'll call you back
-                </p>
-              </>
-            ) : (
-              <>
-                <Phone className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h1 className="text-3xl font-bold">Contact Us</h1>
-                <p className="text-muted-foreground mt-2">
-                  Get in touch with our friendly team
-                </p>
-              </>
-            )}
-          </div>
-
-          {isBespoke ? (
-            <div className="max-w-lg mx-auto">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4">Request a Bespoke Course</h2>
-                  <BespokeEnquiryForm />
-                </CardContent>
-              </Card>
-            </div>
-          ) : isCallback ? (
-            <div className="max-w-lg mx-auto">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4">Request a Callback</h2>
-                  <form className="space-y-4" onSubmit={handleCallbackSubmit}>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First name *</Label>
-                        <Input 
-                          id="firstName" 
-                          placeholder="John" 
-                          required
-                          value={formData.firstName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last name *</Label>
-                        <Input 
-                          id="lastName" 
-                          placeholder="Smith" 
-                          required
-                          value={formData.lastName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone number *</Label>
-                      <Input 
-                        id="phone" 
-                        type="tel" 
-                        placeholder="07123 456789" 
-                        required
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email (optional)</Label>
-                      <Input 
-                        id="email" 
-                        type="email" 
-                        placeholder="john@example.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="message">What would you like to discuss? (optional)</Label>
-                      <Textarea 
-                        id="message" 
-                        placeholder="Tell us briefly what you'd like to talk about..."
-                        rows={3}
-                        value={formData.message}
-                        onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        "Request Callback"
-                      )}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-          ) : (
-            <div className="grid gap-8 lg:grid-cols-2">
-              {/* Contact Info */}
-              <div className="space-y-4">
+              <div className="max-w-lg mx-auto">
                 <Card>
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className="p-3 rounded-full bg-primary/10">
-                      <Phone className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Phone</div>
-                      <a href="tel:08001234567" className="text-muted-foreground hover:text-primary">
-                        0800 123 4567
-                      </a>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className="p-3 rounded-full bg-primary/10">
-                      <Mail className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Email</div>
-                      <a href="mailto:hello@drivingschool.com" className="text-muted-foreground hover:text-primary">
-                        hello@drivingschool.com
-                      </a>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className="p-3 rounded-full bg-primary/10">
-                      <MapPin className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Address</div>
-                      <div className="text-muted-foreground">
-                        123 High Street, London, SW1A 1AA
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className="p-3 rounded-full bg-primary/10">
-                      <Clock className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Opening Hours</div>
-                      <div className="text-muted-foreground">
-                        Mon - Fri: 9am - 6pm<br />
-                        Sat: 10am - 4pm
-                      </div>
-                    </div>
+                  <CardContent className="p-6">
+                    <h2 className="text-lg font-semibold mb-4">Request a Bespoke Course</h2>
+                    <BespokeEnquiryForm />
                   </CardContent>
                 </Card>
               </div>
+            ) : (
+              <div className="max-w-lg mx-auto">
+                <Card>
+                  <CardContent className="p-6">
+                    <h2 className="text-lg font-semibold mb-4">Request a Callback</h2>
+                    <form className="space-y-4" onSubmit={handleCallbackSubmit}>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName">First name *</Label>
+                          <Input id="firstName" placeholder="John" required value={formData.firstName} onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName">Last name *</Label>
+                          <Input id="lastName" placeholder="Smith" required value={formData.lastName} onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone number *</Label>
+                        <Input id="phone" type="tel" placeholder="07123 456789" required value={formData.phone} onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email (optional)</Label>
+                        <Input id="email" type="email" placeholder="john@example.com" value={formData.email} onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="message">What would you like to discuss? (optional)</Label>
+                        <Textarea id="message" placeholder="Tell us briefly what you'd like to talk about..." rows={3} value={formData.message} onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))} />
+                      </div>
+                      <Button type="submit" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</>) : ("Request Callback")}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
-              {/* Contact Form */}
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4">Send us a message</h2>
-                  <form className="space-y-4" onSubmit={handleContactSubmit}>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First name</Label>
-                        <Input 
-                          id="firstName" 
-                          placeholder="John" 
-                          required
-                          value={formData.firstName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last name</Label>
-                        <Input 
-                          id="lastName" 
-                          placeholder="Smith" 
-                          required
-                          value={formData.lastName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email" 
-                        type="email" 
-                        placeholder="john@example.com" 
-                        required
-                        value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone (optional)</Label>
-                      <Input 
-                        id="phone" 
-                        type="tel" 
-                        placeholder="07123 456789"
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Message</Label>
-                      <Textarea 
-                        id="message" 
-                        placeholder="How can we help you?"
-                        rows={4}
-                        required
-                        value={formData.message}
-                        onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Sending...
-                        </>
-                      ) : (
-                        "Send Message"
-                      )}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
+  // Drive365 redesigned default contact page
+  const infoCards = [
+    { title: "Phone", detail: "0800 123 4567", icon: Phone, chipBg: "#FCEBEB", chipFg: "#D12E2E" },
+    { title: "Email", detail: "hello@drive365.co.uk", icon: Mail, chipBg: "#E6F1FB", chipFg: "#0070C0" },
+    { title: "Address", detail: "123 High Street, Winchester, SO23 1AA", icon: MapPin, chipBg: "#EAF3DE", chipFg: "#3B6D11" },
+    { title: "Opening Hours", detail: "Mon – Fri: 9am – 6pm / Sat: 10am – 4pm", icon: Clock, chipBg: "#FAEEDA", chipFg: "#854F0B" },
+  ];
+
+  const inputStyle: React.CSSProperties = {
+    background: "#fafbfc",
+    border: "1.5px solid #e8edf2",
+    borderRadius: 8,
+    fontSize: 13,
+    fontFamily: "'Poppins', sans-serif",
+    padding: "10px 12px",
+    width: "100%",
+    outline: "none",
+    transition: "border-color 0.15s",
+    color: "#0F2044",
+  };
+  const onFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => { e.currentTarget.style.borderColor = "#0070C0"; };
+  const onBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => { e.currentTarget.style.borderColor = "#e8edf2"; };
+
+  return (
+    <MainLayout>
+      {CONTACT_SEO}
+      <style>{`
+        .d365-contact { font-family: 'Poppins', sans-serif; color: #0F2044; }
+        .d365-contact h1, .d365-contact h2, .d365-contact h3 { font-family: 'Poppins', sans-serif; color: #0F2044; }
+        .d365-card { background:#fff; border-radius:14px; border:1.5px solid #e8edf2; transition: border-color .15s; }
+        .d365-card:hover { border-color:#0070C0; }
+        .d365-submit { background:#D12E2E; color:#fff; transition: background .15s; }
+        .d365-submit:hover { background:#b52626; }
+      `}</style>
+      <div className="d365-contact container py-10 pb-24">
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div
+              className="mx-auto mb-4 flex items-center justify-center"
+              style={{ width: 44, height: 44, borderRadius: 12, background: "#FCEBEB" }}
+            >
+              <Phone style={{ width: 20, height: 20, color: "#D12E2E" }} />
             </div>
-          )}
+            <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0F2044", margin: 0 }}>
+              Contact Drive365
+            </h1>
+            <p style={{ fontSize: 14, color: "#6b7280", marginTop: 8 }}>
+              Get in touch with our friendly team
+            </p>
+          </div>
+
+          {/* Two-column grid 40/60 */}
+          <div className="grid gap-6 lg:[grid-template-columns:2fr_3fr]">
+            {/* Left: info cards */}
+            <div className="space-y-4">
+              {infoCards.map((c) => {
+                const Icon = c.icon;
+                return (
+                  <div key={c.title} className="d365-card flex items-center gap-4 p-4">
+                    <div
+                      className="flex items-center justify-center shrink-0"
+                      style={{ width: 42, height: 42, borderRadius: 10, background: c.chipBg }}
+                    >
+                      <Icon style={{ width: 20, height: 20, color: c.chipFg }} />
+                    </div>
+                    <div className="min-w-0">
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#0F2044" }}>{c.title}</div>
+                      <div style={{ fontSize: 13, color: "#6b7280" }}>{c.detail}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Right: form */}
+            <div className="d365-card" style={{ padding: "1.5rem" }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F2044", marginBottom: 16 }}>
+                Send us a message
+              </h2>
+              <form className="space-y-4" onSubmit={handleContactSubmit}>
+                <div className="grid gap-4 grid-cols-2">
+                  <div>
+                    <input
+                      placeholder="First name"
+                      required
+                      style={inputStyle}
+                      onFocus={onFocus}
+                      onBlur={onBlur}
+                      value={formData.firstName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <input
+                      placeholder="Last name"
+                      required
+                      style={inputStyle}
+                      onFocus={onFocus}
+                      onBlur={onBlur}
+                      value={formData.lastName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  required
+                  style={inputStyle}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone (optional)"
+                  style={inputStyle}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                  value={formData.phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                />
+                <textarea
+                  placeholder="Message"
+                  required
+                  style={{ ...inputStyle, minHeight: 110, resize: "vertical" }}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                  value={formData.message}
+                  onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="d365-submit w-full flex items-center justify-center gap-2"
+                  style={{
+                    border: "none",
+                    borderRadius: 8,
+                    padding: "12px 16px",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    fontFamily: "'Poppins', sans-serif",
+                    cursor: isSubmitting ? "not-allowed" : "pointer",
+                    opacity: isSubmitting ? 0.7 : 1,
+                  }}
+                >
+                  {isSubmitting ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" />Sending...</>
+                  ) : (
+                    <><Send className="h-4 w-4" />Send message</>
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </MainLayout>
