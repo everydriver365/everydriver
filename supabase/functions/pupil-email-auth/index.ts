@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Resend } from "npm:resend@4.0.1";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -244,29 +245,19 @@ serve(async (req) => {
         .from("pupil_otp_codes")
         .upsert({ phone: cleanEmail, code: resetCode, expires_at: expiresAt, verified: false }, { onConflict: "phone" });
 
-      const resendApiKey = Deno.env.get("RESEND_API_KEY");
-      if (resendApiKey) {
-        const resend = new Resend(resendApiKey);
-        const firstName = pupil.name?.split(" ")[0] || "there";
-        await resend.emails.send({
-          from: "EveryDriver <noreply@everydriver.co.uk>",
-          reply_to: "hello@everydriver.co.uk",
-          to: cleanEmail,
-          subject: "Your Password Reset Code",
-          html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
-              <div style="text-align: center; margin-bottom: 32px;">
-                <h1 style="color: #10b981; font-size: 24px; margin: 0;">EveryDriver</h1>
-              </div>
-              <p style="color: #334155; font-size: 16px;">Hi ${firstName},</p>
-              <p style="color: #475569; font-size: 14px;">You requested a password reset. Use the code below to set a new password:</p>
-              <div style="text-align: center; margin: 24px 0;">
-                <span style="display: inline-block; background: #f1f5f9; padding: 16px 32px; font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #0f172a; border-radius: 12px;">${resetCode}</span>
-              </div>
-              <p style="color: #94a3b8; font-size: 13px; text-align: center;">This code expires in 15 minutes.</p>
-            </div>`,
-        });
-      }
+      const firstName = pupil.name?.split(" ")[0] || "there";
+      await sendBrandedEmail({
+        to: cleanEmail,
+        subject: "Your Password Reset Code",
+        heading: "Password reset code",
+        intro: `Hi ${firstName}, you requested a password reset for your EveryDriver account.`,
+        paragraphs: [
+          `Your one-time code: ${resetCode}`,
+          "This code expires in 15 minutes. If you didn't request a reset, you can safely ignore this email.",
+        ],
+        idempotencyKey: `pupil-reset-${cleanEmail}-${resetCode}`,
+      }, admin);
+
 
       return jsonResponse({ success: true, message: "If an account exists with that email, a reset code has been sent." });
 
