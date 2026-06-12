@@ -1,291 +1,197 @@
 project_id = "qyqeibovdhyohkfagujv"
 
-[functions.tomtom-speed-limits]
-verify_jwt = false
-
-[functions.fetch-dvsa-news]
-verify_jwt = false
-
-[functions.send-gap-sms]
-verify_jwt = false
-
-[functions.send-lesson-reminders]
-verify_jwt = false
-
-[functions.notify-instructor]
-verify_jwt = false
-
-[functions.send-payment-confirmation]
-verify_jwt = false
-
-[functions.send-payment-reminder]
-verify_jwt = false
-
-[functions.postcode-autocomplete]
-verify_jwt = false
-
-[functions.track-payment-link]
-verify_jwt = false
-
-[functions.twentyi-api]
-verify_jwt = false
-
-[functions.clearpay-checkout]
-verify_jwt = false
-
-[functions.clearpay-capture]
-verify_jwt = false
-
-[functions.klarna-checkout]
-verify_jwt = false
-
-[functions.klarna-session]
-verify_jwt = false
-
-[functions.square-checkout]
-verify_jwt = false
-
-[functions.square-payment]
-verify_jwt = false
-
-[functions.payment-callback]
-verify_jwt = false
-
-[functions.payment-health]
-verify_jwt = false
-
-[functions.generate-route-report]
-verify_jwt = false
-
-[functions.sync-all-calendars]
-verify_jwt = false
-
-[functions.google-calendar-service]
-verify_jwt = false
-
-[functions.klarna-order]
-verify_jwt = false
-
-[functions.convert-to-what3words]
-verify_jwt = false
-
-[functions.convert-from-what3words]
-verify_jwt = false
-
-[functions.weekly-backup-email]
-verify_jwt = false
-
-[functions.send-signing-link]
-verify_jwt = false
-
-[functions.google-oauth]
-verify_jwt = false
-
-[functions.calendar-sync]
-verify_jwt = false
-
-[functions.scheduled-calendar-sync]
-verify_jwt = false
-
-[functions.process-cancellation-waitlist]
-verify_jwt = false
-
-[functions.pupil-payment-checkout]
-verify_jwt = false
-
-[functions.square-wallet-config]
-verify_jwt = false
-
-[functions.square-wallet-payment]
-verify_jwt = false
-
-[functions.send-payment-receipt]
-verify_jwt = false
-
-[functions.square-booking-wallet-payment]
-verify_jwt = false
-
-[functions.traccar-webhook]
-verify_jwt = false
-
-[functions.twilio-webhook]
-verify_jwt = false
-
-[functions.square-create-subscription]
-verify_jwt = false
-
-[functions.square-webhook]
-verify_jwt = false
-
-[functions.traccar-poller]
-verify_jwt = false
-
-[functions.gpsgate-poller]
-verify_jwt = false
-
-[functions.get-driving-alerts]
-verify_jwt = false
-
-[functions.get-fuel-prices]
-verify_jwt = false
-
-[functions.send-campaign]
-verify_jwt = false
-
-[functions.compliance-reminders]
-verify_jwt = false
-
-[functions.quartix-poller]
-verify_jwt = false
-
-[functions.quartix-trips]
-verify_jwt = false
-
-[functions.quartix-route]
-verify_jwt = false
-
-[functions.extract-invoice-data]
-verify_jwt = false
-
-[functions.generate-lesson-plan]
-verify_jwt = false
-
-[functions.send-pupil-welcome]
-verify_jwt = false
-
-[functions.quartix-sync]
-verify_jwt = false
-
-[functions.geotab-poller]
-verify_jwt = false
-
-[functions.geotab-media-download]
-verify_jwt = false
-
-[functions.geotab-auth]
-verify_jwt = false
-
-[functions.geotab-status]
-verify_jwt = false
-
-[functions.public-courses]
-verify_jwt = false
-
-[functions.auto-payment-reminders]
-verify_jwt = false
-
-[functions.voice-parse-intent]
-verify_jwt = false
-
-[functions.voice-tts]
-verify_jwt = false
-
-[functions.voice-execute]
-verify_jwt = false
-
-[functions.generate-morning-briefing]
-verify_jwt = false
-
-[functions.generate-nudges]
-verify_jwt = false
-
-[functions.generate-eod-summary]
-verify_jwt = false
-
-[functions.generate-lesson-prep]
-verify_jwt = false
-
-[functions.generate-weekly-report]
-verify_jwt = false
-
-[functions.generate-quick-replies]
-verify_jwt = false
-
-[functions.accounting-oauth]
-verify_jwt = false
-
-[functions.accounting-sync]
-verify_jwt = false
-
-[functions.ai-admin-receptionist]
-verify_jwt = false
-
-[functions.process-calendar-queue]
-verify_jwt = false
-
-[functions.google-places-nearby]
-verify_jwt = false
-
-[functions.postcode-address-lookup]
-verify_jwt = false
-
-[functions.google-places-autocomplete]
-verify_jwt = false
-
-[functions.google-places-details]
-verify_jwt = false
-
-[functions.address-lookup]
-verify_jwt = false
-
-[functions.confirm-booking]
-verify_jwt = false
-
-[functions.meta-data-deletion]
-verify_jwt = false
-
-[functions.rork-geotab-proxy]
-verify_jwt = false
-
-[functions.mini-website-ssr]
-verify_jwt = false
-
-[functions.mini-website-sitemap]
-verify_jwt = false
-
-[functions.auto-start-lesson-tracker]
-verify_jwt = false
-
-[functions.auto-stop-lesson-tracker]
-verify_jwt = false
-
-[functions.famulor-webhook]
-verify_jwt = false
-
-[functions.famulor-cron-reminders]
-verify_jwt = false
-
-[functions.famulor-cron-dormant]
-verify_jwt = false
-
-[functions.process-email-queue]
-verify_jwt = true
-
-[functions.slot-offer-expire]
-verify_jwt = false
-
-[functions.send-dbs-update-service-reminder]
-verify_jwt = false
-
-[functions.google-calendar-webhook]
-verify_jwt = false
-
-[functions.renew-google-calendar-webhooks]
-verify_jwt = false
-
-
-
-[functions.klarna-invoice-webhook]
-verify_jwt = false
-
-[functions.fetch-google-reviews]
-verify_jwt = false
-
-[functions.google-place-photo]
-verify_jwt = false
-
-[functions.instructor-calendar-feed]
-verify_jwt = false
-
-[functions.poll-ics-subscriptions]
-verify_jwt = false
+[functions]
+  [functions.accounting-oauth]
+    verify_jwt = false
+  [functions.accounting-sync]
+    verify_jwt = false
+  [functions.address-lookup]
+    verify_jwt = false
+  [functions.ai-admin-receptionist]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.auto-payment-reminders]
+    verify_jwt = false
+  [functions.auto-start-lesson-tracker]
+    verify_jwt = false
+  [functions.auto-stop-lesson-tracker]
+    verify_jwt = false
+  [functions.calendar-sync]
+    verify_jwt = false
+  [functions.clearpay-capture]
+    verify_jwt = false
+  [functions.clearpay-checkout]
+    verify_jwt = false
+  [functions.compliance-reminders]
+    verify_jwt = false
+  [functions.confirm-booking]
+    verify_jwt = false
+  [functions.convert-from-what3words]
+    verify_jwt = false
+  [functions.convert-to-what3words]
+    verify_jwt = false
+  [functions.extract-invoice-data]
+    verify_jwt = false
+  [functions.famulor-cron-dormant]
+    verify_jwt = false
+  [functions.famulor-cron-reminders]
+    verify_jwt = false
+  [functions.famulor-webhook]
+    verify_jwt = false
+  [functions.fetch-dvsa-news]
+    verify_jwt = false
+  [functions.fetch-google-reviews]
+    verify_jwt = false
+  [functions.generate-eod-summary]
+    verify_jwt = false
+  [functions.generate-lesson-plan]
+    verify_jwt = false
+  [functions.generate-lesson-prep]
+    verify_jwt = false
+  [functions.generate-morning-briefing]
+    verify_jwt = false
+  [functions.generate-nudges]
+    verify_jwt = false
+  [functions.generate-quick-replies]
+    verify_jwt = false
+  [functions.generate-route-report]
+    verify_jwt = false
+  [functions.generate-weekly-report]
+    verify_jwt = false
+  [functions.geotab-auth]
+    verify_jwt = false
+  [functions.geotab-media-download]
+    verify_jwt = false
+  [functions.geotab-poller]
+    verify_jwt = false
+  [functions.geotab-status]
+    verify_jwt = false
+  [functions.get-driving-alerts]
+    verify_jwt = false
+  [functions.get-fuel-prices]
+    verify_jwt = false
+  [functions.google-calendar-service]
+    verify_jwt = false
+  [functions.google-calendar-webhook]
+    verify_jwt = false
+  [functions.google-oauth]
+    verify_jwt = false
+  [functions.google-place-photo]
+    verify_jwt = false
+  [functions.google-places-autocomplete]
+    verify_jwt = false
+  [functions.google-places-details]
+    verify_jwt = false
+  [functions.google-places-nearby]
+    verify_jwt = false
+  [functions.gpsgate-poller]
+    verify_jwt = false
+  [functions.instructor-calendar-feed]
+    verify_jwt = false
+  [functions.klarna-checkout]
+    verify_jwt = false
+  [functions.klarna-invoice-webhook]
+    verify_jwt = false
+  [functions.klarna-order]
+    verify_jwt = false
+  [functions.klarna-session]
+    verify_jwt = false
+  [functions.meta-data-deletion]
+    verify_jwt = false
+  [functions.mini-website-sitemap]
+    verify_jwt = false
+  [functions.mini-website-ssr]
+    verify_jwt = false
+  [functions.notify-instructor]
+    verify_jwt = false
+  [functions.payment-callback]
+    verify_jwt = false
+  [functions.payment-health]
+    verify_jwt = false
+  [functions.poll-ics-subscriptions]
+    verify_jwt = false
+  [functions.postcode-address-lookup]
+    verify_jwt = false
+  [functions.postcode-autocomplete]
+    verify_jwt = false
+  [functions.process-calendar-queue]
+    verify_jwt = false
+  [functions.process-cancellation-waitlist]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.public-courses]
+    verify_jwt = false
+  [functions.pupil-payment-checkout]
+    verify_jwt = false
+  [functions.quartix-poller]
+    verify_jwt = false
+  [functions.quartix-route]
+    verify_jwt = false
+  [functions.quartix-sync]
+    verify_jwt = false
+  [functions.quartix-trips]
+    verify_jwt = false
+  [functions.renew-google-calendar-webhooks]
+    verify_jwt = false
+  [functions.rork-geotab-proxy]
+    verify_jwt = false
+  [functions.scheduled-calendar-sync]
+    verify_jwt = false
+  [functions.send-campaign]
+    verify_jwt = false
+  [functions.send-dbs-update-service-reminder]
+    verify_jwt = false
+  [functions.send-gap-sms]
+    verify_jwt = false
+  [functions.send-lesson-reminders]
+    verify_jwt = false
+  [functions.send-payment-confirmation]
+    verify_jwt = false
+  [functions.send-payment-receipt]
+    verify_jwt = false
+  [functions.send-payment-reminder]
+    verify_jwt = false
+  [functions.send-pupil-welcome]
+    verify_jwt = false
+  [functions.send-signing-link]
+    verify_jwt = false
+  [functions.slot-offer-expire]
+    verify_jwt = false
+  [functions.square-booking-wallet-payment]
+    verify_jwt = false
+  [functions.square-checkout]
+    verify_jwt = false
+  [functions.square-create-subscription]
+    verify_jwt = false
+  [functions.square-payment]
+    verify_jwt = false
+  [functions.square-wallet-config]
+    verify_jwt = false
+  [functions.square-wallet-payment]
+    verify_jwt = false
+  [functions.square-webhook]
+    verify_jwt = false
+  [functions.sync-all-calendars]
+    verify_jwt = false
+  [functions.tomtom-speed-limits]
+    verify_jwt = false
+  [functions.traccar-poller]
+    verify_jwt = false
+  [functions.traccar-webhook]
+    verify_jwt = false
+  [functions.track-payment-link]
+    verify_jwt = false
+  [functions.twentyi-api]
+    verify_jwt = false
+  [functions.twilio-webhook]
+    verify_jwt = false
+  [functions.voice-execute]
+    verify_jwt = false
+  [functions.voice-parse-intent]
+    verify_jwt = false
+  [functions.voice-tts]
+    verify_jwt = false
+  [functions.weekly-backup-email]
+    verify_jwt = false
