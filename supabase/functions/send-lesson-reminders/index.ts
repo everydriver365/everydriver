@@ -1,11 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 import { initVapidKeys, sendPush } from "../_shared/webpush.ts";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -107,70 +109,47 @@ serve(async (req) => {
         : null;
 
       // EMAIL reminder
-      if (prefs.email_enabled && resendApiKey && pupil.email) {
+      if (prefs.email_enabled && pupil.email) {
         try {
-          const testChecklistHtml = isDrivingTest ? `
-              <h3 style="color: #ea580c;">🚨 Driving Test Day Checklist:</h3>
-              <ul style="color: #4b5563;">
-                <li><strong>Provisional driving licence</strong> (photocard) — you CANNOT take the test without it</li>
-                <li><strong>Theory test pass certificate</strong></li>
-                <li>Glasses or contact lenses (if needed for driving)</li>
-                <li>Be ready <strong>10 minutes before</strong> your test time</li>
-              </ul>
-              ${testCentreFromNotes ? `<p style="margin: 8px 0;"><strong>📍 Test Centre:</strong> ${testCentreFromNotes}</p>` : ''}
-          ` : '';
+          const details = [
+            { label: "Date", value: formattedDate },
+            { label: "Time", value: displayTime },
+            { label: "Duration", value: `${durationHours} hour${durationHours !== 1 ? "s" : ""}` },
+            ...(testCentreFromNotes ? [{ label: "Test centre", value: testCentreFromNotes }] : []),
+            ...(lesson.pickup_location ? [{ label: "Pickup", value: `${lesson.pickup_location}${lesson.pickup_postcode ? `, ${lesson.pickup_postcode}` : ""}` }] : []),
+          ];
 
-          const emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: ${isDrivingTest ? '#ea580c' : '#3b82f6'};">${isDrivingTest ? 'Driving Test Tomorrow! 🚗🎯' : 'Lesson Reminder - Tomorrow! 🚗'}</h2>
-              <p>Hi ${pupil.name},</p>
-              <p>This is a friendly reminder that you have ${isDrivingTest ? 'your <strong>driving test</strong>' : 'a driving lesson'} scheduled for <strong>tomorrow</strong>:</p>
-              <div style="background: ${isDrivingTest ? '#fff7ed' : '#f3f4f6'}; padding: 20px; border-radius: 12px; margin: 20px 0; ${isDrivingTest ? 'border: 2px solid #fed7aa;' : ''}">
-                <p style="margin: 0 0 8px 0;"><strong>📅 Date:</strong> ${formattedDate}</p>
-                <p style="margin: 0 0 8px 0;"><strong>🕐 Time:</strong> ${displayTime}</p>
-                <p style="margin: 0 0 8px 0;"><strong>⏱️ Duration:</strong> ${durationHours} hour${durationHours !== 1 ? 's' : ''}</p>
-                ${testCentreFromNotes ? `<p style="margin: 0 0 8px 0;"><strong>📍 Test Centre:</strong> ${testCentreFromNotes}</p>` : ''}
-                ${lesson.pickup_location ? `<p style="margin: 0;"><strong>📍 Pickup:</strong> ${lesson.pickup_location}${lesson.pickup_postcode ? `, ${lesson.pickup_postcode}` : ''}</p>` : ''}
-              </div>
-              ${testChecklistHtml}
-              ${!isDrivingTest ? `<h3 style="color: #374151;">Before your lesson:</h3>
-              <ul style="color: #4b5563;">
-                <li>Bring your provisional driving licence</li>
-                <li>Wear comfortable shoes suitable for driving</li>
-                <li>Be ready at your pickup location 5 minutes early</li>
-                <li>Bring glasses/contact lenses if needed</li>
-              </ul>` : ''}
-              <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">
-                Need to reschedule? Please contact ${instructor?.name || 'your instructor'} as soon as possible.
-              </p>
-              <p style="margin-top: 24px;">See you tomorrow!<br><strong>${instructor?.name || 'Your Instructor'}</strong></p>
-            </div>`;
-
-          const emailResponse = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${resendApiKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              from: "EveryDriver <noreply@everydriver.co.uk>",
-              reply_to: "hello@everydriver.co.uk",
-              to: pupil.email,
-              subject: `Reminder: Driving Lesson Tomorrow at ${displayTime} 🚗`,
-              html: emailHtml,
-            }),
-          });
-
-          if (emailResponse.ok) {
-            results.emailsSent++;
+          const paragraphs: string[] = [];
+          if (isDrivingTest) {
+            paragraphs.push(
+              "🚨 Driving test day checklist:\n• Provisional driving licence (photocard) — you CANNOT take the test without it\n• Theory test pass certificate\n• Glasses or contact lenses (if needed for driving)\n• Be ready 10 minutes before your test time",
+            );
           } else {
-            const errorText = await emailResponse.text();
-            results.errors.push(`Email ${lesson.id}: ${errorText}`);
+            paragraphs.push(
+              "Before your lesson:\n• Bring your provisional driving licence\n• Wear comfortable shoes suitable for driving\n• Be ready at your pickup location 5 minutes early\n• Bring glasses/contact lenses if needed",
+            );
           }
+          paragraphs.push(`Need to reschedule? Please contact ${instructor?.name || "your instructor"} as soon as possible.`);
+
+          const r = await sendBrandedEmail({
+            to: pupil.email,
+            subject: isDrivingTest
+              ? `Driving Test Tomorrow at ${displayTime} 🚗🎯`
+              : `Reminder: Driving Lesson Tomorrow at ${displayTime} 🚗`,
+            heading: isDrivingTest ? "Driving test tomorrow!" : "Lesson reminder — tomorrow",
+            intro: `Hi ${pupil.name}, ${isDrivingTest ? "your driving test" : "your driving lesson"} is scheduled for tomorrow.`,
+            details,
+            paragraphs,
+            signOff: `See you tomorrow!\n${instructor?.name || "Your Instructor"}`,
+            idempotencyKey: `lesson-rem-${lesson.id}`,
+          }, supabase);
+          if (r.enqueued > 0) results.emailsSent++;
+          else results.errors.push(`Email ${lesson.id}: ${r.errors.join("; ")}`);
         } catch (emailError) {
           results.errors.push(`Email ${lesson.id}: ${emailError instanceof Error ? emailError.message : "Unknown"}`);
         }
       }
+
 
       // SMS reminder
       if (prefs.sms_enabled && twilioAccountSid && twilioAuthToken && twilioPhoneNumber && pupil.phone) {
