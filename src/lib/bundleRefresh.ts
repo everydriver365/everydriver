@@ -21,6 +21,7 @@
 
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
+import { bootProbeLog } from "@/lib/bootProbe";
 
 const THROTTLE_MS = 60_000;
 const RELOAD_KEY = "__bundleRefreshLastReload";
