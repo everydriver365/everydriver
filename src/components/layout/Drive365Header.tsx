@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: "/drive365/franchise", label: "Franchise" },
   { href: "/about", label: "About" },
   { href: "/help", label: "Help" },
+  { href: "/contact", label: "Contact" },
 ];
 
 const COURSES_DROPDOWN = [
