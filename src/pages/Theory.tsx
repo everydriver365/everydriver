@@ -162,55 +162,103 @@ export function TheoryContent() {
   // Menu
   if (mode === "menu") {
     return (
-      <div className="container py-8 pb-24">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h1 className="text-3xl font-bold">Theory Test Preparation</h1>
-            <p className="text-muted-foreground mt-2">
+      <div className="py-8 pb-24 px-4">
+        <div className="max-w-[680px] mx-auto">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div
+              className="mx-auto mb-4 flex items-center justify-center"
+              style={{ width: 54, height: 54, borderRadius: 14, backgroundColor: "#E6F1FB" }}
+            >
+              <BookOpen style={{ width: 26, height: 26, color: "#0070C0" }} />
+            </div>
+            <h1 className="font-bold" style={{ fontSize: 26, color: "#0F2044" }}>
+              Theory Test Preparation
+            </h1>
+            <p className="mt-2" style={{ fontSize: 14, color: "#888" }}>
               Everything you need to pass your theory test first time
             </p>
           </div>
 
-          <div className="grid gap-4">
-            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-emerald-500" />
-                  Practice Questions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Test your knowledge with {theoryQuestions.length} DVSA-style questions with detailed explanations.
-                </p>
-                <Button onClick={handleStartPractice} className="gap-2">
-                  Start Practice <ChevronRight className="h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-amber-500" />
-                  Mock Test
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-2">
-                  Timed mock test that simulates real DVSA exam conditions.
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge variant="secondary">{MOCK_QUESTION_COUNT} questions</Badge>
-                  <Badge variant="secondary">57 minutes</Badge>
-                  <Badge variant="secondary">{MOCK_PASS_MARK}/{MOCK_QUESTION_COUNT} to pass</Badge>
+          {/* Cards */}
+          <div className="flex flex-col" style={{ gap: "1.1rem" }}>
+            {/* Card 1 — Practice Questions */}
+            <div
+              className="bg-white"
+              style={{ borderRadius: 14, border: "1.5px solid #e8edf2", padding: "1.5rem" }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="flex items-center justify-center"
+                  style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: "#EAF3DE" }}
+                >
+                  <CheckCircle style={{ width: 20, height: 20, color: "#3B6D11" }} />
                 </div>
-                <Button variant="outline" onClick={handleStartMock} className="gap-2">
-                  Take Mock Test <ChevronRight className="h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
+                <h2 className="font-bold" style={{ fontSize: 16, color: "#0F2044" }}>
+                  Practice Questions
+                </h2>
+              </div>
+              <p className="mb-5" style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>
+                Test your knowledge with 700 DVSA-style questions, each with detailed explanations.
+              </p>
+              <button
+                onClick={handleStartPractice}
+                className="inline-flex items-center justify-center gap-2 w-full font-medium transition-colors bg-[#D12E2E] text-white rounded-lg hover:bg-[#b52626]"
+                style={{ padding: "10px 16px", fontSize: 14 }}
+              >
+                Start practice
+                <ArrowRight style={{ width: 16, height: 16 }} />
+              </button>
+            </div>
+
+            {/* Card 2 — Mock Test */}
+            <div
+              className="bg-white"
+              style={{ borderRadius: 14, border: "1.5px solid #e8edf2", padding: "1.5rem" }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="flex items-center justify-center"
+                  style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: "#FAEEDA" }}
+                >
+                  <Clock style={{ width: 20, height: 20, color: "#854F0B" }} />
+                </div>
+                <h2 className="font-bold" style={{ fontSize: 16, color: "#0F2044" }}>
+                  Mock Test
+                </h2>
+              </div>
+              <p className="mb-4" style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>
+                A timed mock test that simulates real DVSA exam conditions.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-5">
+                <span
+                  className="inline-block font-bold text-white"
+                  style={{ backgroundColor: "#0F2044", borderRadius: 20, padding: "6px 12px", fontSize: 12 }}
+                >
+                  50 questions
+                </span>
+                <span
+                  className="inline-block font-bold text-white"
+                  style={{ backgroundColor: "#0F2044", borderRadius: 20, padding: "6px 12px", fontSize: 12 }}
+                >
+                  57 minutes
+                </span>
+                <span
+                  className="inline-block font-bold text-white"
+                  style={{ backgroundColor: "#0F2044", borderRadius: 20, padding: "6px 12px", fontSize: 12 }}
+                >
+                  43/50 to pass
+                </span>
+              </div>
+              <button
+                onClick={handleStartMock}
+                className="inline-flex items-center justify-center gap-2 w-full font-medium transition-colors bg-white text-[#0F2044] rounded-lg border-[1.5px] border-[#e8edf2] hover:border-[#0070C0]"
+                style={{ padding: "10px 16px", fontSize: 14 }}
+              >
+                Take mock test
+                <ArrowRight style={{ width: 16, height: 16 }} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
