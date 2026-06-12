@@ -56,6 +56,17 @@ serve(async (req) => {
 
     const resend = new Resend(RESEND_API_KEY);
 
+    // Fan-out: prefer site_settings.admin_notification_emails; fall back to ADMIN_ENQUIRY_EMAIL env.
+    const { data: settings } = await supabase
+      .from("site_settings")
+      .select("admin_notification_emails")
+      .limit(1)
+      .maybeSingle();
+    const configured = ((settings as any)?.admin_notification_emails ?? []) as string[];
+    const recipients = (Array.isArray(configured) && configured.length > 0)
+      ? configured.filter((e) => typeof e === "string" && e.includes("@"))
+      : [ADMIN_EMAIL];
+
     const learnerFirst = (enquiry.pupil_name || "").split(/\s+/)[0] || "the learner";
     const subject = `New enquiry: ${enquiry.pupil_name} → ${instructor.name}`;
     const html = renderHtml(enquiry, instructor);
@@ -63,7 +74,7 @@ serve(async (req) => {
 
     const result = await resend.emails.send({
       from: "EveryDriver Enquiries <enquiries@everydriver.co.uk>",
-      to: [ADMIN_EMAIL],
+      to: recipients,
       reply_to: enquiry.pupil_email,
       subject,
       html,
@@ -73,6 +84,7 @@ serve(async (req) => {
     if ((result as any)?.error) {
       throw new Error(JSON.stringify((result as any).error));
     }
+
 
     await supabase
       .from("booking_enquiries")
