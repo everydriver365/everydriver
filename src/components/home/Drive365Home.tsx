@@ -403,9 +403,9 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
               <img src="/logo.png" alt={logoAlt} className="h-10 mx-auto mb-5" />
               <div className="d365-welcome-eyebrow font-bold">Find your instructor</div>
               <h1>See who's teaching you before you book.</h1>
-              <p className="mx-0 py-0" style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.65, maxWidth: 440, margin: "0 auto" }}>
+              <p>
                 Every instructor verified. Real reviews. Real pass rates. You choose who teaches you.{" "}
-                <span style={{ color: "#0A1628", fontWeight: 600 }}>All bookings backed by us.</span>
+                <b>All bookings backed by us.</b>
               </p>
               <PostcodeSearch />
               <div
@@ -414,16 +414,18 @@ export default function Drive365Home({ afterLearningPaths, afterHero }: { afterL
                   alignItems: "center",
                   justifyContent: "center",
                   gap: 8,
-                  marginTop: 12,
+                  marginTop: 14,
+                  flexWrap: "wrap",
+                  fontFamily: "'Poppins', sans-serif",
                 }}
               >
-                <span className="font-medium" style={{ color: "#9CA3AF", fontSize: 11 }}>
+                <span style={{ color: "#888888", fontSize: 12 }}>
                   Book now, pay later with
                 </span>
-                <span style={{ background: "#FFB3C7", borderRadius: 5, padding: "3px 10px", fontFamily: "system-ui, sans-serif", fontSize: 11, fontWeight: 900, color: "#17120F" }}>
+                <span style={{ background: "#FFB3C7", borderRadius: 6, padding: "4px 10px", fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: 700, color: "#17120F" }}>
                   Klarna
                 </span>
-                <span style={{ background: "#B2FCE4", borderRadius: 5, padding: "3px 10px", fontFamily: "system-ui, sans-serif", fontSize: 11, fontWeight: 900, color: "#000E18" }}>
+                <span style={{ background: "#B2FCE4", borderRadius: 6, padding: "4px 10px", fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: 700, color: "#000E18" }}>
                   Clearpay
                 </span>
               </div>
