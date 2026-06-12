@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
+import { sendBrandedEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,11 +11,11 @@ interface PaymentReminderRequest {
   instructorId: string;
   instructorName: string;
   pupilIds?: string[];
-  method?: "sms" | "email" | "both"; // default: sms
-  paymentLink?: string; // optional custom payment link
-  manualPhone?: string; // override phone number
-  manualEmail?: string; // override email address
-  manualName?: string; // name for manual-only sends
+  method?: "sms" | "email" | "both";
+  paymentLink?: string;
+  manualPhone?: string;
+  manualEmail?: string;
+  manualName?: string;
 }
 
 async function callerIsAdmin(req: Request): Promise<boolean> {
@@ -34,109 +35,94 @@ async function callerIsAdmin(req: Request): Promise<boolean> {
   return Boolean(isAdmin);
 }
 
+async function sendTwilioSms(to: string, body: string) {
+  const sid = Deno.env.get("TWILIO_ACCOUNT_SID");
+  const token = Deno.env.get("TWILIO_AUTH_TOKEN");
+  const from = Deno.env.get("TWILIO_PHONE_NUMBER");
+  if (!sid || !token || !from) return { ok: false, error: "Twilio not configured" };
+  try {
+    const response = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
+      {
+        method: "POST",
+        headers: { Authorization: `Basic ${btoa(`${sid}:${token}`)}`, "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ To: to, From: from, Body: body }),
+      },
+    );
+    if (response.ok) return { ok: true };
+    const j = await response.json();
+    return { ok: false, error: j.message };
+  } catch (e) { return { ok: false, error: e instanceof Error ? e.message : "Unknown" }; }
+}
+
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
-    const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-    const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
     const data: PaymentReminderRequest = await req.json();
     let method = data.method || "sms";
 
-    // Email channel is admin-only. Downgrade non-admin email/both requests to SMS.
     if (method === "email" || method === "both") {
       const isAdmin = await callerIsAdmin(req);
-      if (!isAdmin) {
-        method = "sms";
-      }
+      if (!isAdmin) method = "sms";
     }
 
-    console.log("Payment reminder request:", { ...data, method });
+    const results = {
+      sent: 0, emailSent: 0, failed: 0, skipped: 0,
+      details: [] as { name: string; status: string; error?: string }[],
+    };
 
-    // If manual-only (no pupilIds), send directly using manual contact info
+    // Manual-only path
     if (!data.pupilIds || data.pupilIds.length === 0) {
-      const results = { sent: 0, emailSent: 0, failed: 0, skipped: 0, details: [] as { name: string; status: string; error?: string }[] };
       const recipientName = data.manualName || "there";
       const paymentLink = data.paymentLink || `https://everydriver.co.uk/pay/${data.instructorId}`;
 
-      // SMS
-      if ((method === "sms" || method === "both") && data.manualPhone && twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
-        const message = `💳 Payment Reminder: Hi ${recipientName}, pay here: ${paymentLink} — ${data.instructorName}`;
-        try {
-          const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`, {
-            method: "POST",
-            headers: { Authorization: `Basic ${btoa(`${twilioAccountSid}:${twilioAuthToken}`)}`, "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ To: data.manualPhone, From: twilioPhoneNumber, Body: message }),
-          });
-          const result = await response.json();
-          if (response.ok) { results.sent++; results.details.push({ name: recipientName, status: "sms_sent" }); }
-          else { results.failed++; results.details.push({ name: recipientName, status: "sms_failed", error: result.message }); }
-        } catch (e) { results.failed++; results.details.push({ name: recipientName, status: "sms_failed", error: e instanceof Error ? e.message : "Unknown error" }); }
+      if ((method === "sms" || method === "both") && data.manualPhone) {
+        const sms = await sendTwilioSms(data.manualPhone,
+          `💳 Payment Reminder: Hi ${recipientName}, pay here: ${paymentLink} — ${data.instructorName}`);
+        if (sms.ok) { results.sent++; results.details.push({ name: recipientName, status: "sms_sent" }); }
+        else { results.failed++; results.details.push({ name: recipientName, status: "sms_failed", error: sms.error }); }
       }
 
-      // Email
-      if ((method === "email" || method === "both") && data.manualEmail && resendApiKey) {
-        try {
-          const emailResponse = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              from: `${data.instructorName} <payments@everydriver.co.uk>`,
-              to: [data.manualEmail],
-              subject: `Payment Link from ${data.instructorName}`,
-              html: `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;"><h2 style="color: #1a1a1a;">Payment Link</h2><p>Hi ${recipientName},</p><p>${data.instructorName} has sent you a payment link.</p><p style="margin: 24px 0;"><a href="${paymentLink}" style="background: #2563eb; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Pay Now</a></p><p style="color: #666; font-size: 14px;">Thank you!<br/>${data.instructorName}</p></div>`,
-            }),
-          });
-          if (emailResponse.ok) { results.emailSent++; results.details.push({ name: recipientName, status: "email_sent" }); }
-          else { const errBody = await emailResponse.text(); results.failed++; results.details.push({ name: recipientName, status: "email_failed", error: errBody }); }
-        } catch (e) { results.failed++; results.details.push({ name: recipientName, status: "email_failed", error: e instanceof Error ? e.message : "Unknown error" }); }
+      if ((method === "email" || method === "both") && data.manualEmail) {
+        const r = await sendBrandedEmail({
+          to: data.manualEmail,
+          subject: `Payment Link from ${data.instructorName}`,
+          heading: "Payment link",
+          intro: `Hi ${recipientName}, ${data.instructorName} has sent you a payment link.`,
+          ctaLabel: "Pay now",
+          ctaUrl: paymentLink,
+          signOff: `Thank you!\n${data.instructorName}`,
+          idempotencyKey: `pay-manual-${data.instructorId}-${data.manualEmail}-${Date.now()}`,
+        }, supabase);
+        if (r.enqueued > 0) { results.emailSent++; results.details.push({ name: recipientName, status: "email_sent" }); }
+        else { results.failed++; results.details.push({ name: recipientName, status: "email_failed", error: r.errors.join("; ") }); }
       }
 
-      console.log("Manual send results:", results);
-      return new Response(JSON.stringify({ success: true, ...results }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ success: true, ...results }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Fetch pupils with outstanding balances (negative balance)
+    // Bulk path: pupils with outstanding balances
     let query = supabase
       .from("pupils")
       .select("id, name, phone, email, account_balance")
       .eq("instructor_id", data.instructorId)
       .lt("account_balance", 0);
-
-    if (data.pupilIds && data.pupilIds.length > 0) {
-      query = query.in("id", data.pupilIds);
-    }
+    if (data.pupilIds && data.pupilIds.length > 0) query = query.in("id", data.pupilIds);
 
     const { data: pupils, error: pupilsError } = await query;
-
-    if (pupilsError) {
-      console.error("Error fetching pupils:", pupilsError);
-      throw pupilsError;
-    }
+    if (pupilsError) throw pupilsError;
 
     if (!pupils || pupils.length === 0) {
-      console.log("No pupils with outstanding balances found");
       return new Response(
         JSON.stringify({ success: true, sent: 0, emailSent: 0, message: "No pupils with outstanding balances" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-
-    const results = {
-      sent: 0,
-      emailSent: 0,
-      failed: 0,
-      skipped: 0,
-      details: [] as { name: string; status: string; error?: string }[],
-    };
 
     for (const pupil of pupils) {
       const amountOwed = Math.abs(Number(pupil.account_balance));
@@ -145,110 +131,42 @@ serve(async (req) => {
       const phoneToUse = data.manualPhone || pupil.phone;
       const emailToUse = data.manualEmail || pupil.email;
 
-      // --- SMS ---
-      if ((method === "sms" || method === "both") && twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
+      if (method === "sms" || method === "both") {
         if (!phoneToUse) {
-          results.skipped++;
-          results.details.push({ name: pupil.name, status: "skipped_sms", error: "No phone number" });
+          results.skipped++; results.details.push({ name: pupil.name, status: "skipped_sms", error: "No phone number" });
         } else {
-          const message = `💳 Payment Reminder: Hi ${pupil.name}, you have an outstanding balance of ${formattedAmount}. Pay here: ${paymentLink} — ${data.instructorName}`;
-          try {
-            const response = await fetch(
-              `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
-              {
-                method: "POST",
-                headers: {
-                  Authorization: `Basic ${btoa(`${twilioAccountSid}:${twilioAuthToken}`)}`,
-                  "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({
-                  To: phoneToUse,
-                  From: twilioPhoneNumber,
-                  Body: message,
-                }),
-              }
-            );
-            const result = await response.json();
-            if (response.ok) {
-              results.sent++;
-              results.details.push({ name: pupil.name, status: "sms_sent" });
-            } else {
-              results.failed++;
-              results.details.push({ name: pupil.name, status: "sms_failed", error: result.message });
-            }
-          } catch (smsError) {
-            results.failed++;
-            results.details.push({ name: pupil.name, status: "sms_failed", error: smsError instanceof Error ? smsError.message : "Unknown error" });
-          }
+          const sms = await sendTwilioSms(phoneToUse,
+            `💳 Payment Reminder: Hi ${pupil.name}, you have an outstanding balance of ${formattedAmount}. Pay here: ${paymentLink} — ${data.instructorName}`);
+          if (sms.ok) { results.sent++; results.details.push({ name: pupil.name, status: "sms_sent" }); }
+          else { results.failed++; results.details.push({ name: pupil.name, status: "sms_failed", error: sms.error }); }
         }
       }
 
-      // --- Email ---
-      if ((method === "email" || method === "both") && resendApiKey) {
+      if (method === "email" || method === "both") {
         if (!emailToUse) {
-          results.skipped++;
-          results.details.push({ name: pupil.name, status: "skipped_email", error: "No email" });
+          results.skipped++; results.details.push({ name: pupil.name, status: "skipped_email", error: "No email" });
         } else {
-          try {
-            const emailResponse = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${resendApiKey}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                from: `${data.instructorName} <payments@everydriver.co.uk>`,
-                to: [emailToUse],
-                subject: `Payment Reminder — ${formattedAmount} outstanding`,
-                html: `
-                  <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-                    <h2 style="color: #1a1a1a;">Payment Reminder</h2>
-                    <p>Hi ${pupil.name},</p>
-                    <p>You have an outstanding balance of <strong>${formattedAmount}</strong> for your driving lessons with ${data.instructorName}.</p>
-                    <p style="margin: 24px 0;">
-                      <a href="${paymentLink}" style="background: #2563eb; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-                        Pay Now
-                      </a>
-                    </p>
-                    <p style="color: #666; font-size: 14px;">Thank you!<br/>${data.instructorName}</p>
-                  </div>
-                `,
-              }),
-            });
-            if (emailResponse.ok) {
-              results.emailSent++;
-              results.details.push({ name: pupil.name, status: "email_sent" });
-            } else {
-              const errBody = await emailResponse.text();
-              results.failed++;
-              results.details.push({ name: pupil.name, status: "email_failed", error: errBody });
-            }
-          } catch (emailError) {
-            results.failed++;
-            results.details.push({ name: pupil.name, status: "email_failed", error: emailError instanceof Error ? emailError.message : "Unknown error" });
-          }
+          const r = await sendBrandedEmail({
+            to: emailToUse,
+            subject: `Payment Reminder — ${formattedAmount} outstanding`,
+            heading: "Payment reminder",
+            intro: `Hi ${pupil.name}, you have an outstanding balance of ${formattedAmount} for your driving lessons with ${data.instructorName}.`,
+            ctaLabel: "Pay now",
+            ctaUrl: paymentLink,
+            signOff: `Thank you!\n${data.instructorName}`,
+            idempotencyKey: `pay-rem-${pupil.id}-${new Date().toISOString().slice(0,10)}`,
+          }, supabase);
+          if (r.enqueued > 0) { results.emailSent++; results.details.push({ name: pupil.name, status: "email_sent" }); }
+          else { results.failed++; results.details.push({ name: pupil.name, status: "email_failed", error: r.errors.join("; ") }); }
         }
       }
     }
 
-    console.log("Reminder results:", results);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        sent: results.sent,
-        emailSent: results.emailSent,
-        failed: results.failed,
-        skipped: results.skipped,
-        details: results.details,
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: true, ...results }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
-    console.error("Error in send-payment-reminder:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
