@@ -208,23 +208,19 @@ serve(async (req) => {
       }
 
       // 2) Email
-      if (resendApiKey && pupil.email) {
+      if (pupil.email) {
         try {
-          const response = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${resendApiKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              from: "EveryDriver <noreply@everydriver.co.uk>",
-              reply_to: "hello@everydriver.co.uk",
-              to: [pupil.email],
-              subject: emailSubject(tier, formattedAmount),
-              html: emailHtml(tier, pupil.name, formattedAmount, instructorName),
-            }),
-          });
-          if (response.ok) {
+          const result = await sendBrandedEmail({
+            to: pupil.email,
+            subject: emailSubject(tier, formattedAmount),
+            heading: emailHeading(tier),
+            preview: `${formattedAmount} outstanding with ${instructorName}`,
+            intro: smsBody(tier, pupil.name, formattedAmount, instructorName),
+            paragraphs: ["Thank you."],
+            footerNote: `${instructorName} via EveryDriver`,
+            idempotencyKey: `payment-reminder-${pupil.id}-${tier}-${new Date().toISOString().slice(0,10)}`,
+          }, supabase);
+          if (result.enqueued > 0) {
             emailSent++;
             await supabase.from("payment_reminder_log").insert({
               pupil_id: pupil.id,
@@ -234,7 +230,6 @@ serve(async (req) => {
               amount_owed: amountOwed,
             });
           }
-          await response.text();
         } catch (e) {
           console.error(`Email failed for ${pupil.name}:`, e);
         }
