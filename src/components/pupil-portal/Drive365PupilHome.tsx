@@ -431,3 +431,271 @@ function ReadinessRing({ pct }: { pct: number | null }) {
     </div>
   );
 }
+
+// ─── Next Lesson card (mirrors instructor UpNextCard layout) ───
+function toSentenceName(name: string): string {
+  return (name || "").toLowerCase().split(/\s+/).map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(" ");
+}
+function getInitials(name: string): string {
+  return (name || "").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+}
+function formatTime24(time: string): string {
+  try { return format(parse(time, "HH:mm:ss", new Date()), "HH:mm"); }
+  catch { return (time || "").slice(0, 5); }
+}
+function formatHoursLong(minutes: number): string {
+  const h = minutes / 60;
+  return Number.isInteger(h) ? `${h}h` : `${h.toFixed(1)}h`;
+}
+function pupilCountdownText(lessonDate: string, startTime: string | null): string {
+  try {
+    const start = startTime ? `${lessonDate}T${startTime}` : `${lessonDate}T00:00:00`;
+    const d = parseISO(start);
+    const minutesUntil = Math.round((d.getTime() - Date.now()) / 60000);
+    if (minutesUntil <= 0) return "Now";
+    if (minutesUntil < 60) return `In ${minutesUntil} min`;
+    const lessonDay = parseISO(lessonDate);
+    if (isToday(lessonDay)) {
+      const hours = Math.round(minutesUntil / 60);
+      return hours === 1 ? "In 1 hour" : `In ${hours} hours`;
+    }
+    if (isTomorrow(lessonDay)) return "Tomorrow";
+    const days = differenceInCalendarDays(lessonDay, new Date());
+    return days === 1 ? "Tomorrow" : `In ${days} days`;
+  } catch { return ""; }
+}
+
+function NextLessonCard({
+  nextLesson,
+  instructor,
+  onBook,
+}: {
+  nextLesson: any;
+  instructor: { id: string; name: string; phone: string | null; profile_image_url?: string | null };
+  onBook: () => void;
+}) {
+  const pickupPostcode: string | null = nextLesson?.pickup_postcode ?? null;
+  const pickupLocation: string | null = nextLesson?.pickup_location ?? null;
+  const { durationMinutes: etaMinutes } = useTrafficETA(pickupPostcode);
+
+  const fullName = toSentenceName(instructor.name);
+  const initials = getInitials(instructor.name);
+  const avatarColor = pupilAvatarColor(instructor.id || instructor.name) || "#3D55A1";
+
+  const handleCall = () => { if (instructor.phone) { const a = document.createElement("a"); a.href = `tel:${instructor.phone}`; a.click(); } };
+  const handleText = () => { if (instructor.phone) { const a = document.createElement("a"); a.href = `sms:${instructor.phone}`; a.click(); } };
+  const handleNavigate = () => {
+    if (!pickupPostcode && !pickupLocation) return;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const dest = encodeURIComponent([pickupLocation, pickupPostcode].filter(Boolean).join(", "));
+    if (isIOS) window.open(`maps://maps.apple.com/?daddr=${dest}&dirflg=d`, "_blank");
+    else window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`, "_blank");
+  };
+
+  if (!nextLesson) {
+    return (
+      <div
+        style={{
+          background: "#FFFFFF",
+          borderRadius: 20,
+          border: "0.5px solid rgba(26,82,160,0.09)",
+          boxShadow: "0 2px 16px rgba(26,82,160,0.11)",
+          padding: 20,
+          textAlign: "center",
+        }}
+      >
+        <div style={{ fontFamily: SERIF, fontSize: 20, color: SERIF_TEXT, marginBottom: 6 }}>
+          No lesson booked
+        </div>
+        <div style={{ fontSize: 13, color: BODY, marginBottom: 14 }}>
+          Find a slot with {(instructor.name || "your instructor").split(" ")[0]} this week
+        </div>
+        <button
+          onClick={onBook}
+          style={{
+            padding: "10px 20px",
+            borderRadius: 999,
+            background: NAVY,
+            color: "#fff",
+            fontSize: 13,
+            fontWeight: 700,
+            border: "none",
+          }}
+        >
+          Book now
+        </button>
+      </div>
+    );
+  }
+
+  const startLabel = nextLesson.start_time ? formatTime24(nextLesson.start_time) : "";
+  const countdown = pupilCountdownText(nextLesson.lesson_date, nextLesson.start_time);
+  const hasDestination = !!pickupPostcode;
+  const isImminent = countdown === "Now" || countdown.startsWith("In ") && countdown.includes("min");
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
+
+  return (
+    <div
+      style={{
+        backgroundColor: "#FFFFFF",
+        borderRadius: 20,
+        overflow: "hidden",
+        width: "100%",
+        boxShadow: "0 2px 16px rgba(26,82,160,0.11)",
+        border: "0.5px solid rgba(26,82,160,0.09)",
+        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", sans-serif',
+      }}
+    >
+      {/* Map strip */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleNavigate}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleNavigate(); } }}
+        style={{ position: "relative", height: 110, overflow: "hidden", cursor: "pointer", background: "#F5F4F1" }}
+      >
+        <div style={{ position: "absolute", inset: 0 }}>
+          <StaticMapPreview hasDestination={hasDestination} height={110} />
+        </div>
+
+        <div style={{
+          position: "absolute", top: 10, left: 10,
+          background: "rgba(255,255,255,0.94)",
+          padding: "4px 9px", borderRadius: 999,
+          display: "inline-flex", alignItems: "center", gap: 5,
+          boxShadow: "0 1px 3px rgba(15,23,42,0.10)",
+          backdropFilter: "blur(6px)",
+        }}>
+          <span style={{
+            width: 5, height: 5, borderRadius: 999,
+            background: isImminent ? "#CC2229" : "#3D55A1",
+            boxShadow: `0 0 0 3px ${isImminent ? "rgba(204,34,41,0.22)" : "rgba(61,85,161,0.25)"}`,
+          }} />
+          <span style={{
+            fontSize: 10, fontWeight: 700, color: "#3D55A1",
+            textTransform: "uppercase", letterSpacing: 0.6,
+          }}>
+            Live · {countdown}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={(e) => { stop(e); handleNavigate(); }}
+          disabled={!pickupPostcode && !pickupLocation}
+          style={{
+            position: "absolute", top: 10, right: 10,
+            background: "rgba(255,255,255,0.94)",
+            padding: "4px 9px", borderRadius: 999,
+            display: "inline-flex", alignItems: "center", gap: 5,
+            boxShadow: "0 1px 3px rgba(15,23,42,0.10)",
+            backdropFilter: "blur(6px)",
+            border: "none", cursor: (pickupPostcode || pickupLocation) ? "pointer" : "default",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          <Navigation style={{ width: 11, height: 11, color: "#3D55A1" }} strokeWidth={2.4} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#3D55A1" }}>
+            {etaMinutes > 0 ? `${etaMinutes}m` : "Tap for ETA"}
+          </span>
+        </button>
+      </div>
+
+      {/* Info area */}
+      <div style={{ padding: "14px 14px 10px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{
+              fontSize: 28, fontWeight: 700, color: "#0F172A",
+              letterSpacing: -0.8, lineHeight: 1,
+              fontVariantNumeric: "tabular-nums",
+            }}>
+              {startLabel}
+            </div>
+            <div style={{
+              fontSize: 13, fontWeight: 700, color: "#0F172A",
+              marginTop: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>
+              {fullName}
+            </div>
+            <div style={{
+              fontSize: 11, color: "#64748B", marginTop: 2,
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>
+              Standard lesson · {formatHoursLong(nextLesson.duration_minutes || 60)}
+              {pickupPostcode ? ` · ${pickupPostcode}` : pickupLocation ? ` · ${pickupLocation}` : ""}
+            </div>
+          </div>
+
+          <div
+            aria-label={`${fullName}`}
+            style={{
+              width: 44, height: 44, borderRadius: 22,
+              backgroundColor: avatarColor,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0, overflow: "hidden",
+              border: "2px solid rgba(255,255,255,0.6)",
+              boxShadow: `0 2px 6px ${avatarColor}38`,
+            }}
+          >
+            {instructor.profile_image_url ? (
+              <img src={instructor.profile_image_url} alt="" style={{ width: 44, height: 44, objectFit: "cover" }} />
+            ) : (
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#FFF" }}>{initials}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <button
+            type="button"
+            onClick={(e) => { stop(e); handleCall(); }}
+            disabled={!instructor.phone}
+            style={{
+              flex: 1.3, height: 38, borderRadius: 12,
+              backgroundColor: instructor.phone ? "#CC2229" : "#E8B5B7",
+              color: "#FFF", border: "none",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+              fontSize: 12, fontWeight: 700,
+              boxShadow: instructor.phone ? "0 2px 6px rgba(204,34,41,0.28)" : "none",
+              cursor: instructor.phone ? "pointer" : "not-allowed",
+            }}
+          >
+            <Phone style={{ width: 13, height: 13 }} strokeWidth={2} /> Call
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { stop(e); handleText(); }}
+            disabled={!instructor.phone}
+            style={{
+              flex: 1, height: 38, borderRadius: 12,
+              backgroundColor: "#EDF2FE", color: "#3D55A1", border: "none",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+              fontSize: 12, fontWeight: 600,
+              cursor: instructor.phone ? "pointer" : "not-allowed",
+              opacity: instructor.phone ? 1 : 0.5,
+            }}
+          >
+            <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Text
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { stop(e); handleNavigate(); }}
+            disabled={!pickupPostcode && !pickupLocation}
+            style={{
+              flex: 1, height: 38, borderRadius: 12,
+              backgroundColor: "#EDF2FE", color: "#3D55A1", border: "none",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+              fontSize: 12, fontWeight: 600,
+              cursor: (pickupPostcode || pickupLocation) ? "pointer" : "not-allowed",
+              opacity: (pickupPostcode || pickupLocation) ? 1 : 0.5,
+            }}
+          >
+            <Navigation style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Go
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
