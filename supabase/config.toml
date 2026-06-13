@@ -159,20 +159,6 @@ project_id = "qyqeibovdhyohkfagujv"
     verify_jwt = false
   [functions.slot-offer-expire]
     verify_jwt = false
-  [functions.square-booking-wallet-payment]
-    verify_jwt = false
-  [functions.square-checkout]
-    verify_jwt = false
-  [functions.square-create-subscription]
-    verify_jwt = false
-  [functions.square-payment]
-    verify_jwt = false
-  [functions.square-wallet-config]
-    verify_jwt = false
-  [functions.square-wallet-payment]
-    verify_jwt = false
-  [functions.square-webhook]
-    verify_jwt = false
   [functions.sync-all-calendars]
     verify_jwt = false
   [functions.tomtom-speed-limits]
