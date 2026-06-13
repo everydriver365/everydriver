@@ -2170,6 +2170,14 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
                         <a href="/contact"><MapPin className="h-4 w-4 mr-1" /> Contact Us</a>
                       </Button>
                     </div>
+                    {searchedPostcode && (
+                      <div className="mt-8">
+                        <NoCoverageEnquiry
+                          postcode={searchedPostcode}
+                          areaLabel={searchedAreaName || undefined}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </>
