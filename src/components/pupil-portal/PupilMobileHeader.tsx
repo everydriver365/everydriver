@@ -66,7 +66,7 @@ export function PupilMobileHeader({
                   className="text-[15px] font-semibold leading-tight truncate"
                   style={{
                     color: NAVY,
-                    fontFamily: 'Georgia, "Times New Roman", serif',
+                    fontFamily: 'Poppins, sans-serif',
                   }}
                 >
                   {title}

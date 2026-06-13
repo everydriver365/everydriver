@@ -20,7 +20,7 @@ const AMBER_BG = "#FAEEDA";
 const AMBER_TEXT = "#633806";
 const AMBER_ICON = "#854F0B";
 
-const SERIF = 'Georgia, "Times New Roman", serif';
+const SERIF = 'Poppins, sans-serif';
 const SANS = '"Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 interface Props {
