@@ -21958,6 +21958,7 @@ export type Database = {
           plan_slug: string
         }[]
       }
+      get_my_pupil_portal_slug: { Args: never; Returns: string }
       get_public_instructor_booking_preferences: {
         Args: { p_instructor_id: string }
         Returns: {
