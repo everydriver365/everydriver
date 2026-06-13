@@ -1,5 +1,5 @@
-import SquareInvoicesPage from "@/pages/invoices/SquareInvoicesPage";
+import RyftInvoicesPage from "@/pages/invoices/RyftInvoicesPage";
 
 export default function AdminSquareInvoices() {
-  return <SquareInvoicesPage scope="admin" />;
+  return <RyftInvoicesPage scope="admin" />;
 }
