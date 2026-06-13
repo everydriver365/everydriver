@@ -252,7 +252,7 @@ export const instructorPortalRoutes = (
     <Route path="/instructor/in-out" element={<Gated feature="expense_tracking" label="In & Out"><InstructorInOut /></Gated>} />
     <Route path="/instructor/month-end" element={<Gated feature="payment_tracking" label="Month End"><MonthEndReview /></Gated>} />
     <Route path="/instructor/accounting-callback" element={<AccountingCallback />} />
-    <Route path="/instructor/square-callback" element={<SquareCallback />} />
+    
     <Route path="/instructor/invoices" element={<InstructorSquareInvoices />} />
     <Route path="/instructor/quotes" element={<InstructorQuotes />} />
     <Route path="/instructor/quotes/:id" element={<InstructorQuoteDetail />} />
