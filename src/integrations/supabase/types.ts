@@ -21987,8 +21987,14 @@ export type Database = {
       get_public_instructor_booking_preferences: {
         Args: { p_instructor_id: string }
         Returns: {
+          allowed_lesson_lengths: number[]
+          available_from: string
+          buffer_minutes: number
           id: string
+          is_network_placeholder: boolean
           prefer_earliest_slot: boolean
+          preferred_lesson_length: number
+          slot_increment_minutes: number
         }[]
       }
       get_public_instructor_calendar_blocks: {
