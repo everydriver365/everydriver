@@ -1118,7 +1118,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         ) : (
           <>
             <OfflineBanner />
-            <main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'py-4'}`} style={{ backgroundColor: 'transparent' }}>{children}</main>
+            <main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`} style={{ backgroundColor: 'transparent' }}>{children}</main>
             <InstructorBottomNav wallpaperColor={appStyleBg} voiceState={voiceAssistant.state} onVoiceTap={handleVoiceTap} />
             <VoiceAssistantOverlay state={voiceAssistant.state} transcript={voiceAssistant.transcript} responseText={voiceAssistant.responseText} onCancel={voiceAssistant.cancel} />
           </>
