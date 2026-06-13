@@ -135,21 +135,6 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
     staleTime: 60_000,
   });
 
-  // Last lesson
-  const { data: lastLesson } = useQuery({
-    queryKey: ["pupil-home-last-lesson", pupil.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("lesson_history")
-        .select("id, lesson_date, duration_minutes, skills_practiced, notes")
-        .eq("pupil_id", pupil.id)
-        .order("lesson_date", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data as any;
-    },
-    staleTime: 60_000,
-  });
 
   const firstName = (pupil.name || "").split(" ")[0] || "there";
   const instructorFirst = (instructor.name || "your instructor").split(" ")[0];
