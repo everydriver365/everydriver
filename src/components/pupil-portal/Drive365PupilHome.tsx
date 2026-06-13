@@ -509,6 +509,7 @@ function NextLessonCard({
   const pickupPostcode: string | null = nextLesson?.pickup_postcode ?? null;
   const pickupLocation: string | null = nextLesson?.pickup_location ?? null;
   const { durationMinutes: etaMinutes } = useTrafficETA(pickupPostcode);
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   const fullName = toSentenceName(instructor.name);
   const initials = getInitials(instructor.name);
