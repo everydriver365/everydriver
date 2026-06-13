@@ -3,9 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle, BookOpen, Car, ChevronRight, ClipboardList,
   GraduationCap, ImageIcon, MapPin,
+  Phone, MessageSquare, Navigation,
 } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, parse, isToday, isTomorrow, differenceInCalendarDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { StaticMapPreview } from "@/components/UpNextCard/StaticMapPreview";
+import { useTrafficETA } from "@/hooks/useTrafficETA";
+import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 
 // Editorial palette (per spec)
 const NAVY = "#0F2044";
