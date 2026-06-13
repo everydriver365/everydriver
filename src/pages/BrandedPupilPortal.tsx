@@ -446,11 +446,6 @@ export default function BrandedPupilPortal({ initialSection }: BrandedPupilPorta
                   <div className="space-y-2">
                     {/* Dynamic real-time alert banners (only render when active) */}
                     <div className="px-4 md:pt-3 space-y-3 empty:hidden">
-                      <SwapNeedsAttentionBanner
-                        hasTestBooked={!!pupil.test_date}
-                        optedIn={swapOptedIn}
-                        onClick={openSwapSettings}
-                      />
                       <SwapChecklistNeedsAttentionBanner
                         swapStatus={swapStatus}
                         onClick={() => setSwapChecklistOpen(true)}
