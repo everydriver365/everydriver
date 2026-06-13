@@ -509,6 +509,7 @@ function NextLessonCard({
   const pickupPostcode: string | null = nextLesson?.pickup_postcode ?? null;
   const pickupLocation: string | null = nextLesson?.pickup_location ?? null;
   const { durationMinutes: etaMinutes } = useTrafficETA(pickupPostcode);
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   const fullName = toSentenceName(instructor.name);
   const initials = getInitials(instructor.name);
@@ -659,7 +660,6 @@ function NextLessonCard({
   const countdown = pupilCountdownText(nextLesson.lesson_date, nextLesson.start_time);
   const hasDestination = !!pickupPostcode;
   const isImminent = countdown === "Now" || countdown.startsWith("In ") && countdown.includes("min");
-  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
     <div
