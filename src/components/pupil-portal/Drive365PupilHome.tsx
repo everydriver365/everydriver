@@ -190,9 +190,9 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
         </div>
       )}
 
-      <div style={{ padding: "16px 16px 0", maxWidth: 480, margin: "0 auto" }}>
+      <div className="px-4 pt-0 md:pt-4" style={{ paddingBottom: 0, maxWidth: 480, margin: "0 auto" }}>
         {/* 3. Greeting */}
-        <div className="pt-1 pb-4">
+        <div className="pb-4">
           <div style={{ fontSize: 13, color: BODY }}>{greeting()}</div>
           <div style={{ fontFamily: SERIF, fontSize: 26, color: SERIF_TEXT, lineHeight: 1.15, marginTop: 2 }}>
             Hi {firstName}
