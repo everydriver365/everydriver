@@ -136,7 +136,6 @@ Deno.serve(async (req) => {
               status: "paid",
               paid_at: new Date().toISOString(),
               last_event_at: new Date().toISOString(),
-              payment_method: paymentMethod,
               ryft_payment_session_id: sessionId,
             })
             .eq("id", inv.id);
