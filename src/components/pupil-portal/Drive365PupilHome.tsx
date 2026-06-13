@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StaticMapPreview } from "@/components/UpNextCard/StaticMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
+import nextLessonCarImg from "@/assets/next-lesson-car.png";
 
 // Editorial palette (per spec)
 const NAVY = "#0F2044";
