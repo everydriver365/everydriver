@@ -393,6 +393,13 @@ export default function InstructorPupilsDesktop() {
     const hoursNum = hours ? parseInt(hours, 10) : null;
     const rateNum = addForm.custom_hourly_rate ? parseFloat(addForm.custom_hourly_rate) : null;
     setAddSaving(true);
+    const dupName = composedName || "Unnamed pupil";
+    const existingDup = await checkDuplicatePupilName(instructorId, dupName);
+    if (existingDup) {
+      setAddSaving(false);
+      toast.error(`A pupil named "${existingDup.name}" already exists. Open their record instead of adding a new one.`);
+      return;
+    }
     const { data: insertedRows, error } = await supabase.from("pupils").insert({
       instructor_id: instructorId,
       name: composedName || "Unnamed pupil",
