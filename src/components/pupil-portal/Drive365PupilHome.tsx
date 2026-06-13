@@ -204,99 +204,12 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
           </div>
         </div>
 
-        {/* 4. Next lesson hero */}
-        <div
-          className="relative overflow-hidden"
-          style={{
-            background: NAVY,
-            borderRadius: 16,
-            padding: 20,
-            color: "#fff",
-            minHeight: 156,
-          }}
-        >
-          {/* Decorative steering-wheel icon */}
-          <div
-            aria-hidden
-            style={{
-              position: "absolute",
-              right: -20,
-              bottom: -20,
-              opacity: 0.07,
-              pointerEvents: "none",
-            }}
-          >
-            <svg width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.2">
-              <circle cx="12" cy="12" r="10" />
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 9V2" />
-              <path d="M9 14l-7 3" />
-              <path d="M15 14l7 3" />
-            </svg>
-          </div>
-
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.8, textTransform: "uppercase", color: "rgba(255,255,255,0.6)" }}>
-            Next lesson
-          </div>
-
-          {nextLesson ? (
-            <>
-              <div style={{ fontFamily: SERIF, fontSize: 24, lineHeight: 1.2, marginTop: 6, color: "#fff" }}>
-                {format(parseISO(nextLesson.lesson_date), "EEE, d MMM")}
-                {nextLesson.start_time && ` · ${format(parseISO(`2000-01-01T${nextLesson.start_time}`), "h:mmaaa")}`}
-              </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 6, lineHeight: 1.45 }}>
-                {nextLesson.duration_minutes} mins · with {instructorFirst}
-                {nextLesson.pickup_location && (
-                  <>
-                    <br />
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin size={12} /> {nextLesson.pickup_location}
-                    </span>
-                  </>
-                )}
-              </div>
-              <button
-                onClick={() => onNavigate("schedule")}
-                style={{
-                  marginTop: 14,
-                  padding: "9px 18px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.45)",
-                  background: "transparent",
-                  color: "#fff",
-                  fontSize: 13,
-                  fontWeight: 600,
-                }}
-              >
-                View details
-              </button>
-            </>
-          ) : (
-            <>
-              <div style={{ fontFamily: SERIF, fontSize: 26, lineHeight: 1.15, marginTop: 6, color: "#fff" }}>
-                No lesson booked
-              </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 6 }}>
-                Find a slot with {instructorFirst} this week
-              </div>
-              <button
-                onClick={() => onNavigate("book")}
-                style={{
-                  marginTop: 14,
-                  padding: "10px 20px",
-                  borderRadius: 999,
-                  background: "#fff",
-                  color: NAVY,
-                  fontSize: 13,
-                  fontWeight: 700,
-                }}
-              >
-                Book now
-              </button>
-            </>
-          )}
-        </div>
+        {/* 4. Next lesson hero — instructor app style */}
+        <NextLessonCard
+          nextLesson={nextLesson}
+          instructor={instructor}
+          onBook={() => onNavigate("book")}
+        />
 
         {/* 5. Theory & Driving test tiles */}
         <div className="grid grid-cols-2 gap-3 mt-3">
