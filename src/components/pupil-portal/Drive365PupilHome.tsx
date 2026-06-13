@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StaticMapPreview } from "@/components/UpNextCard/StaticMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
+import nextLessonCarImg from "@/assets/next-lesson-car.png";
 
 // Editorial palette (per spec)
 const NAVY = "#0F2044";
@@ -508,7 +509,7 @@ function NextLessonCard({
         {/* Map strip — placeholder */}
         <div style={{ position: "relative", height: 110, overflow: "hidden", background: "#F5F4F1" }}>
           <div style={{ position: "absolute", inset: 0 }}>
-            <StaticMapPreview hasDestination={true} height={110} />
+            <img src={nextLessonCarImg} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           </div>
           <div style={{
             position: "absolute", top: 10, left: 10,
@@ -632,7 +633,7 @@ function NextLessonCard({
         style={{ position: "relative", height: 110, overflow: "hidden", cursor: "pointer", background: "#F5F4F1" }}
       >
         <div style={{ position: "absolute", inset: 0 }}>
-          <StaticMapPreview hasDestination={hasDestination} height={110} />
+          <img src={nextLessonCarImg} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
 
         <div style={{
