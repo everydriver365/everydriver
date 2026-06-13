@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  AlertCircle, BookOpen, Car, ChevronRight, ClipboardList,
+  AlertCircle, ArrowLeftRight, BarChart3, BookOpen, Car, ChevronRight, ClipboardList,
   GraduationCap, MapPin,
   Phone, MessageSquare, Navigation,
 } from "lucide-react";
