@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Menu, MessageSquare, LogOut, User, CalendarPlus, CreditCard } from "lucide-react";
-import edLogo from "@/assets/everydriver-logo.png";
+import edLogoAsset from "@/assets/everydriver-logo-pupil.png.asset.json";
+const edLogo = edLogoAsset.url;
 import {
   DropdownMenu,
   DropdownMenuContent,
