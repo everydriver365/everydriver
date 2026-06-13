@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle, BookOpen, Car, ChevronRight, ClipboardList,
-  GraduationCap, ImageIcon, MapPin,
+  GraduationCap, MapPin,
   Phone, MessageSquare, Navigation,
 } from "lucide-react";
 import { format, parseISO, parse, isToday, isTomorrow, differenceInCalendarDays } from "date-fns";
