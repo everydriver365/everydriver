@@ -1,52 +1,77 @@
-## Goal
+# Full Square Removal + Ryft Cutover
 
-Replace the current navy "Next lesson" tile in the pupil mobile dashboard (`Drive365PupilHome.tsx`) with the same layout/design as the instructor app's `UpNextCard` — but with the data direction flipped (showing the **instructor** to the pupil, not the pupil to the instructor).
+No payments have been processed yet (Ryft: 0 intents, Square: production traffic in code but no live revenue you want to preserve), so we can do a clean cutover rather than a parallel-run migration.
 
-Scope: mobile pupil portal `/p/:slug` only. No changes to the actual `UpNextCard` component (used by instructors) or to DSM.
+## Current state
 
-## Layout to replicate
+- **Square surface:** 10 edge functions, ~248 code files touch the word "square" (many are unrelated string matches; the real wiring is ~30 components/pages + edge functions + 2 DB tables).
+- **Ryft surface today:** 4 edge functions (`ryft-create-checkout`, `ryft-webhook`, `ryft-onboard-instructor`, `ryft-account-status`), 2 DB tables (`ryft_payment_intents`, `ryft_webhook_events`), secrets present (`RYFT_SECRET_KEY`, `RYFT_PUBLIC_KEY`, `RYFT_WEBHOOK_SECRET`, `RYFT_ENVIRONMENT`).
+- **Gap:** Ryft only covers one-off checkout. Square currently also handles: invoices, subscriptions, wallet/Apple-Google Pay, refunds, OAuth onboarding, webhooks, instructor split payouts.
 
-Card structure (white card, 20px radius, soft blue shadow, SF/Inter stack):
+## What we remove
 
-1. **Map strip (110px)** — `StaticMapPreview` of pickup postcode
-   - Top-left chip: `LIVE · {countdown}` (e.g. "In 2 days", "In 3 hours", "In 25 min")
-   - Top-right chip: `Navigation` icon + ETA from `useTrafficETA(pickupPostcode)` — tappable, opens Apple/Google Maps directions
-2. **Info area**
-   - Time hero: large 28px tabular `HH:mm`
-   - Line 2 (bold): instructor full name
-   - Line 3 (muted): `Standard lesson · {duration}h · {pickupPostcode or pickupLocation}`
-   - Right side: instructor avatar (44px) — tappable to open instructor profile/contact sheet (or no-op if none exists yet)
-3. **Action row** — three buttons
-   - Primary red **Call** (instructor phone) — `tel:` link
-   - Secondary blue **Text** (instructor phone) — `sms:` link
-   - Secondary blue **Go** — open maps to pickup
-4. **Expand handle** at bottom (`Details`) — for v1, hide this. The instructor version's expanded panel delegates to `NextUpTile` which is instructor-only logic; pupils don't need it.
+**Edge functions (delete + undeploy):**
+`square-booking-wallet-payment`, `square-checkout`, `square-create-subscription`, `square-invoice-manage`, `square-oauth`, `square-payment`, `square-refund`, `square-wallet-config`, `square-wallet-payment`, `square-webhook`.
 
-## Data mapping (pupil side)
+**Frontend pages/components:**
+- `src/pages/invoices/SquareInvoicesPage.tsx`
+- `src/pages/instructor/SquareCallback.tsx`
+- `src/pages/instructor/InstructorSquareInvoices.tsx`
+- `src/pages/admin/AdminSquareInvoices.tsx`
+- All `square*` references inside `InstructorIntegrationsHub`, `InstructorPaymentsDesktop`, `InstructorPlanBilling`, `AdminInstructorPayouts`, booking checkout, invoice PDF generator, payment-health/audit pages.
 
-The pupil dashboard already queries `nextLesson` with: `lesson_date`, `start_time`, `duration_minutes`, `pickup_location`. We need to ensure these extra fields are available:
+**Routes:** Square invoice/callback routes in `instructorPortalRoutes.tsx` and `adminRoutes.tsx`.
 
-- `pickup_postcode` — needed for `StaticMapPreview` + `useTrafficETA`. Add to the `nextLesson` Supabase select if not already present.
-- Instructor data — already available via the `instructor` prop on `Drive365PupilHome` (`id`, `name`, `phone`). Add `profile_image_url` to the instructor fetch in `BrandedPupilPortal.tsx` and pass it through.
+**DB:** Drop `square_invoices` and `processed_square_events` (no live data to preserve — confirm before drop).
 
-Countdown: compute `minutesUntil` from `lesson_date + start_time` vs `now` (Europe/London).
+**Secrets:** Remove `SQUARE_*` secrets at the end once nothing references them.
 
-## Files to change
+**Memory:** Update `mem://features/payments/instructor-payout-architecture` and `mem://features/payments/sumup-integration-logic` to remove Square references. Add `mem://constraints/payment-gateway-ryft-only`.
 
-- `src/components/pupil-portal/Drive365PupilHome.tsx` — replace the existing navy "Next lesson" block (lines ~202–290) with the new card. Reuse `StaticMapPreview` from `@/components/UpNextCard/StaticMapPreview` and `useTrafficETA` from `@/hooks/useTrafficETA`. Extend the `nextLesson` query to select `pickup_postcode`.
-- `src/components/pupil-portal/Drive365PupilHome.tsx` Props — extend `instructor` prop to include optional `profile_image_url`.
-- `src/pages/BrandedPupilPortal.tsx` — pass `instructor.profile_image_url` into `Drive365PupilHome`.
+## What we build on Ryft
 
-No new components are extracted; the markup lives inline in `Drive365PupilHome.tsx` like the surrounding editorial sections.
+Ryft already has Standard Accounts (onboarding), Payment Sessions (checkout), Split Payments, Subscriptions, Refunds, Webhooks, and Apple/Google Pay via Drop-in. Mapping:
 
-## What's intentionally different from instructor version
+| Capability | Old (Square) | New (Ryft) |
+|---|---|---|
+| Instructor onboarding | `square-oauth` | `ryft-onboard-instructor` (exists; verify Standard Account flow) |
+| One-off lesson/course checkout | `square-checkout` / `square-payment` | `ryft-create-checkout` (exists; extend with split + service-fee logic) |
+| Wallet (Apple/Google Pay) | `square-wallet-payment` | Ryft Drop-in (built into payment session — no separate function) |
+| Invoices | `square-invoice-manage` | New `ryft-invoice-manage` — Ryft Payment Links + a `ryft_invoices` table mirroring needed columns |
+| Subscriptions (instructor billing) | `square-create-subscription` | New `ryft-create-subscription` using Ryft Subscriptions API |
+| Refunds | `square-refund` | New `ryft-refund` |
+| Webhook | `square-webhook` | `ryft-webhook` (exists; extend event coverage: payment.captured, payment.refunded, subscription.*, payout.*) |
+| Split payout to instructor | Square multi-party | Ryft `splits[]` on payment session — keep tiered service-fee logic (2.0%+25p / 1.5%+25p) and 0–100% pupil/instructor split |
 
-- Avatar shows the **instructor** to the pupil (not the pupil to themself).
-- Call/Text target the **instructor's phone**.
-- "Up next" small-caps label above the card is dropped — the pupil card sits inside the existing editorial layout which already has its own rhythm.
-- The expand-for-details footer is removed (no `NextUpTile` equivalent for pupils).
-- Empty state (no upcoming lesson) keeps current copy: "No upcoming lesson — Book your next session →".
+## Phased delivery
 
-## Open question
+```text
+Phase 1  DB + edge functions
+  - migration: create ryft_invoices, ryft_subscriptions; drop square_* tables
+  - new edge functions: ryft-invoice-manage, ryft-create-subscription, ryft-refund
+  - extend ryft-create-checkout (splits, service fee) and ryft-webhook (full event set)
 
-Tap on the instructor avatar — should it (a) do nothing, (b) open a phone/text sheet, or (c) link to an instructor profile page? I'll default to **(a) no-op** unless you say otherwise.
+Phase 2  Frontend cutover
+  - rename + rewire: InstructorSquareInvoices -> InstructorInvoices (Ryft)
+                    AdminSquareInvoices -> AdminInvoices
+                    SquareCallback -> RyftCallback (or remove if hosted onboarding)
+  - update IntegrationsHub, PaymentsDesktop, PlanBilling, BookingConfirmation, AdminInstructorPayouts
+  - update invoice PDF generator to read ryft_invoices
+  - update routes
+
+Phase 3  Cleanup
+  - delete all square-* edge functions (undeploy)
+  - delete unused Square pages/components
+  - rm SQUARE_* secrets
+  - update memory files
+  - run security + linter scans
+```
+
+## Open questions before I start
+
+1. **Drop or keep `square_invoices` / `processed_square_events`?** You said no payments taken — safe to drop. Confirm.
+2. **Instructor onboarding model.** Ryft Standard Accounts (instructor signs Ryft TOS, fastest) vs Ryft Sub-Accounts (you remain MOR, more KYC on you). Square used OAuth ≈ Standard. Default: Standard.
+3. **Invoices.** Do you want true Ryft hosted invoices (Payment Links + email) or to keep your existing PDF + a Ryft pay link embedded? Default: keep your PDF, embed Ryft pay link (matches current UX).
+4. **Subscriptions.** Are instructor 365 subscriptions currently on Square or GoCardless? If GoCardless (per `mem://features/subscription/billing-lifecycle`), we may not need `ryft-create-subscription` at all — confirm.
+
+Answer those four and I'll execute Phase 1 immediately on switch to build mode.
