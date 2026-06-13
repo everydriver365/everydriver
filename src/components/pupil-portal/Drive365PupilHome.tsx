@@ -300,6 +300,8 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
             test_date: dt ?? null,
             test_time: (pupilExtras?.test_time as string | null) ?? null,
             test_passed: dtPassed ?? null,
+            test_centre_id: (pupilExtras?.test_centre_id as string | null) ?? null,
+            test_centre_name: (pupilExtras?.test_centres?.name as string | null) ?? null,
           }}
         />
 
