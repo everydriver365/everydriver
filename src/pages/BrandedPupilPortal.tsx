@@ -315,6 +315,11 @@ export default function BrandedPupilPortal({ initialSection }: BrandedPupilPorta
 
   const wallpaperColor = effectiveDarkMode ? '#111111' : '#E8F1FE';
 
+  // Keep hooks above all conditional returns so loading → loaded transitions
+  // never change hook order.
+  const { data: unreadMessages = 0 } = usePupilInboundUnreadCount(instructor?.id, pupil?.id);
+  const messagesBadge = unreadMessages > 0 ? (unreadMessages > 99 ? "99+" : unreadMessages) : undefined;
+
   if (loading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: wallpaperColor }}>
@@ -346,10 +351,6 @@ export default function BrandedPupilPortal({ initialSection }: BrandedPupilPorta
   const paymentBadge = pupil && (pupil.account_balance || 0) < 0
     ? `£${Math.abs(pupil.account_balance!).toFixed(0)}`
     : undefined;
-
-  // Pupil unread message count for Messages tab badge
-  const { data: unreadMessages = 0 } = usePupilInboundUnreadCount(instructor?.id, pupil?.id);
-  const messagesBadge = unreadMessages > 0 ? (unreadMessages > 99 ? "99+" : unreadMessages) : undefined;
 
   return (
     <div 
