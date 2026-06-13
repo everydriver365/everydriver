@@ -470,7 +470,7 @@ export default function BrandedPupilPortal({ initialSection }: BrandedPupilPorta
 
                     <Drive365PupilHome
                       pupil={pupil}
-                      instructor={{ id: instructor.id, name: instructor.name, phone: instructor.phone }}
+                      instructor={{ id: instructor.id, name: instructor.name, phone: instructor.phone, profile_image_url: (instructor as any).profile_image_url ?? null }}
                       instructorSlug={slug}
                       onNavigate={(section) => {
                         if (section === 'swap-settings') { openSwapSettings(); return; }
