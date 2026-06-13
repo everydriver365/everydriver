@@ -33,7 +33,7 @@ async function resolvePupilPath(userId: string, email?: string | null): Promise<
     .is("deleted_at", null)
     .maybeSingle();
   let instructorId = data?.instructor_id;
-  if (!slug && email) {
+  if (!instructorId && email) {
     const { data: byEmail } = await supabase
       .from("pupils")
       .select("instructor_id")
