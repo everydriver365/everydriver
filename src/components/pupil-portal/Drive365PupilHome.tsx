@@ -124,13 +124,14 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
     queryFn: async () => {
       const { data } = await supabase
         .from("pupils")
-        .select("theory_test_date, theory_test_passed, test_date, test_time, test_passed, test_centres:test_centre_id(name)")
+        .select("theory_test_date, theory_test_passed, test_date, test_time, test_passed, test_centre_id, test_centres:test_centre_id(name, address, postcode)")
         .eq("id", pupil.id)
         .maybeSingle();
       return data as any;
     },
     staleTime: 60_000,
   });
+
 
   // Mock score
   const { data: mockScoreData } = useQuery({
