@@ -28,6 +28,7 @@ import {
   type CalendarEventRow,
   type ManualBlockRow,
 } from "@/lib/courseAvailability";
+import { OutOfAreaWaitlistCard } from "@/components/home/OutOfAreaWaitlistCard";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
@@ -1720,31 +1721,41 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
                 </div>
               </div>
             ) : !selectedDate ? (
-              <div className="py-16 text-center max-w-md mx-auto">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                  <Search className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <h2 className="text-xl font-semibold text-foreground">No courses found</h2>
-                <p className="mt-2 text-muted-foreground">
-                  We couldn't find available courses for this postcode. Try widening your radius or entering a different postcode.
-                </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-3">
-                  {userLocation && parseInt(radius) < 50 && (
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        const next = parseInt(radius) < 25 ? "25" : "50";
-                        setRadius(next);
-                        handleSearch(searchedPostcode || postcode);
-                      }}
-                    >
-                      Expand to {parseInt(radius) < 25 ? "25" : "50"} miles
-                    </Button>
-                  )}
-                  <Button variant="outline" asChild>
-                    <a href="/contact"><MapPin className="h-4 w-4 mr-1" /> Contact Us</a>
-                  </Button>
-                </div>
+              <div className="py-12">
+                {searchedPostcode ? (
+                  <OutOfAreaWaitlistCard
+                    postcode={searchedPostcode}
+                    areaLabel={searchedAreaName || undefined}
+                    sourcePage="courses-no-results"
+                  />
+                ) : (
+                  <div className="text-center max-w-md mx-auto">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                      <Search className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-foreground">No courses found</h2>
+                    <p className="mt-2 text-muted-foreground">
+                      We couldn't find available courses for this postcode. Try widening your radius or entering a different postcode.
+                    </p>
+                    <div className="mt-6 flex flex-wrap justify-center gap-3">
+                      {userLocation && parseInt(radius) < 50 && (
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            const next = parseInt(radius) < 25 ? "25" : "50";
+                            setRadius(next);
+                            handleSearch(searchedPostcode || postcode);
+                          }}
+                        >
+                          Expand to {parseInt(radius) < 25 ? "25" : "50"} miles
+                        </Button>
+                      )}
+                      <Button variant="outline" asChild>
+                        <a href="/contact"><MapPin className="h-4 w-4 mr-1" /> Contact Us</a>
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <>
