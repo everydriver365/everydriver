@@ -44,6 +44,7 @@ interface Props {
     id: string;
     name: string;
     phone: string | null;
+    profile_image_url?: string | null;
   };
   instructorSlug?: string;
   onNavigate: (section: string) => void;
