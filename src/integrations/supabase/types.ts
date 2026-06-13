@@ -3065,6 +3065,57 @@ export type Database = {
           },
         ]
       }
+      coverage_waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          looking_for: string | null
+          name: string
+          notes: string | null
+          notified_at: string | null
+          phone: string | null
+          postcode: string
+          postcode_area: string | null
+          source: string | null
+          source_page: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          looking_for?: string | null
+          name: string
+          notes?: string | null
+          notified_at?: string | null
+          phone?: string | null
+          postcode: string
+          postcode_area?: string | null
+          source?: string | null
+          source_page?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          looking_for?: string | null
+          name?: string
+          notes?: string | null
+          notified_at?: string | null
+          phone?: string | null
+          postcode?: string
+          postcode_area?: string | null
+          source?: string | null
+          source_page?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cpd_log_entries: {
         Row: {
           activity_type: string
