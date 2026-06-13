@@ -88,6 +88,7 @@ import { StatCard } from "@/components/instructor/ui/StatCard";
 import { SearchInput } from "@/components/instructor/ui/SearchInput";
 import { ArchivePupilDialog } from "@/components/instructor/pupils/ArchivePupilDialog";
 import { ArchivedPupilsDialog } from "@/components/instructor/pupils/ArchivedPupilsDialog";
+import { checkDuplicatePupilName, isDuplicatePupilNameError } from "@/lib/checkDuplicatePupil";
 
 interface Pupil {
   id: string;
