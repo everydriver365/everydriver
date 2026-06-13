@@ -247,33 +247,37 @@ export default function BrandedPupilPortal({ initialSection }: BrandedPupilPorta
     if (!slug) return;
 
     try {
-      const { data, error } = await supabase
-        .from("instructors")
-        .select("id, name, phone, email, logo_url, brand_colour, secondary_colour, pupil_app_dark_mode, pupil_app_enabled, profile_image_url, reflective_logs_enabled, pupil_self_booking_enabled, lesson_feedback_enabled, share_lesson_notes_with_pupil, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, payment_link_base_url, commission_payer, commission_split_percent")
-        .eq("app_slug", slug)
-        .single();
-
-      if (error || !data) {
-        setNotFound(true);
-        return;
-      }
-
-      if (!data.pupil_app_enabled) {
-        setNotFound(true);
-        return;
-      }
-
-      setInstructor(data);
-
-      // Look up the pupil from the active Supabase Auth session
       const { data: sessionData } = await supabase.auth.getSession();
       const authUserId = sessionData.session?.user?.id;
+      const { data, error } = authUserId
+        ? await supabase.rpc("get_my_pupil_portal_branding", { _slug: slug })
+        : await supabase
+            .from("instructors")
+            .select("id, name, phone, email, logo_url, brand_colour, secondary_colour, pupil_app_dark_mode, pupil_app_enabled, profile_image_url, reflective_logs_enabled, pupil_self_booking_enabled, lesson_feedback_enabled, share_lesson_notes_with_pupil, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, payment_link_base_url, commission_payer, commission_split_percent")
+            .eq("app_slug", slug)
+            .single();
+
+      const instructorData = Array.isArray(data) ? data[0] : data;
+
+      if (error || !instructorData) {
+        setNotFound(true);
+        return;
+      }
+
+      if (!instructorData.pupil_app_enabled) {
+        setNotFound(true);
+        return;
+      }
+
+      setInstructor(instructorData);
+
+      // Look up the pupil from the active Supabase Auth session
       if (authUserId) {
         const { data: pupilRow } = await supabase
           .from("pupils")
           .select("id")
           .eq("auth_user_id", authUserId)
-          .eq("instructor_id", data.id)
+          .eq("instructor_id", instructorData.id)
           .maybeSingle();
         if (pupilRow?.id) {
           fetchPupil(pupilRow.id);
