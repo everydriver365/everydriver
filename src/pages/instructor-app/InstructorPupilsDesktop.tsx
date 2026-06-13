@@ -32,6 +32,7 @@ import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { PupilPaymentsManager } from "@/components/instructor/PupilPaymentsManager";
 import { usePupilLessonHistory } from "@/hooks/usePupilLessonHistory";
 import { useQueryClient } from "@tanstack/react-query";
+import { checkDuplicatePupilName, isDuplicatePupilNameError } from "@/lib/checkDuplicatePupil";
 
 // ----------------------------- Types & data -----------------------------
 type Status = "active" | "at-risk" | "test-ready" | "paused" | "archived";
@@ -393,6 +394,13 @@ export default function InstructorPupilsDesktop() {
     const hoursNum = hours ? parseInt(hours, 10) : null;
     const rateNum = addForm.custom_hourly_rate ? parseFloat(addForm.custom_hourly_rate) : null;
     setAddSaving(true);
+    const dupName = composedName || "Unnamed pupil";
+    const existingDup = await checkDuplicatePupilName(instructorId, dupName);
+    if (existingDup) {
+      setAddSaving(false);
+      toast.error(`A pupil named "${existingDup.name}" already exists. Open their record instead of adding a new one.`);
+      return;
+    }
     const { data: insertedRows, error } = await supabase.from("pupils").insert({
       instructor_id: instructorId,
       name: composedName || "Unnamed pupil",
@@ -428,7 +436,14 @@ export default function InstructorPupilsDesktop() {
         ? parseFloat(addForm.intensive_pupil_payment) : null,
     }).select("id").maybeSingle();
     setAddSaving(false);
-    if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
+    if (error) {
+      if (isDuplicatePupilNameError(error)) {
+        toast.error("A pupil with that name already exists for this instructor.");
+        return;
+      }
+      toast.error(`Could not add pupil: ${error.message}`);
+      return;
+    }
     toast.success(`Added ${composedName || "pupil"}`);
 
     // Record optional block booking against the new pupil.
