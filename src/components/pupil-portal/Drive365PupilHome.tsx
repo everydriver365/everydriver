@@ -98,7 +98,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
       const today = format(new Date(), "yyyy-MM-dd");
       const { data } = await supabase
         .from("scheduled_lessons")
-        .select("id, lesson_date, start_time, duration_minutes, pickup_location")
+        .select("id, lesson_date, start_time, duration_minutes, pickup_location, pickup_postcode")
         .eq("pupil_id", pupil.id)
         .gte("lesson_date", today)
         .neq("status", "cancelled")
