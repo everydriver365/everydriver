@@ -110,12 +110,21 @@ export function PupilBottomNav({ activeSection, onNavigate, brandColour, wallpap
         )}
       </AnimatePresence>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50"
+        style={{
+          background: "#FFFFFF",
+          borderTop: "0.5px solid #E5E7EB",
+        }}
+      >
         <div className="flex items-center justify-around h-16 w-full px-1 pb-safe">
           {navItems.map((item) => {
             const isActive = activeSection === item.id || (item.id === "home" && activeSection === "home");
             const badge = getBadge(item.id);
             const showProgressRing = item.id === "home" && courseProgress !== undefined;
+            const activeNavy = "#0F2044";
+            const inactiveGrey = "#888780";
+            const color = isActive ? activeNavy : inactiveGrey;
 
             return (
               <button
@@ -132,10 +141,10 @@ export function PupilBottomNav({ activeSection, onNavigate, brandColour, wallpap
                   {showProgressRing ? (
                     <div className="relative h-6 w-6">
                       <svg viewBox="0 0 24 24" className="h-6 w-6 -rotate-90">
-                        <circle cx="12" cy="12" r="10" fill="none" stroke="hsl(var(--muted))" strokeWidth="2" />
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="#E5E7EB" strokeWidth="2" />
                         <circle
                           cx="12" cy="12" r="10" fill="none"
-                          stroke={isActive ? (activeColor || 'hsl(var(--primary))') : 'hsl(var(--muted-foreground))'}
+                          stroke={color}
                           strokeWidth="2"
                           strokeDasharray={`${(courseProgress / 100) * 62.83} 62.83`}
                           strokeLinecap="round"
@@ -144,43 +153,37 @@ export function PupilBottomNav({ activeSection, onNavigate, brandColour, wallpap
                       <Home
                         className="absolute inset-0 m-auto h-3 w-3"
                         strokeWidth={isActive ? 2.2 : 1.8}
-                        style={{ color: isActive ? (activeColor || 'hsl(var(--primary))') : 'hsl(var(--muted-foreground))' }}
+                        style={{ color }}
                       />
                     </div>
                   ) : (
                     <motion.div
-                      animate={isActive ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+                      animate={isActive ? { scale: [1, 1.1, 1] } : { scale: 1 }}
                       transition={{ duration: 0.2 }}
                     >
                       <item.icon
                         className="h-5 w-5 transition-all duration-200"
                         strokeWidth={isActive ? 2.2 : 1.8}
-                        style={{ color: isActive ? (activeColor || 'hsl(var(--primary))') : 'hsl(var(--muted-foreground))' }}
+                        style={{ color }}
                       />
                     </motion.div>
                   )}
 
-                  {/* Badge */}
                   {badge !== null && badge !== undefined && (
-                    <span className="absolute -top-1 -right-2 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
+                    <span
+                      className="absolute -top-1 -right-2 text-[9px] font-bold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center"
+                      style={{ background: "#E53935", color: "#fff" }}
+                    >
                       {badge}
                     </span>
                   )}
                 </div>
                 <span
                   className="text-[10px] font-medium transition-all duration-200"
-                  style={{ color: isActive ? (activeColor || 'hsl(var(--primary))') : 'hsl(var(--muted-foreground))' }}
+                  style={{ color }}
                 >
                   {item.label}
                 </span>
-                {isActive && (
-                  <motion.div
-                    layoutId="pupil-tab-pill"
-                    className="absolute -bottom-0 h-0.5 w-6 rounded-full"
-                    style={{ backgroundColor: activeColor || 'hsl(var(--primary))' }}
-                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                  />
-                )}
               </button>
             );
           })}
