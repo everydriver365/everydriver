@@ -1,5 +1,5 @@
-import SquareInvoicesPage from "@/pages/invoices/SquareInvoicesPage";
+import RyftInvoicesPage from "@/pages/invoices/RyftInvoicesPage";
 
 export default function InstructorSquareInvoices() {
-  return <SquareInvoicesPage scope="instructor" />;
+  return <RyftInvoicesPage scope="instructor" />;
 }
