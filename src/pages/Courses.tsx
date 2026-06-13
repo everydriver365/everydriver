@@ -28,7 +28,7 @@ import {
   type CalendarEventRow,
   type ManualBlockRow,
 } from "@/lib/courseAvailability";
-import { OutOfAreaWaitlistCard } from "@/components/home/OutOfAreaWaitlistCard";
+import { NoCoverageEnquiry } from "@/components/home/NoCoverageEnquiry";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
@@ -1723,10 +1723,9 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
             ) : !selectedDate ? (
               <div className="py-12">
                 {searchedPostcode ? (
-                  <OutOfAreaWaitlistCard
+                  <NoCoverageEnquiry
                     postcode={searchedPostcode}
                     areaLabel={searchedAreaName || undefined}
-                    sourcePage="courses-no-results"
                   />
                 ) : (
                   <div className="text-center max-w-md mx-auto">
@@ -2171,6 +2170,14 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
                         <a href="/contact"><MapPin className="h-4 w-4 mr-1" /> Contact Us</a>
                       </Button>
                     </div>
+                    {searchedPostcode && (
+                      <div className="mt-8">
+                        <NoCoverageEnquiry
+                          postcode={searchedPostcode}
+                          areaLabel={searchedAreaName || undefined}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </>
