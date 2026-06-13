@@ -25,16 +25,33 @@ const ROLE_MAP: Record<string, RoleInfo> = {
 // Role precedence when no explicit hint and user has multiple roles auto-routed.
 const ROLE_PRIORITY = ["admin", "school_manager", "instructor", "pupil", "parent", "moderator", "user"];
 
-async function resolvePupilPath(userId: string): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
-  const email = user?.email;
-  if (!email) return "/pupil";
+async function resolvePupilPath(userId: string, email?: string | null): Promise<string> {
+  const { data: directSlug } = await supabase.rpc("get_my_pupil_portal_slug");
+  if (typeof directSlug === "string" && directSlug.length > 0) return `/p/${directSlug}`;
+
   const { data } = await supabase
     .from("pupils")
-    .select("instructor_id, instructors:instructor_id(app_slug)")
-    .eq("email", email)
+    .select("instructor_id")
+    .eq("auth_user_id", userId)
+    .is("deleted_at", null)
     .maybeSingle();
-  const slug = (data as any)?.instructors?.app_slug;
+  let instructorId = data?.instructor_id;
+  if (!instructorId && email) {
+    const { data: byEmail } = await supabase
+      .from("pupils")
+      .select("instructor_id")
+      .eq("email", email)
+      .is("deleted_at", null)
+      .maybeSingle();
+    instructorId = byEmail?.instructor_id;
+  }
+  if (!instructorId) return "/pupil";
+  const { data: instructor } = await supabase
+    .from("instructors")
+    .select("app_slug")
+    .eq("id", instructorId)
+    .maybeSingle();
+  const slug = instructor?.app_slug;
   return slug ? `/p/${slug}` : "/pupil";
 }
 
@@ -79,6 +96,18 @@ export function RoleRedirect() {
         return;
       }
 
+      if (hint === "pupil") {
+        const path = await resolvePupilPath(user.id, user.email);
+        navigate(path, { replace: true });
+        return;
+      }
+
+      const pupilPath = await resolvePupilPath(user.id, user.email);
+      if (pupilPath !== "/pupil") {
+        navigate(pupilPath, { replace: true });
+        return;
+      }
+
       bootProbeLog("RoleRedirect: query user_roles…");
       let userRoles: string[] = [];
       try {
@@ -99,7 +128,7 @@ export function RoleRedirect() {
         bootProbeLog(`RoleRedirect: goTo role=${role}`);
         if (role === "pupil") {
           try {
-            const path = await resolvePupilPath(user.id);
+            const path = await resolvePupilPath(user.id, user.email);
             bootProbeLog(`RoleRedirect: nav ${path}`);
             navigate(path, { replace: true });
           } catch {
@@ -131,7 +160,7 @@ export function RoleRedirect() {
       if (userRoles.length === 0) {
         // No role row — try pupil-by-email, otherwise fall back to instructor.
         try {
-          const path = await resolvePupilPath(user.id);
+          const path = await resolvePupilPath(user.id, user.email);
           if (path && path !== "/pupil") {
             navigate(path, { replace: true });
             return;

@@ -50,16 +50,20 @@ export function SchoolAuthProvider({ children }: { children: React.ReactNode }) 
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        const ok = await checkRole(session.user.id);
-        if (mounted) {
-          setIsSchoolManager(ok);
-          setLoading(false);
-        }
+        const userId = session.user.id;
+        setTimeout(() => {
+          checkRole(userId).then((ok) => {
+            if (mounted) {
+              setIsSchoolManager(ok);
+              setLoading(false);
+            }
+          });
+        }, 0);
       } else {
         setIsSchoolManager(false);
         setLoading(false);

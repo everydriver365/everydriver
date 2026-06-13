@@ -59,6 +59,11 @@ export default function UnifiedLogin() {
         setError(signInError.message);
       } else {
         persistRememberMe(rememberChecked);
+        const { data: pupilSlug } = await supabase.rpc("get_my_pupil_portal_slug");
+        if (typeof pupilSlug === "string" && pupilSlug.length > 0) {
+          navigate(`/p/${pupilSlug}`, { replace: true });
+          return;
+        }
         navigate("/auth/redirect", { replace: true });
       }
     } catch {
