@@ -13,6 +13,7 @@ import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 import nextLessonCarImg from "@/assets/next-lesson-car.png";
 import { TestStatusSheet } from "./TestStatusSheet";
 import myLessonsTileAsset from "@/assets/my-lessons-tile.jpg.asset.json";
+import testSwapTileAsset from "@/assets/test-swap-tile.png.asset.json";
 
 // Editorial palette (per spec)
 const NAVY = "#0F2044";
@@ -78,18 +79,23 @@ function HairlineCard({ children, onClick, className = "" }: { children: React.R
   );
 }
 
-function ImagePlaceholder({ icon, ratio = 1, imageUrl }: { icon: React.ReactNode; ratio?: number; imageUrl?: string }) {
+function ImagePlaceholder({ icon, ratio = 1, imageUrl, imageBg, imageScale }: { icon: React.ReactNode; ratio?: number; imageUrl?: string; imageBg?: string; imageScale?: number }) {
   return (
     <div
       className="w-full flex items-center justify-center overflow-hidden"
       style={{
-        background: TILE_BG,
+        background: imageBg ?? TILE_BG,
         aspectRatio: String(ratio),
         borderRadius: 12,
       }}
     >
       {imageUrl ? (
-        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+        <img
+          src={imageUrl}
+          alt=""
+          className="w-full h-full object-cover"
+          style={imageScale ? { transform: `scale(${imageScale})` } : undefined}
+        />
       ) : (
         icon
       )}
@@ -350,11 +356,11 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
             { id: "progress", title: "My progress", subtitle: "Skills & syllabus", icon: <GraduationCap size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
             { id: "theory", title: "Theory", subtitle: "Practice & mocks", icon: <BookOpen size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
             { id: "show-tell", title: "Show me / tell me", subtitle: "Safety questions", icon: <ClipboardList size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
-            { id: "test-requests", title: "Test swap", subtitle: "Find & swap tests", icon: <ArrowLeftRight size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
+            { id: "test-requests", title: "Test swap", subtitle: "Find & swap tests", icon: <ArrowLeftRight size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} />, imageUrl: testSwapTileAsset.url, imageBg: "#0B1B33", imageScale: 1.12 },
             { id: "history", title: "Lesson stats", subtitle: "History & hours", icon: <BarChart3 size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
           ].map((tile) => (
             <button key={tile.id} onClick={() => onNavigate(tile.id)} className="text-left">
-              <ImagePlaceholder icon={tile.icon} ratio={1} imageUrl={(tile as any).imageUrl} />
+              <ImagePlaceholder icon={tile.icon} ratio={1} imageUrl={(tile as any).imageUrl} imageBg={(tile as any).imageBg} imageScale={(tile as any).imageScale} />
               <div style={{ fontFamily: SERIF, fontSize: 15, color: SERIF_TEXT, marginTop: 8, lineHeight: 1.2 }}>
                 {tile.title}
               </div>
