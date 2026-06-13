@@ -28,13 +28,22 @@ const ROLE_PRIORITY = ["admin", "school_manager", "instructor", "pupil", "parent
 async function resolvePupilPath(userId: string): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser();
   const email = user?.email;
-  if (!email) return "/pupil";
   const { data } = await supabase
     .from("pupils")
     .select("instructor_id, instructors:instructor_id(app_slug)")
-    .eq("email", email)
+    .eq("auth_user_id", userId)
+    .is("deleted_at", null)
     .maybeSingle();
-  const slug = (data as any)?.instructors?.app_slug;
+  let slug = (data as any)?.instructors?.app_slug;
+  if (!slug && email) {
+    const { data: byEmail } = await supabase
+      .from("pupils")
+      .select("instructor_id, instructors:instructor_id(app_slug)")
+      .eq("email", email)
+      .is("deleted_at", null)
+      .maybeSingle();
+    slug = (byEmail as any)?.instructors?.app_slug;
+  }
   return slug ? `/p/${slug}` : "/pupil";
 }
 
