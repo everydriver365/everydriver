@@ -350,6 +350,8 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
             { id: "progress", title: "My progress", subtitle: "Skills & syllabus", icon: <GraduationCap size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
             { id: "theory", title: "Theory", subtitle: "Practice & mocks", icon: <BookOpen size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
             { id: "show-tell", title: "Show me / tell me", subtitle: "Safety questions", icon: <ClipboardList size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
+            { id: "test-requests", title: "Test swap", subtitle: "Find & swap tests", icon: <ArrowLeftRight size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
+            { id: "history", title: "Lesson stats", subtitle: "History & hours", icon: <BarChart3 size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
           ].map((tile) => (
             <button key={tile.id} onClick={() => onNavigate(tile.id)} className="text-left">
               <ImagePlaceholder icon={tile.icon} ratio={1} imageUrl={(tile as any).imageUrl} />
