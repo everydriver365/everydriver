@@ -216,7 +216,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
         <div className="pb-4">
           <div style={{ fontSize: 13, color: BODY }}>{greeting()}</div>
           <div style={{ fontFamily: SERIF, fontSize: 26, color: SERIF_TEXT, lineHeight: 1.15, marginTop: 2 }}>
-            Hi {firstName}
+            Hi <span style={{ fontWeight: 700 }}>{firstName}</span>
           </div>
         </div>
 
