@@ -219,7 +219,7 @@ export default function InstructorVerificationPage() {
 
   return (
     <InstructorPortalLayout>
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-3xl mx-auto py-2 space-y-5">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link to="/instructor/settings" className="inline-flex items-center gap-1 hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Settings

@@ -129,7 +129,7 @@ export default function InstructorDataImport() {
 
   return (
     <InstructorPortalLayout>
-      <div className="max-w-4xl mx-auto space-y-6 p-4 md:p-6">
+      <div className="max-w-4xl mx-auto space-y-6 md:p-2">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Import Pupils</h1>
           <p className="text-muted-foreground">Switch in minutes — import your pupil list from any platform via CSV</p>

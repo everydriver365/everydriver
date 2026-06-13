@@ -63,7 +63,7 @@ export default function InstructorFindAppointmentPage() {
   if (isMobile) {
     return (
       <InstructorPortalLayout>
-        <div className="p-3 md:p-4 h-[calc(100vh-4rem)]">
+        <div className="h-[calc(100vh-4rem)]">
           <div className="h-full max-w-2xl mx-auto rounded-[24px] overflow-hidden shadow-sm">
             {body}
           </div>
