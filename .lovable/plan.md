@@ -1,45 +1,64 @@
 ## Goal
 
-On the instructor mobile app, all inner pages currently render edge-to-edge while the home (`/instructor`) page has a comfortable horizontal gutter (`px-4`, i.e. 16px each side). Make all inner pages match the home padding.
+Stop duplicate pupil records from being created, and clean up the existing Joseph Thorne duplicate.
 
-## Approach
+## Audit result
 
-Make the change in **one place** — the shared `InstructorPortalLayout` `<main>` — so every inner page gets the gutter automatically, without touching 80 page files.
+I ran a project-wide scan for active pupils sharing the same `(instructor_id, lower(trim(name)))`. **Joseph Thorne is the only duplicate in the entire database** (1 duplicate group, 1 row to remove). Good news — this hasn't been "happening again" elsewhere; it's a single recurrence of the same record.
 
-### Change
+## What I'll do
 
-In `src/components/layout/InstructorPortalLayout.tsx` (line 1121), update the inner `<main>` wrapper:
+### 1. Clean up Joseph Thorne
 
-```tsx
-// before
-<main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'py-4'}`}>
+Soft-delete the empty January record, keep the active May record.
 
-// after
-<main className={`ios-scroll ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`}>
+- **Keep:** `53011379-5cf6-4385-9e9c-544d3e9ae961` (created 19 May 2026, 7 scheduled lessons, 3 payments, £1,487.50 balance).
+- **Soft-delete:** `383c3edb-bd9c-4247-94e0-396326c5837b` (created 24 Jan 2026, 0 lessons, 0 payments, £1,487.50 balance).
+
+Note on the balance: both rows show £1,487.50. The January record has no payment history backing it, so the balance is almost certainly a stale/manual value. The May record is the real ledger (it has the 3 payments). I will **not** add the January balance into the May one — that would double-count. If you know otherwise, tell me and I'll add them.
+
+Soft-delete = `deleted_at = now()`, `status = 'archived'`. Reversible if needed.
+
+### 2. Add a database guard
+
+Create a partial unique index on `pupils` so two active rows can't share the same instructor + name again:
+
+```sql
+CREATE UNIQUE INDEX pupils_unique_active_name_per_instructor
+  ON public.pupils (instructor_id, lower(trim(name)))
+  WHERE deleted_at IS NULL;
 ```
 
-Home is left untouched (it already supplies its own per-section `px-4`, so we don't double-pad it).
-Fullscreen pages (map, tracking) are also untouched — they keep edge-to-edge.
+- Scoped to active (non-deleted) rows only, so historical archives don't block re-adds.
+- Case- and whitespace-insensitive ("joseph thorne" = "Joseph Thorne ").
+- Future duplicate insert/update attempts will fail at the DB with a clear unique-violation error, which the Add Pupil dialog will surface as a toast.
 
-### Cleanup of double-padding
+### 3. Front-end duplicate check (defence in depth)
 
-About 54 of the 80 inner pages already wrap their content in their own `p-4` / `px-4` / `max-w-…` container. After the layout change, those pages would have **32px** gutters instead of 16px.
+In the Add Pupil flow (`AddPupilDialog` / equivalent), before insert, run a lookup:
 
-For each affected page I will:
-- Remove the redundant outer `p-4` / `px-4` wrapper (keep `pb-24` for bottom-nav spacing where present).
-- Preserve any `max-w-2xl mx-auto` constraint (still useful on tablet/desktop).
-- Leave `InstructorPageHeader` and its spacing alone.
+```ts
+const { data: existing } = await supabase
+  .from("pupils")
+  .select("id, name")
+  .eq("instructor_id", instructorId)
+  .is("deleted_at", null)
+  .ilike("name", trimmedName.trim())
+  .maybeSingle();
+```
 
-Examples of files in that bucket: `InstructorClockInOut.tsx`, `InstructorDocumentVault.tsx`, `InstructorCertifications.tsx`, `InstructorDailyManifest.tsx`, etc.
+If a match exists, show a confirm dialog: *"A pupil called 'Joseph Thorne' already exists. Open existing pupil / Add anyway / Cancel."* "Add anyway" is disabled (DB index will reject it).
+
+This catches the duplicate before the DB error, gives a friendlier UX, and lets the instructor jump straight to the existing record.
 
 ## Out of scope
 
-- No changes to the home page (`/instructor`) layout.
-- No changes to fullscreen routes (tracking/map/etc.).
-- No changes to desktop sidebar layout, headers, bottom nav, or any business logic.
-- No changes to the `/every-instructor` or pupil/parent/school portals.
+- No changes to other portals, payments, or business logic.
+- No merging of historical data between the two Joseph records (the older one has none worth keeping).
+- No change to pupils intentionally re-added after being archived — the partial index allows that.
 
 ## Verification
 
-- Open `/instructor` (home) → padding unchanged.
-- Open several inner pages (Pupils, Calendar, Expenses, Certifications, Clock In/Out, Document Vault, Daily Manifest) on mobile → all show the same 16px left/right gutter as home, with no doubled-up padding.
+1. Re-run the duplicate-scan query → expect 0 groups.
+2. Open Joseph Thorne in the Pupils list → exactly one row, with 7 lessons and 3 payments visible.
+3. Try to add a second "Joseph Thorne" under the same instructor → blocked with a friendly message.
