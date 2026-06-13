@@ -508,7 +508,7 @@ function NextLessonCard({
         {/* Map strip — placeholder */}
         <div style={{ position: "relative", height: 110, overflow: "hidden", background: "#F5F4F1" }}>
           <div style={{ position: "absolute", inset: 0 }}>
-            <StaticMapPreview hasDestination={false} height={110} />
+            <StaticMapPreview hasDestination={true} height={110} />
           </div>
           <div style={{
             position: "absolute", top: 10, left: 10,
