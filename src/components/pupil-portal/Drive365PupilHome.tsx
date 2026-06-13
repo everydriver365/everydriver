@@ -11,6 +11,7 @@ import { StaticMapPreview } from "@/components/UpNextCard/StaticMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 import nextLessonCarImg from "@/assets/next-lesson-car.png";
+import myLessonsTileAsset from "@/assets/my-lessons-tile.jpg.asset.json";
 
 // Editorial palette (per spec)
 const NAVY = "#0F2044";
@@ -76,17 +77,21 @@ function HairlineCard({ children, onClick, className = "" }: { children: React.R
   );
 }
 
-function ImagePlaceholder({ icon, ratio = 1 }: { icon: React.ReactNode; ratio?: number }) {
+function ImagePlaceholder({ icon, ratio = 1, imageUrl }: { icon: React.ReactNode; ratio?: number; imageUrl?: string }) {
   return (
     <div
-      className="w-full flex items-center justify-center"
+      className="w-full flex items-center justify-center overflow-hidden"
       style={{
         background: TILE_BG,
         aspectRatio: String(ratio),
         borderRadius: 12,
       }}
     >
-      {icon}
+      {imageUrl ? (
+        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+      ) : (
+        icon
+      )}
     </div>
   );
 }
@@ -275,13 +280,13 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
         </div>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { id: "schedule", title: "My lessons", subtitle: "Upcoming & past", icon: <Car size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
+            { id: "schedule", title: "My lessons", subtitle: "Upcoming & past", icon: <Car size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} />, imageUrl: myLessonsTileAsset.url },
             { id: "progress", title: "My progress", subtitle: "Skills & syllabus", icon: <GraduationCap size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
             { id: "theory", title: "Theory", subtitle: "Practice & mocks", icon: <BookOpen size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
             { id: "show-tell", title: "Show me / tell me", subtitle: "Safety questions", icon: <ClipboardList size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
           ].map((tile) => (
             <button key={tile.id} onClick={() => onNavigate(tile.id)} className="text-left">
-              <ImagePlaceholder icon={tile.icon} ratio={1} />
+              <ImagePlaceholder icon={tile.icon} ratio={1} imageUrl={(tile as any).imageUrl} />
               <div style={{ fontFamily: SERIF, fontSize: 15, color: SERIF_TEXT, marginTop: 8, lineHeight: 1.2 }}>
                 {tile.title}
               </div>
