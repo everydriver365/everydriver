@@ -64,7 +64,11 @@ const timingOptions = [
   { value: "weekends", label: "Weekends only" },
 ];
 
-export function BespokeEnquiryForm() {
+interface BespokeEnquiryFormProps {
+  defaultPostcode?: string;
+}
+
+export function BespokeEnquiryForm({ defaultPostcode }: BespokeEnquiryFormProps = {}) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -79,6 +83,7 @@ export function BespokeEnquiryForm() {
     resolver: zodResolver(bespokeEnquirySchema),
     defaultValues: {
       requested_hours: 20,
+      postcode: defaultPostcode ? defaultPostcode.toUpperCase() : undefined,
     },
   });
 
