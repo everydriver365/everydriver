@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle, BookOpen, Car, ChevronRight, ClipboardList,
-  GraduationCap, ImageIcon, MapPin,
+  GraduationCap, MapPin,
   Phone, MessageSquare, Navigation,
 } from "lucide-react";
 import { format, parseISO, parse, isToday, isTomorrow, differenceInCalendarDays } from "date-fns";
@@ -321,48 +321,6 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
           ))}
         </div>
 
-        {/* 7. Test swap tile */}
-        <div className="mt-7">
-          <button onClick={() => onNavigate("test-requests")} className="block w-full text-left">
-            <div
-              className="relative w-full"
-              style={{
-                background: TILE_BG,
-                aspectRatio: "2.2",
-                borderRadius: 14,
-                overflow: "hidden",
-              }}
-            >
-              <span
-                style={{
-                  position: "absolute",
-                  top: 12,
-                  left: 12,
-                  background: NAVY,
-                  color: "#fff",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "5px 10px",
-                  borderRadius: 999,
-                }}
-              >
-                Free, no cost to use
-              </span>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <ImageIcon size={36} style={{ color: MUTED_NUM }} strokeWidth={1.2} />
-              </div>
-            </div>
-            <div style={{ fontFamily: SERIF, fontSize: 18, color: SERIF_TEXT, marginTop: 10 }}>
-              Free test swapping
-            </div>
-            <div style={{ fontSize: 13, color: BODY, marginTop: 2, lineHeight: 1.4 }}>
-              Swap your test for an earlier date — no booking fees.
-            </div>
-            <div style={{ fontSize: 13, color: LINK, fontWeight: 600, marginTop: 6 }}>
-              Search for an earlier date →
-            </div>
-          </button>
-        </div>
 
         {/* 8. Test readiness card */}
         <div className="mt-7">
