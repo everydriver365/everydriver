@@ -280,13 +280,13 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
         </div>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { id: "schedule", title: "My lessons", subtitle: "Upcoming & past", icon: <Car size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
+            { id: "schedule", title: "My lessons", subtitle: "Upcoming & past", icon: <Car size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} />, imageUrl: myLessonsTileAsset.url },
             { id: "progress", title: "My progress", subtitle: "Skills & syllabus", icon: <GraduationCap size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
             { id: "theory", title: "Theory", subtitle: "Practice & mocks", icon: <BookOpen size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
             { id: "show-tell", title: "Show me / tell me", subtitle: "Safety questions", icon: <ClipboardList size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
           ].map((tile) => (
             <button key={tile.id} onClick={() => onNavigate(tile.id)} className="text-left">
-              <ImagePlaceholder icon={tile.icon} ratio={1} />
+              <ImagePlaceholder icon={tile.icon} ratio={1} imageUrl={(tile as any).imageUrl} />
               <div style={{ fontFamily: SERIF, fontSize: 15, color: SERIF_TEXT, marginTop: 8, lineHeight: 1.2 }}>
                 {tile.title}
               </div>
