@@ -267,10 +267,47 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
                   Didn't pass{dt ? ` · ${format(parseISO(dt), "d MMM yyyy")}` : ""}
                 </div>
               ) : dt ? (
-                <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>
-                  {format(parseISO(dt), "d MMM yyyy")}
-                  {pupilExtras?.test_time && ` · ${String(pupilExtras.test_time).slice(0, 5)}`}
-                </div>
+                (() => {
+                  const timeStr = pupilExtras?.test_time ? String(pupilExtras.test_time).slice(0, 5) : null;
+                  const centre = pupilExtras?.test_centres as { name?: string; postcode?: string | null } | null;
+                  const target = new Date(`${dt}T${timeStr ?? "09:00"}:00`);
+                  const diffMs = target.getTime() - Date.now();
+                  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                  const countdown =
+                    diffMs <= 0
+                      ? "Today"
+                      : days === 1
+                      ? "Tomorrow"
+                      : days <= 7
+                      ? `In ${days} days`
+                      : `In ${days} days`;
+                  return (
+                    <>
+                      <div style={{ fontSize: 12, color: BODY, marginTop: 4, fontWeight: 600 }}>
+                        {format(parseISO(dt), "EEE d MMM")}{timeStr ? ` · ${timeStr}` : ""}
+                      </div>
+                      {centre?.name && (
+                        <div style={{ fontSize: 11, color: BODY, marginTop: 2 }} className="truncate">
+                          {centre.name}
+                        </div>
+                      )}
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#0F2044",
+                          marginTop: 6,
+                          fontWeight: 700,
+                          background: "#EEF2FF",
+                          display: "inline-block",
+                          padding: "3px 8px",
+                          borderRadius: 999,
+                        }}
+                      >
+                        {countdown}
+                      </div>
+                    </>
+                  );
+                })()
               ) : (
                 <>
                   <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>Not booked</div>
@@ -294,8 +331,10 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
             test_date: dt ?? null,
             test_time: (pupilExtras?.test_time as string | null) ?? null,
             test_passed: dtPassed ?? null,
+            test_centre_id: (pupilExtras?.test_centre_id as string | null) ?? null,
           }}
         />
+
 
 
         {/* 6. Quick links */}
