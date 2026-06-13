@@ -21958,6 +21958,31 @@ export type Database = {
           plan_slug: string
         }[]
       }
+      get_my_pupil_portal_branding: {
+        Args: { _slug: string }
+        Returns: {
+          brand_colour: string
+          commission_payer: string
+          commission_split_percent: number
+          email: string
+          id: string
+          lesson_feedback_enabled: boolean
+          logo_url: string
+          name: string
+          payment_link_base_url: string
+          payment_qr_url: string
+          payment_qr_url_instructor_pays: string
+          payment_qr_url_pupil_pays: string
+          phone: string
+          profile_image_url: string
+          pupil_app_dark_mode: boolean
+          pupil_app_enabled: boolean
+          pupil_self_booking_enabled: boolean
+          reflective_logs_enabled: boolean
+          secondary_colour: string
+          share_lesson_notes_with_pupil: boolean
+        }[]
+      }
       get_my_pupil_portal_slug: { Args: never; Returns: string }
       get_public_instructor_booking_preferences: {
         Args: { p_instructor_id: string }
