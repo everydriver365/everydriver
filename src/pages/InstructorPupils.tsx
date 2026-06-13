@@ -448,6 +448,14 @@ export default function InstructorPupils() {
         (addForm.first_name || addForm.last_name)
           ? `${(addForm.first_name || "").trim()} ${(addForm.last_name || "").trim()}`.trim()
           : addForm.name;
+
+      // Duplicate-name guard (defence in depth — DB has a unique index too)
+      const existingDup = await checkDuplicatePupilName(instructorId, fullName);
+      if (existingDup) {
+        toast.error(`A pupil named "${existingDup.name}" already exists. Open their record instead of adding a new one.`);
+        setSaving(false);
+        return;
+      }
       const hoursNum = addForm.approx_hours ? parseInt(addForm.approx_hours, 10) : null;
       const rateNum = addForm.custom_hourly_rate
         ? parseFloat(addForm.custom_hourly_rate)
@@ -493,6 +501,10 @@ export default function InstructorPupils() {
 
       if (error) {
         console.error("Supabase error:", error);
+        if (isDuplicatePupilNameError(error)) {
+          toast.error("A pupil with that name already exists for this instructor.");
+          return;
+        }
         throw error;
       }
 
