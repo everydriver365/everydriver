@@ -496,37 +496,114 @@ function NextLessonCard({
     return (
       <div
         style={{
-          background: "#FFFFFF",
+          backgroundColor: "#FFFFFF",
           borderRadius: 20,
-          border: "0.5px solid rgba(26,82,160,0.09)",
+          overflow: "hidden",
+          width: "100%",
           boxShadow: "0 2px 16px rgba(26,82,160,0.11)",
-          padding: 20,
-          textAlign: "center",
+          border: "0.5px solid rgba(26,82,160,0.09)",
+          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", sans-serif',
         }}
       >
-        <div style={{ fontFamily: SERIF, fontSize: 20, color: SERIF_TEXT, marginBottom: 6 }}>
-          No lesson booked
+        {/* Map strip — placeholder */}
+        <div style={{ position: "relative", height: 110, overflow: "hidden", background: "#F5F4F1" }}>
+          <div style={{ position: "absolute", inset: 0 }}>
+            <StaticMapPreview hasDestination={false} height={110} />
+          </div>
+          <div style={{
+            position: "absolute", top: 10, left: 10,
+            background: "rgba(255,255,255,0.94)",
+            padding: "4px 9px", borderRadius: 999,
+            display: "inline-flex", alignItems: "center", gap: 5,
+            boxShadow: "0 1px 3px rgba(15,23,42,0.10)",
+            backdropFilter: "blur(6px)",
+          }}>
+            <span style={{ width: 5, height: 5, borderRadius: 999, background: "#94A3B8" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: 0.6 }}>
+              No lesson booked
+            </span>
+          </div>
         </div>
-        <div style={{ fontSize: 13, color: BODY, marginBottom: 14 }}>
-          Find a slot with {(instructor.name || "your instructor").split(" ")[0]} this week
+
+        <div style={{ padding: "14px 14px 14px" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", letterSpacing: -0.4, lineHeight: 1.1 }}>
+                Book your next lesson
+              </div>
+              <div style={{ fontSize: 12, color: "#64748B", marginTop: 6 }}>
+                Find a slot with {(instructor.name || "your instructor").split(" ")[0]} this week
+              </div>
+            </div>
+            <div
+              style={{
+                width: 44, height: 44, borderRadius: 22,
+                backgroundColor: avatarColor,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0, overflow: "hidden",
+                border: "2px solid rgba(255,255,255,0.6)",
+                boxShadow: `0 2px 6px ${avatarColor}38`,
+              }}
+            >
+              {instructor.profile_image_url ? (
+                <img src={instructor.profile_image_url} alt="" style={{ width: 44, height: 44, objectFit: "cover" }} />
+              ) : (
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#FFF" }}>{initials}</span>
+              )}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button
+              type="button"
+              onClick={onBook}
+              style={{
+                flex: 1.6, height: 38, borderRadius: 12,
+                backgroundColor: NAVY, color: "#FFF", border: "none",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                fontSize: 12, fontWeight: 700,
+                boxShadow: "0 2px 6px rgba(15,32,68,0.28)",
+                cursor: "pointer",
+              }}
+            >
+              Book a lesson
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { stop(e); handleCall(); }}
+              disabled={!instructor.phone}
+              style={{
+                flex: 1, height: 38, borderRadius: 12,
+                backgroundColor: "#EDF2FE", color: "#3D55A1", border: "none",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                fontSize: 12, fontWeight: 600,
+                cursor: instructor.phone ? "pointer" : "not-allowed",
+                opacity: instructor.phone ? 1 : 0.5,
+              }}
+            >
+              <Phone style={{ width: 13, height: 13 }} strokeWidth={2} /> Call
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { stop(e); handleText(); }}
+              disabled={!instructor.phone}
+              style={{
+                flex: 1, height: 38, borderRadius: 12,
+                backgroundColor: "#EDF2FE", color: "#3D55A1", border: "none",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+                fontSize: 12, fontWeight: 600,
+                cursor: instructor.phone ? "pointer" : "not-allowed",
+                opacity: instructor.phone ? 1 : 0.5,
+              }}
+            >
+              <MessageSquare style={{ width: 13, height: 13 }} strokeWidth={1.9} /> Text
+            </button>
+          </div>
         </div>
-        <button
-          onClick={onBook}
-          style={{
-            padding: "10px 20px",
-            borderRadius: 999,
-            background: NAVY,
-            color: "#fff",
-            fontSize: 13,
-            fontWeight: 700,
-            border: "none",
-          }}
-        >
-          Book now
-        </button>
       </div>
     );
   }
+
 
   const startLabel = nextLesson.start_time ? formatTime24(nextLesson.start_time) : "";
   const countdown = pupilCountdownText(nextLesson.lesson_date, nextLesson.start_time);
