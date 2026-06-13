@@ -173,6 +173,8 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
   const dt = pupilExtras?.test_date as string | null | undefined;
   const dtPassed = pupilExtras?.test_passed as boolean | null | undefined;
 
+  const [editTest, setEditTest] = useState<"theory" | "driving" | null>(null);
+
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100%", paddingBottom: 32, fontFamily: SANS }}>
       {/* 2. Balance banner — only when owed */}
