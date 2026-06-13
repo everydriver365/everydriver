@@ -28,7 +28,7 @@ import {
   type CalendarEventRow,
   type ManualBlockRow,
 } from "@/lib/courseAvailability";
-import { OutOfAreaWaitlistCard } from "@/components/home/OutOfAreaWaitlistCard";
+import { NoCoverageEnquiry } from "@/components/home/NoCoverageEnquiry";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
