@@ -146,7 +146,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
       setLocationsLoading(true);
       try {
         const { data: locData, error: locErr } = await supabase.functions.invoke(
-          "square-invoice-manage",
+          "ryft-invoice-manage",
           { body: { action: "list_locations" } },
         );
         if (!locErr && Array.isArray((locData as any)?.locations)) {
@@ -271,7 +271,7 @@ export function CreateInvoiceDialog({ onCreated, scope, disabled, disabledReason
 
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("square-invoice-manage", {
+      const { data, error } = await supabase.functions.invoke("ryft-invoice-manage", {
         body: { action: "create", ...payload },
       });
       if (error) throw error;

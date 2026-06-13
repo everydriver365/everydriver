@@ -204,7 +204,7 @@ export function RefundModal({
           return;
         }
 
-        const { data, error } = await supabase.functions.invoke("square-refund", {
+        const { data, error } = await supabase.functions.invoke("ryft-refund", {
           body: {
             paymentHistoryId: selectedSquarePaymentId,
             amount: Math.abs(parsedAmount),
