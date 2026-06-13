@@ -660,7 +660,6 @@ function NextLessonCard({
   const countdown = pupilCountdownText(nextLesson.lesson_date, nextLesson.start_time);
   const hasDestination = !!pickupPostcode;
   const isImminent = countdown === "Now" || countdown.startsWith("In ") && countdown.includes("min");
-  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
     <div
