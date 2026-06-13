@@ -138,7 +138,7 @@ export default function InstructorPay() {
     if (!instructorId) return;
     const { data } = await supabase
       .from("instructors")
-      .select("payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, name, bonus_earned, square_merchant_id")
+      .select("payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, name, bonus_earned")
       .eq("id", instructorId)
       .maybeSingle();
     if (data) {
@@ -146,7 +146,7 @@ export default function InstructorPay() {
       setCommissionPayer(data.commission_payer);
       setInstructorName(data.name || "Your Instructor");
       setBonusEarned(data.bonus_earned || 0);
-      setSquareConnected(!!(data as any).square_merchant_id);
+      setSquareConnected(false);
     }
   };
 

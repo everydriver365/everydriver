@@ -30,7 +30,7 @@ export function InvoiceStatusStrip({ instructorId }: Props) {
       const since = new Date();
       since.setDate(since.getDate() - 30);
       const { data, error } = await supabase
-        .from("square_invoices")
+        .from("ryft_invoices")
         .select("status")
         .eq("issuer_instructor_id", instructorId)
         .gte("created_at", since.toISOString())
@@ -55,11 +55,11 @@ export function InvoiceStatusStrip({ instructorId }: Props) {
       .channel(`invoice-status-${instructorId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "square_invoices", filter: `issuer_instructor_id=eq.${instructorId}` },
+        { event: "*", schema: "public", table: "ryft_invoices", filter: `issuer_instructor_id=eq.${instructorId}` },
         () => {
           // simple re-fetch
           supabase
-            .from("square_invoices")
+            .from("ryft_invoices")
             .select("status")
             .eq("issuer_instructor_id", instructorId)
             .gte("created_at", new Date(Date.now() - 30 * 86400_000).toISOString())

@@ -96,38 +96,10 @@ async function revokeGoogle(instructorId: string, admin: ReturnType<typeof creat
   }
 }
 
-async function revokeSquare(instructorId: string, admin: ReturnType<typeof createClient>): Promise<RevocationResult> {
-  const appId = Deno.env.get("SQUARE_APPLICATION_ID");
-  const secret = Deno.env.get("SQUARE_OAUTH_SECRET");
-  const env = (Deno.env.get("SQUARE_ENVIRONMENT") || "production").toLowerCase();
-  if (!appId || !secret) return { outcome: "skipped", detail: "Square OAuth not configured" };
-  try {
-    const { data } = await admin
-      .from("instructors")
-      .select("square_merchant_id")
-      .eq("id", instructorId)
-      .maybeSingle();
-    const merchantId = (data as { square_merchant_id?: string } | null)?.square_merchant_id;
-    if (!merchantId) return { outcome: "skipped", detail: "no Square merchant on file" };
-    const host = env === "sandbox" ? "connect.squareupsandbox.com" : "connect.squareup.com";
-    const resp = await fetch(`https://${host}/oauth2/revoke`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Square-Version": "2024-01-18",
-        Authorization: `Client ${secret}`,
-      },
-      body: JSON.stringify({ client_id: appId, merchant_id: merchantId, revoke_only_access_token: false }),
-    });
-    if (!resp.ok) {
-      const txt = await resp.text();
-      return { outcome: "failure", detail: `${resp.status} ${txt}` };
-    }
-    return { outcome: "success" };
-  } catch (e) {
-    return { outcome: "failure", detail: e instanceof Error ? e.message : String(e) };
-  }
+async function revokeSquare(_instructorId: string, _admin: ReturnType<typeof createClient>): Promise<RevocationResult> {
+  return { outcome: "skipped", detail: "Square integration removed" };
 }
+
 
 async function revokeGoCardless(instructorId: string, admin: ReturnType<typeof createClient>): Promise<RevocationResult> {
   const token = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");

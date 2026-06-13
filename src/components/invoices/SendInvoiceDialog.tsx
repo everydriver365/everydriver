@@ -137,7 +137,7 @@ export function SendInvoiceDialog({
     }
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("square-invoice-manage", {
+      const { data, error } = await supabase.functions.invoke("ryft-invoice-manage", {
         body: {
           action: "create",
           pupil_id: pupilId || null,

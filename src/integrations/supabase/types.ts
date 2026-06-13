@@ -10695,11 +10695,6 @@ export type Database = {
           sidebar_pinned: Json | null
           slot_increment_minutes: number
           special_skills: string | null
-          square_access_token_encrypted: string | null
-          square_connected_at: string | null
-          square_merchant_id: string | null
-          square_refresh_token_encrypted: string | null
-          square_token_expires_at: string | null
           standards_check_at: string | null
           standards_check_result: string | null
           stripe_account_id: string | null
@@ -10937,11 +10932,6 @@ export type Database = {
           sidebar_pinned?: Json | null
           slot_increment_minutes?: number
           special_skills?: string | null
-          square_access_token_encrypted?: string | null
-          square_connected_at?: string | null
-          square_merchant_id?: string | null
-          square_refresh_token_encrypted?: string | null
-          square_token_expires_at?: string | null
           standards_check_at?: string | null
           standards_check_result?: string | null
           stripe_account_id?: string | null
@@ -11179,11 +11169,6 @@ export type Database = {
           sidebar_pinned?: Json | null
           slot_increment_minutes?: number
           special_skills?: string | null
-          square_access_token_encrypted?: string | null
-          square_connected_at?: string | null
-          square_merchant_id?: string | null
-          square_refresh_token_encrypted?: string | null
-          square_token_expires_at?: string | null
           standards_check_at?: string | null
           standards_check_result?: string | null
           stripe_account_id?: string | null
@@ -14882,24 +14867,6 @@ export type Database = {
           },
         ]
       }
-      processed_square_events: {
-        Row: {
-          event_id: string
-          event_type: string | null
-          processed_at: string
-        }
-        Insert: {
-          event_id: string
-          event_type?: string | null
-          processed_at?: string
-        }
-        Update: {
-          event_id?: string
-          event_type?: string | null
-          processed_at?: string
-        }
-        Relationships: []
-      }
       promotional_messages: {
         Row: {
           created_at: string
@@ -17627,6 +17594,124 @@ export type Database = {
         }
         Relationships: []
       }
+      ryft_invoices: {
+        Row: {
+          accepted_payment_methods: Json
+          amount_pence: number
+          cancelled_at: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          issuer_instructor_id: string | null
+          issuer_type: string
+          last_error: string | null
+          last_event_at: string | null
+          line_items: Json
+          paid_at: string | null
+          public_url: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          recipient_pupil_id: string | null
+          refund_amount_pence: number | null
+          refunded_at: string | null
+          ryft_payment_link_url: string | null
+          ryft_payment_session_id: string | null
+          sent_at: string | null
+          service_fee_pence: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_payment_methods?: Json
+          amount_pence: number
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          issuer_instructor_id?: string | null
+          issuer_type?: string
+          last_error?: string | null
+          last_event_at?: string | null
+          line_items?: Json
+          paid_at?: string | null
+          public_url?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_pupil_id?: string | null
+          refund_amount_pence?: number | null
+          refunded_at?: string | null
+          ryft_payment_link_url?: string | null
+          ryft_payment_session_id?: string | null
+          sent_at?: string | null
+          service_fee_pence?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_payment_methods?: Json
+          amount_pence?: number
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          issuer_instructor_id?: string | null
+          issuer_type?: string
+          last_error?: string | null
+          last_event_at?: string | null
+          line_items?: Json
+          paid_at?: string | null
+          public_url?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_pupil_id?: string | null
+          refund_amount_pence?: number | null
+          refunded_at?: string | null
+          ryft_payment_link_url?: string | null
+          ryft_payment_session_id?: string | null
+          sent_at?: string | null
+          service_fee_pence?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ryft_invoices_issuer_instructor_id_fkey"
+            columns: ["issuer_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ryft_invoices_issuer_instructor_id_fkey"
+            columns: ["issuer_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ryft_invoices_recipient_pupil_id_fkey"
+            columns: ["recipient_pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ryft_payment_intents: {
         Row: {
           amount_pence: number
@@ -18989,145 +19074,6 @@ export type Database = {
           speed_limit_kmh?: number
         }
         Relationships: []
-      }
-      square_invoices: {
-        Row: {
-          accepted_payment_methods: Json | null
-          amount_cents: number
-          cancelled_at: string | null
-          clearpay_enabled: boolean
-          created_at: string
-          created_by: string | null
-          currency: string
-          deleted_at: string | null
-          deleted_by: string | null
-          description: string | null
-          due_date: string | null
-          id: string
-          issuer_instructor_id: string | null
-          issuer_type: string
-          klarna_enabled: boolean
-          klarna_last_error: string | null
-          klarna_last_error_at: string | null
-          klarna_order_id: string | null
-          klarna_pay_url: string | null
-          klarna_status: string | null
-          last_event_at: string | null
-          line_items: Json
-          paid_at: string | null
-          public_url: string | null
-          recipient_email: string | null
-          recipient_name: string | null
-          recipient_pupil_id: string | null
-          refund_amount_cents: number
-          refunded_at: string | null
-          sent_at: string | null
-          service_fee_cents: number
-          square_invoice_id: string | null
-          square_location_id: string | null
-          square_order_id: string | null
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          accepted_payment_methods?: Json | null
-          amount_cents?: number
-          cancelled_at?: string | null
-          clearpay_enabled?: boolean
-          created_at?: string
-          created_by?: string | null
-          currency?: string
-          deleted_at?: string | null
-          deleted_by?: string | null
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          issuer_instructor_id?: string | null
-          issuer_type: string
-          klarna_enabled?: boolean
-          klarna_last_error?: string | null
-          klarna_last_error_at?: string | null
-          klarna_order_id?: string | null
-          klarna_pay_url?: string | null
-          klarna_status?: string | null
-          last_event_at?: string | null
-          line_items?: Json
-          paid_at?: string | null
-          public_url?: string | null
-          recipient_email?: string | null
-          recipient_name?: string | null
-          recipient_pupil_id?: string | null
-          refund_amount_cents?: number
-          refunded_at?: string | null
-          sent_at?: string | null
-          service_fee_cents?: number
-          square_invoice_id?: string | null
-          square_location_id?: string | null
-          square_order_id?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          accepted_payment_methods?: Json | null
-          amount_cents?: number
-          cancelled_at?: string | null
-          clearpay_enabled?: boolean
-          created_at?: string
-          created_by?: string | null
-          currency?: string
-          deleted_at?: string | null
-          deleted_by?: string | null
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          issuer_instructor_id?: string | null
-          issuer_type?: string
-          klarna_enabled?: boolean
-          klarna_last_error?: string | null
-          klarna_last_error_at?: string | null
-          klarna_order_id?: string | null
-          klarna_pay_url?: string | null
-          klarna_status?: string | null
-          last_event_at?: string | null
-          line_items?: Json
-          paid_at?: string | null
-          public_url?: string | null
-          recipient_email?: string | null
-          recipient_name?: string | null
-          recipient_pupil_id?: string | null
-          refund_amount_cents?: number
-          refunded_at?: string | null
-          sent_at?: string | null
-          service_fee_cents?: number
-          square_invoice_id?: string | null
-          square_location_id?: string | null
-          square_order_id?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "square_invoices_issuer_instructor_id_fkey"
-            columns: ["issuer_instructor_id"]
-            isOneToOne: false
-            referencedRelation: "instructors"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "square_invoices_issuer_instructor_id_fkey"
-            columns: ["issuer_instructor_id"]
-            isOneToOne: false
-            referencedRelation: "public_instructors"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "square_invoices_recipient_pupil_id_fkey"
-            columns: ["recipient_pupil_id"]
-            isOneToOne: false
-            referencedRelation: "pupils"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       subscription_payments: {
         Row: {
