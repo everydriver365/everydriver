@@ -11,6 +11,7 @@ import { StaticMapPreview } from "@/components/UpNextCard/StaticMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 import nextLessonCarImg from "@/assets/next-lesson-car.png";
+import { TestStatusSheet } from "./TestStatusSheet";
 import myLessonsTileAsset from "@/assets/my-lessons-tile.jpg.asset.json";
 
 // Editorial palette (per spec)
