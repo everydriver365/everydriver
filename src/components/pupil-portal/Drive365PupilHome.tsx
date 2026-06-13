@@ -13,6 +13,7 @@ import { pupilAvatarColor } from "@/lib/pupilAvatarColor";
 import nextLessonCarImg from "@/assets/next-lesson-car.png";
 import { TestStatusSheet } from "./TestStatusSheet";
 import myLessonsTileAsset from "@/assets/my-lessons-tile.jpg.asset.json";
+import testSwapTileAsset from "@/assets/test-swap-tile.png.asset.json";
 
 // Editorial palette (per spec)
 const NAVY = "#0F2044";
