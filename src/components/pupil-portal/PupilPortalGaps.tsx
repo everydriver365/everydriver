@@ -144,19 +144,22 @@ export function PupilPortalGaps({ pupilId, instructorId }: PupilPortalGapsProps)
       setLoading(true);
       try {
         const [instrRes, pupilRes] = await Promise.all([
-          supabase
-            .from("instructors")
-            .select(
-              "id, name, available_from, buffer_minutes, slot_increment_minutes, is_network_placeholder, preferred_lesson_length, allowed_lesson_lengths",
-            )
-            .eq("id", instructorId)
-            .maybeSingle(),
+          (supabase.rpc as any)("get_public_instructor_booking_preferences", {
+            p_instructor_id: instructorId,
+          }),
           supabase.from("pupils").select("address, postcode").eq("id", pupilId).maybeSingle(),
         ]);
 
         if (cancelled) return;
 
-        const instrRow = (instrRes.data as unknown as InstructorRow | null) ?? null;
+        if (instrRes.error) {
+          console.error("Error loading instructor booking preferences:", instrRes.error);
+        }
+
+        const instrData = Array.isArray(instrRes.data) ? instrRes.data[0] : instrRes.data;
+        const instrRow = instrData
+          ? ({ ...instrData, name: null } as unknown as InstructorRow)
+          : null;
         setInstructor(instrRow);
 
         const defaultDur =
