@@ -124,7 +124,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
     queryFn: async () => {
       const { data } = await supabase
         .from("pupils")
-        .select("theory_test_date, theory_test_passed, test_date, test_time, test_passed, test_centres:test_centre_id(name)")
+        .select("theory_test_date, theory_test_passed, test_date, test_time, test_passed, test_centre_id, test_centres:test_centre_id(name, address)")
         .eq("id", pupil.id)
         .maybeSingle();
       return data as any;
@@ -266,10 +266,17 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
                   Didn't pass{dt ? ` · ${format(parseISO(dt), "d MMM yyyy")}` : ""}
                 </div>
               ) : dt ? (
-                <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>
-                  {format(parseISO(dt), "d MMM yyyy")}
-                  {pupilExtras?.test_time && ` · ${String(pupilExtras.test_time).slice(0, 5)}`}
-                </div>
+                <>
+                  <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>
+                    {format(parseISO(dt), "d MMM yyyy")}
+                    {pupilExtras?.test_time && ` · ${String(pupilExtras.test_time).slice(0, 5)}`}
+                  </div>
+                  {pupilExtras?.test_centres?.name && (
+                    <div style={{ fontSize: 11, color: MUTED_NUM, marginTop: 2 }}>
+                      {pupilExtras.test_centres.name}
+                    </div>
+                  )}
+                </>
               ) : (
                 <>
                   <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>Not booked</div>
@@ -293,6 +300,8 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
             test_date: dt ?? null,
             test_time: (pupilExtras?.test_time as string | null) ?? null,
             test_passed: dtPassed ?? null,
+            test_centre_id: (pupilExtras?.test_centre_id as string | null) ?? null,
+            test_centre_name: (pupilExtras?.test_centres?.name as string | null) ?? null,
           }}
         />
 
