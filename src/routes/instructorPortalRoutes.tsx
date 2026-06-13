@@ -64,7 +64,7 @@ const InstructorSubscriptions = lazy(() => import("@/pages/InstructorSubscriptio
 const InstructorInOut = lazy(() => import("@/pages/InstructorInOut"));
 const MonthEndReview = lazy(() => import("@/pages/instructor/MonthEndReview"));
 const AccountingCallback = lazy(() => import("@/pages/instructor/AccountingCallback"));
-const SquareCallback = lazy(() => import("@/pages/instructor/SquareCallback"));
+
 
 // Communication
 const InstructorMessages = lazy(() => import("@/pages/instructor-app/InstructorInboxRouter"));
