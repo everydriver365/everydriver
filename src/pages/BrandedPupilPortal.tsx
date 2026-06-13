@@ -445,7 +445,7 @@ export default function BrandedPupilPortal({ initialSection }: BrandedPupilPorta
                   <PullToRefresh onRefresh={async () => { await fetchPupil(pupil.id); }}>
                   <div className="space-y-2">
                     {/* Dynamic real-time alert banners (only render when active) */}
-                    <div className="px-4 pt-3 space-y-3 empty:hidden">
+                    <div className="px-4 md:pt-3 space-y-3 empty:hidden">
                       <SwapNeedsAttentionBanner
                         hasTestBooked={!!pupil.test_date}
                         optedIn={swapOptedIn}
