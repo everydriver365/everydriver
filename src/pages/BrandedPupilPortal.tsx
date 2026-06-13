@@ -462,7 +462,9 @@ export default function BrandedPupilPortal({ initialSection }: BrandedPupilPorta
                         <PupilEndOfLessonWizard pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
                       )}
                       <PostLessonRating pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
-                      <LessonSummaryCard pupilId={pupil.id} />
+                      <div className="hidden md:block">
+                        <LessonSummaryCard pupilId={pupil.id} />
+                      </div>
                       <LessonPrepChecklist pupilId={pupil.id} instructorId={instructor.id} brandColour={drive365Blue} />
                     </div>
 
