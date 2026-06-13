@@ -43,6 +43,18 @@ interface MiniWebsiteHomeProps {
 export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps = {}) {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = subdomainSlug || paramSlug;
+
+  // Drive365 Network placeholders (slugs prefixed with `network-`) are parked
+  // coverage rows, not real instructors. Bounce visitors and crawlers to the
+  // contact page with the postcode area, preserving SEO link equity.
+  if (slug && slug.toLowerCase().startsWith("network-")) {
+    const area = slug.replace(/^network-/i, "").toUpperCase();
+    if (typeof window !== "undefined") {
+      window.location.replace(`/contact?postcode=${encodeURIComponent(area)}&reason=out-of-area`);
+    }
+    return null;
+  }
+
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "home");
   const links = useMiniWebsiteLinks(slug);
   const navigate = useNavigate();
