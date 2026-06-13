@@ -651,7 +651,25 @@ function NextLessonCard({
         style={{ position: "relative", height: 110, overflow: "hidden", cursor: "pointer", background: "#F5F4F1" }}
       >
         <div style={{ position: "absolute", inset: 0 }}>
-          <img src={nextLessonCarImg} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          <img
+            src={nextLessonCarImg}
+            alt=""
+            aria-hidden
+            style={{
+              position: "absolute",
+              right: -30,
+              top: -45,
+              height: "180%",
+              width: "65%",
+              objectFit: "cover",
+              objectPosition: "center 25%",
+              pointerEvents: "none",
+              WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.9) 25%, #000 60%), linear-gradient(to bottom, #000 0%, #000 65%, rgba(0,0,0,0.5) 88%, transparent 100%)",
+              WebkitMaskComposite: "source-in",
+              maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.9) 25%, #000 60%), linear-gradient(to bottom, #000 0%, #000 65%, rgba(0,0,0,0.5) 88%, transparent 100%)",
+              maskComposite: "intersect",
+            }}
+          />
         </div>
 
         <div style={{
