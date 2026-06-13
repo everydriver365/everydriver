@@ -73,6 +73,10 @@ Deno.serve(async (req) => {
     const session = event.data || event.paymentSession || event;
     const sessionId = session.id;
 
+    const metadata = (session.metadata || {}) as Record<string, string>;
+    const invoiceRowId = metadata.invoiceRowId || null;
+    const paymentMethod = session.paymentMethod?.type || session.paymentMethod?.method || "card";
+
     if (eventType.includes("PaymentSession.approved") || eventType === "payment.captured" || session.status === "Approved") {
       // Mark intent paid + credit pupil balance
       const { data: intent } = await supabase
@@ -84,14 +88,13 @@ Deno.serve(async (req) => {
       if (intent && intent.status !== "paid") {
         await supabase
           .from("ryft_payment_intents")
-          .update({ status: "paid", payment_method: session.paymentMethod?.type || "card" })
+          .update({ status: "paid", payment_method: paymentMethod })
           .eq("id", intent.id);
 
         const creditPence = intent.amount_pence - intent.service_fee_pence - intent.platform_fee_pence;
         const reservationId = (intent.metadata as any)?.reservationId || null;
 
         if (reservationId) {
-          // Course reservation flow — mark the reservation paid.
           await supabase
             .from("course_reservations")
             .update({
@@ -112,10 +115,57 @@ Deno.serve(async (req) => {
             pupil_id: intent.pupil_id,
             instructor_id: intent.instructor_id,
             amount: creditPence / 100,
-            payment_method: "ryft_card",
+            payment_method: `ryft_${paymentMethod}`.toLowerCase(),
             notes: reservationId ? `Ryft reservation ${reservationId}` : `Ryft payment ${sessionId}`,
             recorded_at: new Date().toISOString(),
           });
+        }
+      }
+
+      // Reconcile invoice (covers Klarna / card / wallet paid via Ryft hosted session)
+      if (invoiceRowId || sessionId) {
+        const invQuery = supabase.from("ryft_invoices").select("id, status, recipient_pupil_id, issuer_instructor_id, amount_pence, service_fee_pence").limit(1);
+        const { data: invRows } = invoiceRowId
+          ? await invQuery.eq("id", invoiceRowId)
+          : await invQuery.eq("ryft_payment_session_id", sessionId);
+        const inv = invRows?.[0];
+        if (inv && inv.status !== "paid") {
+          await supabase
+            .from("ryft_invoices")
+            .update({
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              last_event_at: new Date().toISOString(),
+              payment_method: paymentMethod,
+              ryft_payment_session_id: sessionId,
+            })
+            .eq("id", inv.id);
+
+          // If not already credited via intent path, credit pupil balance now
+          if (inv.recipient_pupil_id) {
+            const creditPence = inv.amount_pence - (inv.service_fee_pence || 0);
+            const { data: alreadyLogged } = await supabase
+              .from("payment_history")
+              .select("id")
+              .eq("pupil_id", inv.recipient_pupil_id)
+              .ilike("notes", `%${sessionId}%`)
+              .limit(1)
+              .maybeSingle();
+            if (!alreadyLogged) {
+              await supabase.rpc("increment_pupil_balance", {
+                p_pupil_id: inv.recipient_pupil_id,
+                p_amount: creditPence / 100,
+              });
+              await supabase.from("payment_history").insert({
+                pupil_id: inv.recipient_pupil_id,
+                instructor_id: inv.issuer_instructor_id,
+                amount: creditPence / 100,
+                payment_method: `ryft_${paymentMethod}`.toLowerCase(),
+                notes: `Ryft invoice ${inv.id} (${sessionId})`,
+                recorded_at: new Date().toISOString(),
+              });
+            }
+          }
         }
       }
     } else if (eventType.includes("PaymentSession.failed") || session.status === "Failed") {
@@ -123,6 +173,13 @@ Deno.serve(async (req) => {
         .from("ryft_payment_intents")
         .update({ status: "failed", last_error: session.lastError?.message || "unknown" })
         .eq("ryft_payment_session_id", sessionId);
+
+      if (invoiceRowId) {
+        await supabase
+          .from("ryft_invoices")
+          .update({ status: "failed", last_error: session.lastError?.message || "unknown", last_event_at: new Date().toISOString() })
+          .eq("id", invoiceRowId);
+      }
     }
 
     await supabase
