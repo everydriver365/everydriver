@@ -222,7 +222,7 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
 
         {/* 5. Theory & Driving test tiles */}
         <div className="grid grid-cols-2 gap-3 mt-3">
-          <HairlineCard onClick={() => onNavigate("theory")}>
+          <HairlineCard onClick={() => setEditTest("theory")}>
             <div className="p-4">
               <BookOpen size={20} style={{ color: NAVY }} strokeWidth={1.6} />
               <div style={{ fontFamily: SERIF, fontSize: 16, color: SERIF_TEXT, marginTop: 10 }}>
@@ -232,22 +232,26 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
                 <div style={{ fontSize: 12, color: "#15803D", marginTop: 4, fontWeight: 600 }}>
                   Passed{tt ? ` · ${format(parseISO(tt), "d MMM yyyy")}` : ""}
                 </div>
+              ) : ttPassed === false ? (
+                <div style={{ fontSize: 12, color: "#B91C1C", marginTop: 4, fontWeight: 600 }}>
+                  Didn't pass{tt ? ` · ${format(parseISO(tt), "d MMM yyyy")}` : ""}
+                </div>
               ) : tt ? (
                 <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>
-                  {format(parseISO(tt), "d MMM yyyy")}
+                  Booked · {format(parseISO(tt), "d MMM yyyy")}
                 </div>
               ) : (
                 <>
                   <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>Not taken</div>
                   <div style={{ fontSize: 12, color: LINK, marginTop: 8, fontWeight: 600 }}>
-                    Take a mock test →
+                    Update status →
                   </div>
                 </>
               )}
             </div>
           </HairlineCard>
 
-          <HairlineCard onClick={onEditProfile}>
+          <HairlineCard onClick={() => setEditTest("driving")}>
             <div className="p-4">
               <Car size={20} style={{ color: NAVY }} strokeWidth={1.6} />
               <div style={{ fontFamily: SERIF, fontSize: 16, color: SERIF_TEXT, marginTop: 10 }}>
@@ -255,7 +259,11 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
               </div>
               {dtPassed === true ? (
                 <div style={{ fontSize: 12, color: "#15803D", marginTop: 4, fontWeight: 600 }}>
-                  Passed
+                  Passed{dt ? ` · ${format(parseISO(dt), "d MMM yyyy")}` : ""}
+                </div>
+              ) : dtPassed === false ? (
+                <div style={{ fontSize: 12, color: "#B91C1C", marginTop: 4, fontWeight: 600 }}>
+                  Didn't pass{dt ? ` · ${format(parseISO(dt), "d MMM yyyy")}` : ""}
                 </div>
               ) : dt ? (
                 <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>
@@ -266,13 +274,28 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, on
                 <>
                   <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>Not booked</div>
                   <div style={{ fontSize: 12, color: LINK, marginTop: 8, fontWeight: 600 }}>
-                    Book a date →
+                    Update status →
                   </div>
                 </>
               )}
             </div>
           </HairlineCard>
         </div>
+
+        <TestStatusSheet
+          open={editTest !== null}
+          onOpenChange={(o) => !o && setEditTest(null)}
+          kind={editTest ?? "theory"}
+          pupilId={pupil.id}
+          initial={{
+            theory_test_date: tt ?? null,
+            theory_test_passed: ttPassed ?? null,
+            test_date: dt ?? null,
+            test_time: (pupilExtras?.test_time as string | null) ?? null,
+            test_passed: dtPassed ?? null,
+          }}
+        />
+
 
         {/* 6. Quick links */}
         <div className="flex items-baseline justify-between mt-7 mb-3">
