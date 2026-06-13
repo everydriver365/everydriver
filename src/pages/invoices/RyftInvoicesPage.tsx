@@ -119,8 +119,7 @@ export default function RyftInvoicesPage({ scope }: Props) {
 
       {createOpen && (
         <CreateInvoiceDialog
-          open={createOpen}
-          onOpenChange={setCreateOpen}
+          scope={scope}
           onCreated={() => {
             setCreateOpen(false);
             load();
