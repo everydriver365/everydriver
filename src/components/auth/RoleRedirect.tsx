@@ -26,6 +26,9 @@ const ROLE_MAP: Record<string, RoleInfo> = {
 const ROLE_PRIORITY = ["admin", "school_manager", "instructor", "pupil", "parent", "moderator", "user"];
 
 async function resolvePupilPath(userId: string, email?: string | null): Promise<string> {
+  const { data: directSlug } = await supabase.rpc("get_my_pupil_portal_slug");
+  if (typeof directSlug === "string" && directSlug.length > 0) return `/p/${directSlug}`;
+
   const { data } = await supabase
     .from("pupils")
     .select("instructor_id")
