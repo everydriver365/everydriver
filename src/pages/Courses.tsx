@@ -1723,10 +1723,9 @@ export default function Courses({ restrictToInstructorIds, title: titleProp, emb
             ) : !selectedDate ? (
               <div className="py-12">
                 {searchedPostcode ? (
-                  <OutOfAreaWaitlistCard
+                  <NoCoverageEnquiry
                     postcode={searchedPostcode}
                     areaLabel={searchedAreaName || undefined}
-                    sourcePage="courses-no-results"
                   />
                 ) : (
                   <div className="text-center max-w-md mx-auto">
