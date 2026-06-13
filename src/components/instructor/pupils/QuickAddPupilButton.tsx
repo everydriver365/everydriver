@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { checkDuplicatePupilName, isDuplicatePupilNameError } from "@/lib/checkDuplicatePupil";
 
 export interface QuickAddedPupil {
   id: string;
@@ -87,12 +88,24 @@ export function QuickAddPupilButton({
       if (phone.trim()) payload.phone = phone.trim();
       if (postcode.trim()) payload.postcode = postcode.trim().toUpperCase();
 
+      const existingDup = await checkDuplicatePupilName(targetInstructor, trimmedName);
+      if (existingDup) {
+        toast.error(`A pupil named "${existingDup.name}" already exists.`);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("pupils")
         .insert(payload as any)
         .select("id, name, email, phone, postcode")
         .single();
-      if (error) throw error;
+      if (error) {
+        if (isDuplicatePupilNameError(error)) {
+          toast.error("A pupil with that name already exists for this instructor.");
+          return;
+        }
+        throw error;
+      }
 
       toast.success(`Added ${data.name}`);
       onCreated(data as QuickAddedPupil);
