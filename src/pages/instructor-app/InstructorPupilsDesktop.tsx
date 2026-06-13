@@ -436,7 +436,14 @@ export default function InstructorPupilsDesktop() {
         ? parseFloat(addForm.intensive_pupil_payment) : null,
     }).select("id").maybeSingle();
     setAddSaving(false);
-    if (error) { toast.error(`Could not add pupil: ${error.message}`); return; }
+    if (error) {
+      if (isDuplicatePupilNameError(error)) {
+        toast.error("A pupil with that name already exists for this instructor.");
+        return;
+      }
+      toast.error(`Could not add pupil: ${error.message}`);
+      return;
+    }
     toast.success(`Added ${composedName || "pupil"}`);
 
     // Record optional block booking against the new pupil.
