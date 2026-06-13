@@ -77,17 +77,21 @@ function HairlineCard({ children, onClick, className = "" }: { children: React.R
   );
 }
 
-function ImagePlaceholder({ icon, ratio = 1 }: { icon: React.ReactNode; ratio?: number }) {
+function ImagePlaceholder({ icon, ratio = 1, imageUrl }: { icon: React.ReactNode; ratio?: number; imageUrl?: string }) {
   return (
     <div
-      className="w-full flex items-center justify-center"
+      className="w-full flex items-center justify-center overflow-hidden"
       style={{
         background: TILE_BG,
         aspectRatio: String(ratio),
         borderRadius: 12,
       }}
     >
-      {icon}
+      {imageUrl ? (
+        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+      ) : (
+        icon
+      )}
     </div>
   );
 }
