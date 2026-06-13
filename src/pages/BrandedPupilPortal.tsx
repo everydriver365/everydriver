@@ -122,7 +122,7 @@ interface Pupil {
   test_date?: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style' | 'show-tell' | 'documents' | 'swap-settings';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching' | 'test-requests' | 'reflections' | 'book' | 'lesson-tracks' | 'lesson-videos' | 'driving-style' | 'show-tell' | 'documents' | 'swap-settings' | 'referrals';
 
 const sectionTitles: Record<string, string> = {
   schedule: "My Lessons",
@@ -143,6 +143,7 @@ const sectionTitles: Record<string, string> = {
   "driving-style": "Driving Style",
   "show-tell": "Show Me / Tell Me",
   documents: "My Documents",
+  referrals: "Refer a Friend",
 };
 
 interface BrandedPupilPortalProps {
@@ -377,6 +378,7 @@ export default function BrandedPupilPortal({ initialSection }: BrandedPupilPorta
         onLogout={pupil ? handleLogout : undefined}
         onAvatarClick={() => setDetailsOpen(true)}
         onNavigate={pupil ? (section) => setActiveSection(section as ActiveSection) : undefined}
+        unreadMessages={unreadMessages}
       />
 
       <main className="pb-20">
@@ -655,6 +657,15 @@ export default function BrandedPupilPortal({ initialSection }: BrandedPupilPorta
                       swapOptedIn={swapOptedIn}
                       onOpenSwapSettings={openSwapSettings}
                     />
+                  </div>
+                </motion.div>
+              )}
+
+              {activeSection === 'referrals' && (
+                <motion.div key="referrals" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                  <SubPageHeader title="Refer a Friend" onBack={handleBack} />
+                  <div className="px-4 py-2">
+                    <ReferralCard pupilId={pupil.id} instructorId={instructor.id} instructorSlug={slug} brandColour={drive365Blue} />
                   </div>
                 </motion.div>
               )}

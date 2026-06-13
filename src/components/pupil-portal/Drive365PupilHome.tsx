@@ -1,26 +1,27 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import {
-  Phone, Pencil, Car, CalendarPlus, CalendarCheck, BookOpen, CreditCard,
-  ChevronRight, ChevronDown, ChevronUp, Gift, Copy, Share2, GraduationCap,
-  ClipboardList, FileText, User, Bell, ShieldCheck, MapPin, FileBadge,
-  MessageSquare, CheckCircle2,
+  AlertCircle, BookOpen, Car, ChevronRight, ClipboardList,
+  GraduationCap, ImageIcon, MapPin,
 } from "lucide-react";
-import { format, parseISO, differenceInCalendarDays } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { toast } from "@/hooks/use-toast";
 
-const NAVY = "#141b43";
-const RED = "#E53935";
-const SURFACE = "#F2F2F4";
-const CARD = "#FFFFFF";
-const MUTED = "#6B7280";
-const TEXT = "#0F172A";
-const BORDER = "rgba(15,23,42,0.06)";
-const cardShadow = "0 1px 2px rgba(0,0,0,0.03)";
+// Editorial palette (per spec)
+const NAVY = "#0F2044";
+const SERIF_TEXT = "#0F2044";
+const BODY = "#5F5E5A";
+const MUTED_NUM = "#B4B2A9";
+const TILE_BG = "#F1EFE8";
+const LINK = "#1A52A0";
+const TAG_BORDER = "#C9D2E3";
+const HAIRLINE = "#E5E7EB";
+const AMBER_BG = "#FAEEDA";
+const AMBER_TEXT = "#633806";
+const AMBER_ICON = "#854F0B";
+
+const SERIF = 'Georgia, "Times New Roman", serif';
+const SANS = '"Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 interface Props {
   pupil: {
@@ -52,18 +53,16 @@ function greeting() {
   return "Good evening";
 }
 
-function Card({ children, onClick, className = "", padding = 14 }: { children: React.ReactNode; onClick?: () => void; className?: string; padding?: number }) {
+function HairlineCard({ children, onClick, className = "" }: { children: React.ReactNode; onClick?: () => void; className?: string }) {
   const Tag: any = onClick ? "button" : "div";
   return (
     <Tag
       onClick={onClick}
       className={`w-full text-left ${className}`}
       style={{
-        background: CARD,
+        background: "#FFFFFF",
+        border: `1px solid ${HAIRLINE}`,
         borderRadius: 14,
-        padding,
-        boxShadow: cardShadow,
-        border: `1px solid ${BORDER}`,
       }}
     >
       {children}
@@ -71,62 +70,30 @@ function Card({ children, onClick, className = "", padding = 14 }: { children: R
   );
 }
 
-function IconSquare({ children }: { children: React.ReactNode }) {
+function ImagePlaceholder({ icon, ratio = 1 }: { icon: React.ReactNode; ratio?: number }) {
   return (
     <div
-      className="flex items-center justify-center shrink-0"
-      style={{ width: 44, height: 44, borderRadius: 12, background: "#EEF0F3", color: NAVY }}
+      className="w-full flex items-center justify-center"
+      style={{
+        background: TILE_BG,
+        aspectRatio: String(ratio),
+        borderRadius: 12,
+      }}
     >
-      {children}
+      {icon}
     </div>
   );
 }
 
-function SectionLabel({ children, open, onToggle }: { children: React.ReactNode; open?: boolean; onToggle?: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="w-full flex items-center justify-between px-1 pt-1 pb-2"
-    >
-      <span className="text-[11px] font-semibold tracking-[0.12em] uppercase" style={{ color: MUTED }}>
-        {children}
-      </span>
-      {onToggle && (
-        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronUp size={16} color={MUTED} />
-        </motion.div>
-      )}
-    </button>
-  );
-}
-
-function NavRow({ icon, title, subtitle, onClick }: { icon: React.ReactNode; title: string; subtitle?: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full flex items-center gap-3 py-2.5 active:opacity-70"
-    >
-      <IconSquare>{icon}</IconSquare>
-      <div className="flex-1 min-w-0 text-left">
-        <div className="text-[15px] font-semibold leading-tight truncate" style={{ color: TEXT }}>{title}</div>
-        {subtitle && <div className="text-[12px] truncate" style={{ color: MUTED }}>{subtitle}</div>}
-      </div>
-      <ChevronRight size={18} color={MUTED} />
-    </button>
-  );
-}
-
-export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigate, onEditProfile }: Props) {
-  // Next lesson
+export function Drive365PupilHome({ pupil, instructor, instructorSlug: _slug, onNavigate, onEditProfile }: Props) {
+  // Next lesson — include pickup_location
   const { data: nextLesson } = useQuery({
-    queryKey: ["d365-next-lesson", pupil.id],
+    queryKey: ["pupil-home-next-lesson", pupil.id],
     queryFn: async () => {
       const today = format(new Date(), "yyyy-MM-dd");
       const { data } = await supabase
         .from("scheduled_lessons")
-        .select("id, lesson_date, start_time, duration_minutes")
+        .select("id, lesson_date, start_time, duration_minutes, pickup_location")
         .eq("pupil_id", pupil.id)
         .gte("lesson_date", today)
         .neq("status", "cancelled")
@@ -139,9 +106,9 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
     staleTime: 60_000,
   });
 
-  // Tests
+  // Test data
   const { data: pupilExtras } = useQuery({
-    queryKey: ["d365-pupil-extras", pupil.id],
+    queryKey: ["pupil-home-extras", pupil.id],
     queryFn: async () => {
       const { data } = await supabase
         .from("pupils")
@@ -153,533 +120,475 @@ export function Drive365PupilHome({ pupil, instructor, instructorSlug, onNavigat
     staleTime: 60_000,
   });
 
-  // Transmission from instructor's car_type
-  const { data: instructorCar } = useQuery({
-    queryKey: ["d365-instructor-car", instructor.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("instructors")
-        .select("car_type")
-        .eq("id", instructor.id)
-        .maybeSingle();
-      return data as any;
-    },
-    staleTime: 5 * 60_000,
-  });
-
-
-  // Mock score for readiness — keep raw score/total for "X/50" display
+  // Mock score
   const { data: mockScoreData } = useQuery({
-    queryKey: ["d365-mock-score", pupil.id],
+    queryKey: ["pupil-home-mock-score", pupil.id],
     queryFn: async () => {
       const { data } = await (supabase.from("theory_mock_scores") as any)
         .select("score, total_questions")
         .eq("pupil_id", pupil.id)
         .order("created_at", { ascending: false })
         .limit(1);
-      if (data && data[0]) {
-        return { score: data[0].score as number, total: data[0].total_questions as number };
-      }
+      if (data && data[0]) return { score: data[0].score as number, total: data[0].total_questions as number };
       return null;
     },
     staleTime: 60_000,
   });
+
+  // Last lesson
+  const { data: lastLesson } = useQuery({
+    queryKey: ["pupil-home-last-lesson", pupil.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("lesson_history")
+        .select("id, lesson_date, duration_minutes, skills_practiced, notes")
+        .eq("pupil_id", pupil.id)
+        .order("lesson_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data as any;
+    },
+    staleTime: 60_000,
+  });
+
+  const firstName = (pupil.name || "").split(" ")[0] || "there";
+  const instructorFirst = (instructor.name || "your instructor").split(" ")[0];
+  const lessonsTaken = pupil.lessons_completed ?? 0;
+  const balance = pupil.account_balance ?? 0;
+  const isOwed = balance < 0;
+  const owedAmount = Math.abs(balance);
+
   const mockScorePct = mockScoreData
     ? Math.round((mockScoreData.score / Math.max(1, mockScoreData.total)) * 100)
     : null;
 
-  // Referral data
-  const { data: referral } = useQuery({
-    queryKey: ["d365-referral", pupil.id],
-    queryFn: async () => {
-      const { data } = await (supabase.from("pupil_referrals") as any)
-        .select("referral_code, completed_count, pending_count, points")
-        .eq("pupil_id", pupil.id)
-        .maybeSingle();
-      return data;
-    },
-    staleTime: 5 * 60_000,
-  });
-
-  const firstName = (pupil.name || "").split(" ")[0] || "there";
-  const lessonsTaken = pupil.lessons_completed ?? 0;
-  const totalHours = pupil.prepaid_hours; // may be null — surface, don't invent
-  const lessonProgressPct =
-    totalHours && totalHours > 0 ? Math.min(100, (lessonsTaken / totalHours) * 100) : 0;
-
-  const balance = pupil.account_balance ?? 0;
-  const isOwed = balance < 0;
-  const isCredit = balance > 0;
-
-  const transmission = instructorCar?.car_type as string | null | undefined;
-
-  // Test Readiness — only compute when we have real signals
+  // Readiness — only when we have real signals (no fallback)
+  const totalHours = pupil.prepaid_hours;
   const hasReadinessSignal = lessonsTaken > 0 || mockScorePct !== null;
-  const lessonsFactor = totalHours && totalHours > 0
-    ? Math.min(100, (lessonsTaken / totalHours) * 100)
-    : 0;
-  const mockFactor = mockScorePct ?? 0;
+  const lessonsFactor = totalHours && totalHours > 0 ? Math.min(100, (lessonsTaken / totalHours) * 100) : 0;
   const readinessPct = hasReadinessSignal
-    ? Math.round(lessonsFactor * 0.6 + mockFactor * 0.4)
+    ? Math.round(lessonsFactor * 0.6 + (mockScorePct ?? 0) * 0.4)
     : null;
 
-  // Driving test countdown
-  const dt = pupilExtras?.test_date as string | null | undefined;
-  const dtDays = dt ? differenceInCalendarDays(parseISO(dt), new Date()) : null;
-
-  // Theory test status
+  // Tests
   const tt = pupilExtras?.theory_test_date as string | null | undefined;
   const ttPassed = pupilExtras?.theory_test_passed as boolean | null | undefined;
-
-  // Accordions
-  const [openLearning, setOpenLearning] = useState(true);
-  const [openData, setOpenData] = useState(false);
-  const [openAccount, setOpenAccount] = useState(false);
-  const [openTools, setOpenTools] = useState(false);
-  const [openProgress, setOpenProgress] = useState(true);
-  const [openReferral, setOpenReferral] = useState(false);
-
-  const copyCode = async () => {
-    if (!referral?.referral_code) return;
-    try {
-      await navigator.clipboard.writeText(referral.referral_code);
-      toast({ title: "Copied", description: "Referral code copied to clipboard" });
-    } catch {}
-  };
-
-  const shareCode = async () => {
-    const url = instructorSlug ? `${window.location.origin}/p/${instructorSlug}` : window.location.origin;
-    const text = `Join me learning to drive! Use my code ${referral?.referral_code || ""} at ${url}`;
-    try {
-      if ((navigator as any).share) {
-        await (navigator as any).share({ title: "Drive365 Referral", text, url });
-      } else {
-        await navigator.clipboard.writeText(text);
-        toast({ title: "Copied", description: "Share message copied" });
-      }
-    } catch {}
-  };
-
-  // Readiness ring math
-  const R = 32, C = 2 * Math.PI * R;
-  const ringOffset = readinessPct !== null ? C - (readinessPct / 100) * C : C;
+  const dt = pupilExtras?.test_date as string | null | undefined;
+  const dtPassed = pupilExtras?.test_passed as boolean | null | undefined;
 
   return (
-    <div style={{ background: SURFACE, minHeight: "100%", paddingBottom: 24 }}>
-      <div style={{ padding: "14px 14px 0", maxWidth: 430, margin: "0 auto" }}>
-        {/* 2. Greeting */}
-        <div className="flex items-center gap-3 mb-3">
-          <Avatar style={{ width: 52, height: 52 }} className="border-2" >
-            <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
-            <AvatarFallback style={{ background: NAVY, color: "#fff", fontWeight: 700, fontSize: 22 }}>
-              {firstName.slice(0, 1).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <div className="text-[13px]" style={{ color: MUTED }}>{greeting()}</div>
-            <div className="text-[24px] font-bold leading-tight" style={{ color: TEXT }}>
-              Hi {firstName} <span aria-hidden>👋</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 3. Instructor Info Card */}
-        <div className="mb-2">
-          <Card>
-            <div className="flex items-center gap-3">
-              <IconSquare><Phone size={20} /></IconSquare>
-              <div className="flex-1 min-w-0">
-                <div className="text-[11px]" style={{ color: MUTED }}>Instructor</div>
-                <div className="text-[15px] font-semibold truncate" style={{ color: TEXT }}>{instructor.name}</div>
-                {instructor.phone && (
-                  <a href={`tel:${instructor.phone}`} className="text-[12px]" style={{ color: MUTED }}>
-                    {instructor.phone}
-                  </a>
-                )}
-              </div>
-              <button onClick={onEditProfile} className="p-2" aria-label="Edit profile">
-                <Pencil size={16} color={MUTED} />
-              </button>
-              {transmission && (
-                <span
-                  className="text-[11px] font-semibold ml-1 px-2.5 py-1 rounded-full"
-                  style={{ background: "#EEF0F3", color: NAVY }}
-                >
-                  {transmission}
-                </span>
-              )}
-            </div>
-          </Card>
-        </div>
-
-        {/* 4. Lessons Progress */}
-        <Card>
-          <div className="flex items-center gap-2 mb-2">
-            <Car size={18} color={NAVY} strokeWidth={1.8} />
-            <span className="text-[15px] font-bold" style={{ color: TEXT }}>Lessons</span>
-          </div>
-          <div className="text-[13px] mb-2" style={{ color: MUTED }}>
-            {totalHours && totalHours > 0 ? (
-              <><span style={{ color: TEXT, fontWeight: 600 }}>{lessonsTaken} hrs</span> of {totalHours} hrs taken</>
-            ) : (
-              <><span style={{ color: TEXT, fontWeight: 600 }}>{lessonsTaken} hrs</span> taken · add a plan to track progress</>
-            )}
-          </div>
-          <div style={{ height: 8, borderRadius: 4, background: "#EEF0F3", overflow: "hidden" }}>
-            <div style={{ width: `${lessonProgressPct}%`, height: "100%", background: RED, borderRadius: 4 }} />
+    <div style={{ background: "#FFFFFF", minHeight: "100%", paddingBottom: 32, fontFamily: SANS }}>
+      {/* 2. Balance banner — only when owed */}
+      {isOwed && (
+        <div
+          className="flex items-center gap-3 px-4 py-3"
+          style={{ background: AMBER_BG }}
+        >
+          <AlertCircle size={20} style={{ color: AMBER_ICON, flexShrink: 0 }} />
+          <div className="flex-1 min-w-0" style={{ color: AMBER_TEXT, fontSize: 14, fontWeight: 500 }}>
+            Balance due: £{owedAmount.toFixed(2)}
           </div>
           <button
-            onClick={() => onNavigate("progress")}
-            className="text-[12px] font-semibold mt-2"
-            style={{ color: NAVY }}
+            onClick={() => onNavigate("payments")}
+            style={{
+              background: AMBER_ICON,
+              color: "#fff",
+              fontSize: 13,
+              fontWeight: 600,
+              padding: "8px 14px",
+              borderRadius: 999,
+              flexShrink: 0,
+            }}
           >
-            See Details →
+            Pay now
           </button>
-        </Card>
+        </div>
+      )}
 
-        {/* 5. Two-Column Tile Row */}
-        <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: "0.85fr 1.15fr" }}>
-          {/* Next lesson (left, full height matches right column stack) */}
-          <Card padding={14} className="h-full">
-            <button
-              onClick={() => onNavigate("schedule")}
-              className={`w-full text-left flex flex-col h-full ${nextLesson ? "" : "justify-center items-start"}`}
-            >
-              <div className="text-[12px] font-semibold mb-1" style={{ color: MUTED }}>Next lesson</div>
-              {nextLesson ? (
-                <>
-                  <div className="text-[30px] font-bold leading-[1.05]" style={{ color: TEXT }}>
-                    {format(parseISO(nextLesson.lesson_date), "EEE")}
-                  </div>
-                  <div className="text-[30px] font-bold leading-[1.05]" style={{ color: TEXT }}>
-                    {format(parseISO(nextLesson.lesson_date), "d MMM")}
-                  </div>
-                  <div className="text-[11px] mt-1 truncate" style={{ color: MUTED }}>
-                    {nextLesson.start_time?.slice(0, 5)} · {instructor.name.split(" ")[0]}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-[16px] font-semibold" style={{ color: TEXT }}>No lesson booked</div>
-                  <div className="text-[11px] mt-1" style={{ color: MUTED }}>Tap to schedule</div>
-                </>
-              )}
-            </button>
-          </Card>
-
-          {/* Right column stack */}
-          <div className="grid gap-2">
-            {/* Theory test */}
-            <Card padding={12}>
-              <button onClick={() => onNavigate("theory")} className="w-full text-left flex items-start gap-2">
-                <BookOpen size={18} color={NAVY} strokeWidth={1.8} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold" style={{ color: TEXT }}>Theory Test</div>
-                  {ttPassed === true ? (
-                    <div
-                      className="flex items-center gap-1"
-                      style={{ color: "#16A34A", fontSize: 11, fontWeight: 600, lineHeight: 1.35 }}
-                    >
-                      <CheckCircle2 size={12} /> Passed{tt ? ` · ${format(parseISO(tt), "d MMM")}` : ""}
-                    </div>
-                  ) : tt ? (
-                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
-                      {format(parseISO(tt), "dd/MM/yy")}
-                    </div>
-                  ) : (
-                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
-                      Not taken
-                    </div>
-                  )}
-                </div>
-              </button>
-            </Card>
-
-            {/* Driving test */}
-            <Card padding={12} className="relative">
-              <button onClick={() => onEditProfile()} className="w-full text-left flex items-start gap-2">
-                <Car size={18} color={NAVY} strokeWidth={1.8} />
-                <div className="flex-1 min-w-0 pr-16">
-                  <div className="text-[13px] font-semibold" style={{ color: TEXT }}>Driving Test</div>
-                  {pupilExtras?.test_passed === true ? (
-                    <div style={{ color: "#059669", fontSize: 11, fontWeight: 600, lineHeight: 1.35 }}>
-                      Passed
-                    </div>
-                  ) : dt ? (
-                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
-                      {pupilExtras?.test_centres?.name && (
-                        <div className="truncate">{pupilExtras.test_centres.name}</div>
-                      )}
-                      <div className="truncate">
-                        {format(parseISO(dt), "d MMM")}
-                        {pupilExtras?.test_time ? ` · ${String(pupilExtras.test_time).slice(0, 5)}` : ""}
-                      </div>
-                    </div>
-                  ) : pupilExtras?.test_passed === false ? (
-                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
-                      Awaiting retake
-                    </div>
-                  ) : (
-                    <div style={{ color: MUTED, fontSize: 11, fontWeight: 500, lineHeight: 1.35 }}>
-                      Not booked
-                    </div>
-                  )}
-
-                </div>
-              </button>
-              {dt && dtDays !== null && dtDays >= 0 && (
-                <div
-                  className="absolute"
-                  style={{
-                    top: 12, right: 12,
-                    background: RED, color: "#fff",
-                    borderRadius: 12, padding: "4px 9px",
-                    fontSize: 10, fontWeight: 700, lineHeight: 1.2,
-                    boxShadow: "0 4px 10px -2px rgba(229,57,53,0.45)",
-                  }}
-                >
-                  <span style={{ fontWeight: 700 }}>{dtDays}</span> days
-                </div>
-              )}
-            </Card>
+      <div style={{ padding: "16px 16px 0", maxWidth: 480, margin: "0 auto" }}>
+        {/* 3. Greeting */}
+        <div className="pt-1 pb-4">
+          <div style={{ fontSize: 13, color: BODY }}>{greeting()}</div>
+          <div style={{ fontFamily: SERIF, fontSize: 26, color: SERIF_TEXT, lineHeight: 1.15, marginTop: 2 }}>
+            Hi {firstName}
           </div>
         </div>
 
-        {/* 6. Payment History Card */}
-        <div className="mt-2">
-          <Card>
-            <div className="flex items-center gap-3">
-              <IconSquare><CreditCard size={20} /></IconSquare>
-              <div className="flex-1 min-w-0">
-                <div className="text-[15px] font-bold" style={{ color: TEXT }}>Payment History</div>
-                <div
-                  className="text-[12px] font-semibold"
-                  style={{ color: isOwed ? RED : isCredit ? "#16A34A" : MUTED }}
-                >
-                  {isOwed
-                    ? `Balance: −£${Math.abs(balance).toFixed(2)}`
-                    : isCredit
-                    ? `Balance: £${balance.toFixed(2)} in credit`
-                    : "Balance: £0.00"}
-                </div>
-              </div>
-              {isOwed ? (
-                <button
-                  onClick={() => onNavigate("payments")}
-                  className="rounded-full"
-                  style={{
-                    background: RED, color: "#fff",
-                    fontSize: 13, fontWeight: 600,
-                    padding: "9px 16px", borderRadius: 24,
-                    boxShadow: "0 4px 12px -2px rgba(229,57,53,0.45)",
-                  }}
-                >
-                  Pay Now
-                </button>
-              ) : (
-                <button onClick={() => onNavigate("payments")} className="p-1" aria-label="Open payments">
-                  <ChevronRight size={20} color={MUTED} />
-                </button>
-              )}
-            </div>
-          </Card>
-        </div>
+        {/* 4. Next lesson hero */}
+        <div
+          className="relative overflow-hidden"
+          style={{
+            background: NAVY,
+            borderRadius: 16,
+            padding: 20,
+            color: "#fff",
+            minHeight: 156,
+          }}
+        >
+          {/* Decorative steering-wheel icon */}
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              right: -20,
+              bottom: -20,
+              opacity: 0.07,
+              pointerEvents: "none",
+            }}
+          >
+            <svg width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.2">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 9V2" />
+              <path d="M9 14l-7 3" />
+              <path d="M15 14l7 3" />
+            </svg>
+          </div>
 
-        {/* 7. Book a Lesson */}
-        <div className="mt-2">
-          <Card>
-            <div className="flex items-center gap-3">
-              <IconSquare><CalendarPlus size={20} /></IconSquare>
-              <div className="flex-1 min-w-0">
-                <div className="text-[15px] font-bold" style={{ color: TEXT }}>Book a Lesson</div>
+          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.8, textTransform: "uppercase", color: "rgba(255,255,255,0.6)" }}>
+            Next lesson
+          </div>
+
+          {nextLesson ? (
+            <>
+              <div style={{ fontFamily: SERIF, fontSize: 24, lineHeight: 1.2, marginTop: 6, color: "#fff" }}>
+                {format(parseISO(nextLesson.lesson_date), "EEE, d MMM")}
+                {nextLesson.start_time && ` · ${format(parseISO(`2000-01-01T${nextLesson.start_time}`), "h:mmaaa")}`}
+              </div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 6, lineHeight: 1.45 }}>
+                {nextLesson.duration_minutes} mins · with {instructorFirst}
+                {nextLesson.pickup_location && (
+                  <>
+                    <br />
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin size={12} /> {nextLesson.pickup_location}
+                    </span>
+                  </>
+                )}
               </div>
               <button
                 onClick={() => onNavigate("schedule")}
-                className="px-3 py-1.5 rounded-full text-[12px] font-semibold"
-                style={{ background: NAVY, color: "#fff" }}
+                style={{
+                  marginTop: 14,
+                  padding: "9px 18px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(255,255,255,0.45)",
+                  background: "transparent",
+                  color: "#fff",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
               >
-                Book Now
+                View details
               </button>
+            </>
+          ) : (
+            <>
+              <div style={{ fontFamily: SERIF, fontSize: 26, lineHeight: 1.15, marginTop: 6, color: "#fff" }}>
+                No lesson booked
+              </div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 6 }}>
+                Find a slot with {instructorFirst} this week
+              </div>
+              <button
+                onClick={() => onNavigate("book")}
+                style={{
+                  marginTop: 14,
+                  padding: "10px 20px",
+                  borderRadius: 999,
+                  background: "#fff",
+                  color: NAVY,
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                Book now
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* 5. Theory & Driving test tiles */}
+        <div className="grid grid-cols-2 gap-3 mt-3">
+          <HairlineCard onClick={() => onNavigate("theory")}>
+            <div className="p-4">
+              <BookOpen size={20} style={{ color: NAVY }} strokeWidth={1.6} />
+              <div style={{ fontFamily: SERIF, fontSize: 16, color: SERIF_TEXT, marginTop: 10 }}>
+                Theory test
+              </div>
+              {ttPassed === true ? (
+                <div style={{ fontSize: 12, color: "#15803D", marginTop: 4, fontWeight: 600 }}>
+                  Passed{tt ? ` · ${format(parseISO(tt), "d MMM yyyy")}` : ""}
+                </div>
+              ) : tt ? (
+                <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>
+                  {format(parseISO(tt), "d MMM yyyy")}
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>Not taken</div>
+                  <div style={{ fontSize: 12, color: LINK, marginTop: 8, fontWeight: 600 }}>
+                    Take a mock test →
+                  </div>
+                </>
+              )}
             </div>
-          </Card>
+          </HairlineCard>
+
+          <HairlineCard onClick={onEditProfile}>
+            <div className="p-4">
+              <Car size={20} style={{ color: NAVY }} strokeWidth={1.6} />
+              <div style={{ fontFamily: SERIF, fontSize: 16, color: SERIF_TEXT, marginTop: 10 }}>
+                Driving test
+              </div>
+              {dtPassed === true ? (
+                <div style={{ fontSize: 12, color: "#15803D", marginTop: 4, fontWeight: 600 }}>
+                  Passed
+                </div>
+              ) : dt ? (
+                <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>
+                  {format(parseISO(dt), "d MMM yyyy")}
+                  {pupilExtras?.test_time && ` · ${String(pupilExtras.test_time).slice(0, 5)}`}
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>Not booked</div>
+                  <div style={{ fontSize: 12, color: LINK, marginTop: 8, fontWeight: 600 }}>
+                    Book a date →
+                  </div>
+                </>
+              )}
+            </div>
+          </HairlineCard>
         </div>
 
-        {/* 8 + 9. Your Progress + Readiness */}
-        <div className="mt-3">
-          <SectionLabel open={openProgress} onToggle={() => setOpenProgress(o => !o)}>Your Progress</SectionLabel>
-          <Collapsible open={openProgress} onOpenChange={setOpenProgress}>
-            <CollapsibleContent>
-              <Card>
-                <div className="flex items-center gap-3">
-                  <div className="relative shrink-0" style={{ width: 84, height: 84 }}>
-                    <svg width={84} height={84} viewBox="0 0 84 84">
-                      <defs>
-                        <linearGradient id="d365Ring" x1="0" y1="0" x2="1" y2="1">
-                          <stop offset="0%" stopColor={RED} />
-                          <stop offset="100%" stopColor={NAVY} />
-                        </linearGradient>
-                      </defs>
-                      <circle cx={42} cy={42} r={R} fill="none" stroke="#EEF0F3" strokeWidth={10} />
-                      <circle
-                        cx={42} cy={42} r={R}
-                        fill="none" stroke="url(#d365Ring)" strokeWidth={10}
-                        strokeLinecap="round" strokeDasharray={C} strokeDashoffset={ringOffset}
-                        transform="rotate(-90 42 42)"
-                        style={{ transition: "stroke-dashoffset 0.8s ease" }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span style={{ color: TEXT, fontSize: 19, fontWeight: 800, lineHeight: 1 }}>
-                        {readinessPct !== null ? `${readinessPct}%` : "—"}
-                      </span>
-                      <span
-                        className="uppercase"
-                        style={{ color: MUTED, fontSize: 8, fontWeight: 700, letterSpacing: "0.12em", marginTop: 2 }}
-                      >
-                        Ready
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div style={{ color: TEXT, fontSize: 17, fontWeight: 700 }}>Test Readiness</div>
-                    <div style={{ color: MUTED, fontSize: 13 }}>Based on lessons & mock results</div>
-                    <div className="flex gap-4 mt-2">
-                      <div>
-                        <div className="text-[14px] font-bold" style={{ color: TEXT }}>{lessonsTaken}</div>
-                        <div className="text-[10px] uppercase tracking-wider" style={{ color: MUTED, fontWeight: 600 }}>Lessons</div>
-                      </div>
-                      <div>
-                        <div className="text-[14px] font-bold" style={{ color: TEXT }}>
-                          {mockScoreData ? `${mockScoreData.score}/${mockScoreData.total}` : "—"}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wider" style={{ color: MUTED, fontWeight: 600 }}>Mock score</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </CollapsibleContent>
-          </Collapsible>
+        {/* 6. Quick links */}
+        <div className="flex items-baseline justify-between mt-7 mb-3">
+          <h2 style={{ fontFamily: SERIF, fontSize: 20, color: SERIF_TEXT, margin: 0 }}>Quick links</h2>
+          <button onClick={() => onNavigate("progress")} style={{ fontSize: 13, color: LINK, fontWeight: 600 }}>
+            More
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { id: "schedule", title: "My lessons", subtitle: "Upcoming & past", icon: <Car size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
+            { id: "progress", title: "My progress", subtitle: "Skills & syllabus", icon: <GraduationCap size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
+            { id: "theory", title: "Theory", subtitle: "Practice & mocks", icon: <BookOpen size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
+            { id: "show-tell", title: "Show me / tell me", subtitle: "Safety questions", icon: <ClipboardList size={28} style={{ color: MUTED_NUM }} strokeWidth={1.4} /> },
+          ].map((tile) => (
+            <button key={tile.id} onClick={() => onNavigate(tile.id)} className="text-left">
+              <ImagePlaceholder icon={tile.icon} ratio={1} />
+              <div style={{ fontFamily: SERIF, fontSize: 15, color: SERIF_TEXT, marginTop: 8, lineHeight: 1.2 }}>
+                {tile.title}
+              </div>
+              <div style={{ fontSize: 12, color: BODY, marginTop: 2 }}>{tile.subtitle}</div>
+            </button>
+          ))}
         </div>
 
-        {/* 10. Refer a Friend */}
-        <div className="mt-2">
-          <Card padding={0}>
-            <Collapsible open={openReferral} onOpenChange={setOpenReferral}>
-              <CollapsibleTrigger className="w-full flex items-center gap-3 p-3.5">
-                <IconSquare><Gift size={20} /></IconSquare>
-                <div className="flex-1 text-left">
-                  <div className="text-[15px] font-bold" style={{ color: TEXT }}>Refer a Friend</div>
-                  <div className="text-[12px]" style={{ color: MUTED }}>Earn rewards when they book</div>
+        {/* 7. Test swap tile */}
+        <div className="mt-7">
+          <button onClick={() => onNavigate("test-requests")} className="block w-full text-left">
+            <div
+              className="relative w-full"
+              style={{
+                background: TILE_BG,
+                aspectRatio: "2.2",
+                borderRadius: 14,
+                overflow: "hidden",
+              }}
+            >
+              <span
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  left: 12,
+                  background: NAVY,
+                  color: "#fff",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "5px 10px",
+                  borderRadius: 999,
+                }}
+              >
+                Free, no cost to use
+              </span>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <ImageIcon size={36} style={{ color: MUTED_NUM }} strokeWidth={1.2} />
+              </div>
+            </div>
+            <div style={{ fontFamily: SERIF, fontSize: 18, color: SERIF_TEXT, marginTop: 10 }}>
+              Free test swapping
+            </div>
+            <div style={{ fontSize: 13, color: BODY, marginTop: 2, lineHeight: 1.4 }}>
+              Swap your test for an earlier date — no booking fees.
+            </div>
+            <div style={{ fontSize: 13, color: LINK, fontWeight: 600, marginTop: 6 }}>
+              Search for an earlier date →
+            </div>
+          </button>
+        </div>
+
+        {/* 8. Test readiness card */}
+        <div className="mt-7">
+          <HairlineCard>
+            <div className="p-4 flex items-center gap-4">
+              <ReadinessRing pct={readinessPct} />
+              <div className="flex-1 min-w-0">
+                <div style={{ fontFamily: SERIF, fontSize: 18, color: SERIF_TEXT, lineHeight: 1.15 }}>
+                  Test readiness
                 </div>
-                <motion.div animate={{ rotate: openReferral ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                  <ChevronDown size={18} color={MUTED} />
-                </motion.div>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="px-3.5 pb-3.5">
-                  {referral?.referral_code && (
-                    <div
-                      className="flex items-center justify-between px-3 py-2 rounded-xl mb-2"
-                      style={{ background: "#F4F6F8", border: `1px solid ${BORDER}` }}
+                <div style={{ fontSize: 12, color: BODY, marginTop: 4 }}>
+                  {lessonsTaken} {lessonsTaken === 1 ? "lesson" : "lessons"} taken,{" "}
+                  {mockScoreData
+                    ? `mock score ${mockScoreData.score}/${mockScoreData.total}`
+                    : "no mock score yet"}
+                </div>
+              </div>
+            </div>
+          </HairlineCard>
+        </div>
+
+        {/* 9. Last lesson */}
+        <div className="mt-7">
+          <div className="flex items-baseline justify-between mb-3">
+            <h2 style={{ fontFamily: SERIF, fontSize: 20, color: SERIF_TEXT, margin: 0 }}>Last lesson</h2>
+            {lastLesson && (
+              <span style={{ fontSize: 13, color: LINK, fontWeight: 600 }}>
+                {format(parseISO(lastLesson.lesson_date), "d MMM")}
+              </span>
+            )}
+          </div>
+          {lastLesson ? (
+            <>
+              <div
+                className="relative w-full"
+                style={{
+                  background: TILE_BG,
+                  aspectRatio: "2.2",
+                  borderRadius: 14,
+                  overflow: "hidden",
+                }}
+              >
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <ImageIcon size={36} style={{ color: MUTED_NUM }} strokeWidth={1.2} />
+                </div>
+              </div>
+              {Array.isArray(lastLesson.skills_practiced) && lastLesson.skills_practiced.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {lastLesson.skills_practiced.map((skill: string, i: number) => (
+                    <span
+                      key={i}
+                      style={{
+                        fontSize: 12,
+                        color: LINK,
+                        border: `1px solid ${TAG_BORDER}`,
+                        borderRadius: 999,
+                        padding: "4px 10px",
+                        background: "transparent",
+                      }}
                     >
-                      <span style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", letterSpacing: 2, fontWeight: 700, color: TEXT }}>
-                        {referral.referral_code}
-                      </span>
-                      <button onClick={copyCode} className="p-1" aria-label="Copy code">
-                        <Copy size={16} color={NAVY} />
-                      </button>
-                    </div>
-                  )}
-                  <button
-                    onClick={shareCode}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-[13px] font-semibold"
-                    style={{ background: NAVY, color: "#fff" }}
-                  >
-                    <Share2 size={14} /> Share Your Referral Code
-                  </button>
-                  <div className="grid grid-cols-3 gap-2 mt-3">
-                    <div className="text-center py-2 rounded-xl" style={{ background: "#0F172A", color: "#fff" }}>
-                      <div className="text-[16px] font-bold">{referral?.completed_count ?? 0}</div>
-                      <div className="text-[10px] opacity-80">Completed</div>
-                    </div>
-                    <div className="text-center py-2 rounded-xl" style={{ background: "#FEF3C7", color: "#92400E" }}>
-                      <div className="text-[16px] font-bold">{referral?.pending_count ?? 0}</div>
-                      <div className="text-[10px]">Pending</div>
-                    </div>
-                    <div className="text-center py-2 rounded-xl" style={{ background: "#DCFCE7", color: "#15803D" }}>
-                      <div className="text-[16px] font-bold">{referral?.points ?? 0}</div>
-                      <div className="text-[10px]">Points</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 text-[12px]" style={{ color: MUTED }}>
-                    <div className="font-semibold mb-1" style={{ color: TEXT }}>How It Works:</div>
-                    <ul className="list-disc pl-4 space-y-0.5">
-                      <li>Share your code with a friend</li>
-                      <li>They book their first lesson</li>
-                      <li>You both earn reward points</li>
-                    </ul>
-                  </div>
+                      {skill}
+                    </span>
+                  ))}
                 </div>
-              </CollapsibleContent>
-            </Collapsible>
-          </Card>
+              )}
+              {lastLesson.notes && (
+                <p style={{ fontSize: 14, color: BODY, fontStyle: "italic", marginTop: 12, lineHeight: 1.5 }}>
+                  "{lastLesson.notes}"
+                </p>
+              )}
+            </>
+          ) : (
+            <div
+              style={{
+                background: TILE_BG,
+                borderRadius: 14,
+                padding: 24,
+                textAlign: "center",
+                fontSize: 13,
+                color: BODY,
+              }}
+            >
+              No lessons yet — your first lesson summary will appear here.
+            </div>
+          )}
         </div>
 
-        {/* 11. Accordion sections */}
-        <div className="mt-3">
-          <SectionLabel open={openLearning} onToggle={() => setOpenLearning(o => !o)}>Learning</SectionLabel>
-          <Collapsible open={openLearning} onOpenChange={setOpenLearning}>
-            <CollapsibleContent>
-              <Card>
-                <NavRow icon={<CalendarCheck size={20} />} title="My Lessons" subtitle="View upcoming & past" onClick={() => onNavigate("schedule")} />
-                <NavRow icon={<CalendarPlus size={20} />} title="Book a Lesson" subtitle="Find available slots" onClick={() => onNavigate("schedule")} />
-                <NavRow icon={<GraduationCap size={20} />} title="My Progress" subtitle="Skills & syllabus" onClick={() => onNavigate("progress")} />
-                <NavRow icon={<BookOpen size={20} />} title="Theory" subtitle="Practice & mock tests" onClick={() => onNavigate("theory")} />
-                <NavRow icon={<ClipboardList size={20} />} title="Show Me / Tell Me" subtitle="Vehicle safety questions" onClick={() => onNavigate("show-tell")} />
-              </Card>
-            </CollapsibleContent>
-          </Collapsible>
+        {/* 10. Bottom numbered list */}
+        <div className="mt-7">
+          {[
+            {
+              n: "01",
+              title: "Payment history",
+              sub: balance === 0
+                ? "£0.00"
+                : isOwed
+                  ? `− £${owedAmount.toFixed(2)} due`
+                  : `£${balance.toFixed(2)} in credit`,
+              go: () => onNavigate("payments"),
+            },
+            { n: "02", title: "Refer a friend", sub: "Earn rewards", go: () => onNavigate("referrals") },
+            { n: "03", title: "Account and settings", sub: "Profile, contact, security", go: () => onNavigate("profile") },
+          ].map((row, i) => (
+            <button
+              key={row.n}
+              onClick={row.go}
+              className="w-full flex items-center gap-4 py-4 text-left"
+              style={{
+                borderTop: i === 0 ? `1px solid ${HAIRLINE}` : "none",
+                borderBottom: `1px solid ${HAIRLINE}`,
+              }}
+            >
+              <span style={{ fontFamily: SERIF, fontSize: 18, color: MUTED_NUM, width: 28 }}>
+                {row.n}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div style={{ fontFamily: SERIF, fontSize: 17, color: SERIF_TEXT, lineHeight: 1.2 }}>
+                  {row.title}
+                </div>
+                <div style={{ fontSize: 12, color: BODY, marginTop: 2 }}>{row.sub}</div>
+              </div>
+              <ChevronRight size={18} style={{ color: MUTED_NUM }} />
+            </button>
+          ))}
         </div>
+      </div>
+    </div>
+  );
+}
 
-        <div className="mt-3">
-          <SectionLabel open={openData} onToggle={() => setOpenData(o => !o)}>My Data</SectionLabel>
-          <Collapsible open={openData} onOpenChange={setOpenData}>
-            <CollapsibleContent>
-              <Card>
-                <NavRow icon={<ClipboardList size={20} />} title="Lesson History" onClick={() => onNavigate("history")} />
-                <NavRow icon={<CreditCard size={20} />} title="Payments" onClick={() => onNavigate("payments")} />
-                <NavRow icon={<FileText size={20} />} title="Documents" onClick={() => onNavigate("documents")} />
-              </Card>
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
+function ReadinessRing({ pct }: { pct: number | null }) {
+  const size = 72;
+  const stroke = 8;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const offset = pct !== null ? c - (pct / 100) * c : c;
 
-        <div className="mt-3">
-          <SectionLabel open={openAccount} onToggle={() => setOpenAccount(o => !o)}>Account</SectionLabel>
-          <Collapsible open={openAccount} onOpenChange={setOpenAccount}>
-            <CollapsibleContent>
-              <Card>
-                <NavRow icon={<User size={20} />} title="Profile" onClick={() => onNavigate("profile")} />
-                <NavRow icon={<Bell size={20} />} title="Notifications" onClick={() => onNavigate("profile")} />
-                <NavRow icon={<ShieldCheck size={20} />} title="Security" onClick={() => onNavigate("profile")} />
-              </Card>
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
-
-        <div className="mt-3">
-          <SectionLabel open={openTools} onToggle={() => setOpenTools(o => !o)}>Tools</SectionLabel>
-          <Collapsible open={openTools} onOpenChange={setOpenTools}>
-            <CollapsibleContent>
-              <Card>
-                <NavRow icon={<MapPin size={20} />} title="Find Test Centre" onClick={() => onNavigate("profile")} />
-                <NavRow icon={<FileBadge size={20} />} title="Highway Code" onClick={() => onNavigate("theory")} />
-                <NavRow icon={<MessageSquare size={20} />} title="Contact Instructor" onClick={() => onNavigate("messages")} />
-              </Card>
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={TILE_BG} strokeWidth={stroke} />
+        {pct !== null && (
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke={LINK}
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={offset}
+            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            style={{ transition: "stroke-dashoffset 0.8s ease" }}
+          />
+        )}
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span style={{ fontFamily: SERIF, fontSize: 18, color: SERIF_TEXT, fontWeight: 600 }}>
+          {pct !== null ? `${pct}%` : "—"}
+        </span>
       </div>
     </div>
   );

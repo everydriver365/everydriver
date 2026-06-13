@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Menu, LogOut, User, CalendarPlus, CreditCard, MessageSquare } from "lucide-react";
-import drive365Logo from "@/assets/ed-white-logo.png";
+import { ChevronLeft, Menu, MessageSquare, LogOut, User, CalendarPlus, CreditCard } from "lucide-react";
+import edLogo from "@/assets/everydriver-logo.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,70 +23,94 @@ interface PupilMobileHeaderProps {
   onLogout?: () => void;
   onAvatarClick?: () => void;
   onNavigate?: (section: string) => void;
+  unreadMessages?: number;
 }
 
+const NAVY = "#0F2044";
+const CORAL = "#E53935";
+const BORDER = "#E5E7EB";
+
 export function PupilMobileHeader({
-  brandColour,
   showBackButton = false,
   title,
   onLogout,
   onAvatarClick,
   onNavigate,
+  unreadMessages = 0,
 }: PupilMobileHeaderProps) {
   const navigate = useNavigate();
-  const bgColor = brandColour || "hsl(var(--primary))";
+  const hasUnread = unreadMessages > 0;
 
-  // Vodafone-style hero: bottom edge bulges downward in the middle via
-  // elliptical border-radius on the bottom corners.
   return (
-    <div className="sticky top-0 z-50">
-      <div
-        className="relative overflow-hidden text-white"
-        style={{
-          backgroundColor: bgColor,
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: 4,
-          boxShadow: "none",
-          borderBottomLeftRadius: "50% 6px",
-          borderBottomRightRadius: "50% 6px",
-        }}
-      >
-        {/* Decorative circles */}
-        <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/5" />
-        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/[0.03]" />
-
-        <div className="relative flex items-center justify-between px-4 pt-1.5 pb-[7px]">
-          {/* Left: Back button OR Drive365 logo */}
-          <div className="flex items-center gap-3">
-            {showBackButton ? (
-              <>
-                <button
-                  onClick={() => navigate(-1)}
-                  className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center"
+    <div
+      className="sticky top-0 z-50 bg-white"
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        borderBottom: `1px solid ${BORDER}`,
+      }}
+    >
+      <div className="relative flex items-center justify-between px-4 py-3">
+        {/* Left: back or logo */}
+        <div className="flex items-center gap-3 min-w-0">
+          {showBackButton ? (
+            <>
+              <button
+                onClick={() => navigate(-1)}
+                className="h-9 w-9 -ml-2 rounded-full flex items-center justify-center hover:bg-black/5"
+                aria-label="Back"
+              >
+                <ChevronLeft className="h-5 w-5" style={{ color: NAVY }} />
+              </button>
+              {title && (
+                <p
+                  className="text-[15px] font-semibold leading-tight truncate"
+                  style={{
+                    color: NAVY,
+                    fontFamily: 'Georgia, "Times New Roman", serif',
+                  }}
                 >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                {title && (
-                  <p className="text-sm font-semibold leading-tight">{title}</p>
-                )}
-              </>
-            ) : (
-              <img
-                src={drive365Logo}
-                alt="EveryDriver"
-                className="h-8 object-contain"
-              />
-            )}
-          </div>
+                  {title}
+                </p>
+              )}
+            </>
+          ) : (
+            <img src={edLogo} alt="EveryDriver" className="h-7 object-contain" />
+          )}
+        </div>
 
-          {/* Right: Hamburger menu */}
+        {/* Right: message + menu */}
+        <div className="flex items-center gap-1">
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate("messages")}
+              className="relative h-10 w-10 rounded-full flex items-center justify-center hover:bg-black/5"
+              aria-label="Messages"
+            >
+              <MessageSquare className="h-[22px] w-[22px]" style={{ color: NAVY }} strokeWidth={1.8} />
+              {hasUnread && (
+                <span
+                  className="absolute top-2 right-2 rounded-full"
+                  style={{
+                    width: 8,
+                    height: 8,
+                    backgroundColor: CORAL,
+                    border: "2px solid #fff",
+                    boxSizing: "content-box",
+                    transform: "translate(2px, -2px)",
+                  }}
+                  aria-label={`${unreadMessages} unread messages`}
+                />
+              )}
+            </button>
+          )}
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="h-9 w-9 rounded-full bg-white/15 flex items-center justify-center"
+                className="h-10 w-10 rounded-full flex items-center justify-center hover:bg-black/5"
                 aria-label="Open menu"
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-[22px] w-[22px]" style={{ color: NAVY }} strokeWidth={1.8} />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -110,7 +134,7 @@ export function PupilMobileHeader({
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onNavigate("messages")}>
                     <MessageSquare className="mr-2 h-4 w-4" />
-                    Message
+                    Messages
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
