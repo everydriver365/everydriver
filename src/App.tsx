@@ -19,6 +19,7 @@ import { ConditionalHome } from "@/components/ConditionalHome";
 import { BrandProvider } from "@/components/BrandProvider";
 
 import NotFound from "./pages/NotFound";
+import ArloSpike from "./pages/ArloSpike";
 
 // Route modules
 import { publicRoutes } from "@/routes/publicRoutes";
@@ -66,6 +67,7 @@ const App = () => (
                       {everyInstructorRoutes}
                       {schoolRoutes}
                       {parentRoutes}
+                      <Route path="/arlo-spike" element={<ArloSpike />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
