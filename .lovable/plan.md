@@ -1,64 +1,50 @@
-## Goal
+## Arlo course creation spike
 
-Stop duplicate pupil records from being created, and clean up the existing Joseph Thorne duplicate.
+Throwaway, additive only. No DB writes, no existing files touched, no nav links.
 
-## Audit result
+### Step 1 — Secrets (you do this)
+You'll be prompted to add three runtime secrets after the plan is approved:
+- `ARLO_PLATFORM` — your Arlo subdomain (the part before `.arlo.co`)
+- `ARLO_USERNAME` — Arlo API username
+- `ARLO_PASSWORD` — Arlo API password
 
-I ran a project-wide scan for active pupils sharing the same `(instructor_id, lower(trim(name)))`. **Joseph Thorne is the only duplicate in the entire database** (1 duplicate group, 1 row to remove). Good news — this hasn't been "happening again" elsewhere; it's a single recurrence of the same record.
+Nothing else proceeds until those three are saved.
 
-## What I'll do
+### Step 2 — New edge function `arlo-spike-create-course`
+File: `supabase/functions/arlo-spike-create-course/index.ts`
 
-### 1. Clean up Joseph Thorne
+Behavior (exactly as you specified):
+- Basic auth against `https://{platform}.arlo.co/api/2012-02-01/auth/resources`
+- Step A: GET `/eventtemplates/` → grab first template href
+- Step B: GET `/venues/` → grab first venue href
+- Step C: GET `/presenters/` → grab first presenter href
+- Step D: POST XML to `/events/` with code `ED-SPIKE-001`, location `Winchester`, status `Draft`, linked to template + presenter
+- Step E: if event created (201), POST XML to `{eventHref}sessions/` with tomorrow 09:00–17:00 UTC, linked to venue + presenter
+- Returns one big JSON `results` object with every status, body excerpt, parsed href, and a top-level `FINAL_RESULT` of `SUCCESS` / `PARTIAL` / `FAILED` / `ERROR`
 
-Soft-delete the empty January record, keep the active May record.
+Notes vs your snippet (small, non-behavioural):
+- Use `Deno.serve` (the `std/http/server.ts` import is deprecated). Same handler, same output.
+- Add CORS headers so the page can call it from the browser.
+- No auth on the function (set `verify_jwt = false` in `supabase/config.toml` for this function only).
 
-- **Keep:** `53011379-5cf6-4385-9e9c-544d3e9ae961` (created 19 May 2026, 7 scheduled lessons, 3 payments, £1,487.50 balance).
-- **Soft-delete:** `383c3edb-bd9c-4247-94e0-396326c5837b` (created 24 Jan 2026, 0 lessons, 0 payments, £1,487.50 balance).
+### Step 3 — New page `/arlo-spike`
+Files:
+- `src/pages/ArloSpike.tsx` — heading, subheading, "Run Arlo spike test" button, "Testing…" state, big bold `FINAL_RESULT` at top, full JSON in `<pre style="white-space: pre-wrap">`
+- Route registered in the appropriate router file (likely `src/routes/everydriverRoutes.tsx` — confirmed at build time). Page is reachable only by typing the URL; no nav entry anywhere.
 
-Note on the balance: both rows show £1,487.50. The January record has no payment history backing it, so the balance is almost certainly a stale/manual value. The May record is the real ledger (it has the 3 payments). I will **not** add the January balance into the May one — that would double-count. If you know otherwise, tell me and I'll add them.
+Calls the function via `supabase.functions.invoke('arlo-spike-create-course')`.
 
-Soft-delete = `deleted_at = now()`, `status = 'archived'`. Reversible if needed.
+### Step 4 — Out of scope (will NOT touch)
+- No changes to `instructor_courses`, `scheduled_lessons`, `pupils`, or any existing table
+- No changes to existing components, hooks, routes, or styling
+- No DB migration
+- No memory updates
+- No mobile layout changes
 
-### 2. Add a database guard
+### Step 5 — After you run it
+Paste the JSON back here. I'll read `FINAL_RESULT` + any non-200 steps and tell you what to fix in Arlo (usually: create an EventTemplate / Venue / Presenter in the Arlo dashboard).
 
-Create a partial unique index on `pupils` so two active rows can't share the same instructor + name again:
-
-```sql
-CREATE UNIQUE INDEX pupils_unique_active_name_per_instructor
-  ON public.pupils (instructor_id, lower(trim(name)))
-  WHERE deleted_at IS NULL;
-```
-
-- Scoped to active (non-deleted) rows only, so historical archives don't block re-adds.
-- Case- and whitespace-insensitive ("joseph thorne" = "Joseph Thorne ").
-- Future duplicate insert/update attempts will fail at the DB with a clear unique-violation error, which the Add Pupil dialog will surface as a toast.
-
-### 3. Front-end duplicate check (defence in depth)
-
-In the Add Pupil flow (`AddPupilDialog` / equivalent), before insert, run a lookup:
-
-```ts
-const { data: existing } = await supabase
-  .from("pupils")
-  .select("id, name")
-  .eq("instructor_id", instructorId)
-  .is("deleted_at", null)
-  .ilike("name", trimmedName.trim())
-  .maybeSingle();
-```
-
-If a match exists, show a confirm dialog: *"A pupil called 'Joseph Thorne' already exists. Open existing pupil / Add anyway / Cancel."* "Add anyway" is disabled (DB index will reject it).
-
-This catches the duplicate before the DB error, gives a friendlier UX, and lets the instructor jump straight to the existing record.
-
-## Out of scope
-
-- No changes to other portals, payments, or business logic.
-- No merging of historical data between the two Joseph records (the older one has none worth keeping).
-- No change to pupils intentionally re-added after being archived — the partial index allows that.
-
-## Verification
-
-1. Re-run the duplicate-scan query → expect 0 groups.
-2. Open Joseph Thorne in the Pupils list → exactly one row, with 7 lessons and 3 payments visible.
-3. Try to add a second "Joseph Thorne" under the same instructor → blocked with a friendly message.
+### Technical detail
+- Function deploys with `verify_jwt = false` via a small block added to `supabase/config.toml` (only that one function's block, no project-level changes).
+- Tomorrow's session times sent as ISO UTC; Arlo accepts and stores in tenant timezone. Fine for a spike.
+- Page does not gate on auth, so it works whether you're logged in or not.
