@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
     results.debug_templates_raw = templatesBody.substring(0, 2000);
     results.debug_venues_raw = venuesBody.substring(0, 2000);
 
-    // STEP D — create event
+    // STEP D — probe multiple event creation paths
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(9, 0, 0, 0);
@@ -159,67 +159,65 @@ Deno.serve(async (req) => {
   ${presenterHref ? `<Link rel="http://schemas.arlo.co/api/2012/02/auth/related/Presenter" type="application/xml" href="${presenterHref}" />` : ''}
 </Event>`;
 
-    results.step_D_event_xml_sent = eventXml;
+    results.step_D_xml_sent = eventXml;
 
-    const eRes = await fetch(`${baseUrl}/events/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${basicAuth}`,
-        'Content-Type': 'application/xml',
-        'Accept': 'application/xml',
-      },
-      body: eventXml,
-    });
-    const eBody = await eRes.text();
-    results.step_D_create_event = { status: eRes.status, ok: eRes.ok, body: eBody.substring(0, 2000) };
+    const eventCreationPaths = [
+      `${templateHref}events/`,
+      `${baseUrl}/events/`,
+      `https://dsm.arlo.co/api/2012-02-01/auth/resources/events/`,
+      `https://dsm.arlo.co/api/2012-02-01/pub/resources/events/`,
+    ];
 
-    if (eRes.status === 201) {
-      results.step_D_success = 'Event created in Arlo';
+    let createEventBody = '';
+    let createEventStatus = 0;
+    let successfulPath: string | null = null;
 
-      const eventHref = extractXmlHref(eBody, 'self');
-      const eventId = extractXmlValue(eBody, 'EventID');
+    for (const path of eventCreationPaths) {
+      const attempt = await fetch(path, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${basicAuth}`,
+          'Content-Type': 'application/xml',
+          'Accept': 'application/xml',
+        },
+        body: eventXml,
+      });
+      const attemptBody = await attempt.text();
+      const key = `step_D_attempt_${path.replace(/https?:\/\/[^/]+/, '')}`;
+      results[key] = {
+        status: attempt.status,
+        ok: attempt.ok,
+        body: attemptBody.substring(0, 500),
+      };
+      if (attempt.status !== 404) {
+        createEventStatus = attempt.status;
+        createEventBody = attemptBody;
+        successfulPath = path;
+        results.step_D_successful_path = path;
+        break;
+      }
+    }
+
+    results.step_D_create_event = {
+      status: createEventStatus,
+      ok: createEventStatus >= 200 && createEventStatus < 300,
+      body: createEventBody.substring(0, 2000),
+    };
+
+    if (createEventStatus === 201) {
+      results.step_D_success = 'Event created successfully';
+      const eventId = extractXmlValue(createEventBody, 'EventID');
+      const eventHref = extractXmlHref(createEventBody, 'self');
       results.step_D_event_id = eventId;
       results.step_D_event_href = eventHref;
-
-      if (eventHref) {
-        const sessionXml = `<?xml version="1.0" encoding="utf-8"?>
-<EventSession>
-  <StartDateTime>${tomorrow.toISOString()}</StartDateTime>
-  <FinishDateTime>${finish.toISOString()}</FinishDateTime>
-  ${venueHref ? `<Link rel="http://schemas.arlo.co/api/2012/02/auth/related/Venue" type="application/xml" href="${venueHref}" />` : ''}
-  ${presenterHref ? `<Link rel="http://schemas.arlo.co/api/2012/02/auth/related/Presenter" type="application/xml" href="${presenterHref}" />` : ''}
-</EventSession>`;
-
-        results.step_E_session_xml_sent = sessionXml;
-
-        const sRes = await fetch(`${eventHref}sessions/`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Basic ${basicAuth}`,
-            'Content-Type': 'application/xml',
-            'Accept': 'application/xml',
-          },
-          body: sessionXml,
-        });
-        const sBody = await sRes.text();
-        results.step_E_create_session = { status: sRes.status, ok: sRes.ok, body: sBody.substring(0, 2000) };
-
-        const sessionId = extractXmlValue(sBody, 'SessionID');
-        results.step_E_session_id = sessionId;
-
-        if (sRes.status === 201) {
-          results.step_E_success = 'Session created — course fully created in Arlo with date and presenter';
-          results.FINAL_RESULT = 'SUCCESS — full course creation works end to end';
-        } else {
-          results.step_E_error = `Session creation failed with status ${sRes.status}`;
-          results.FINAL_RESULT = 'PARTIAL — event created but session failed';
-        }
-      } else {
-        results.FINAL_RESULT = 'PARTIAL — event created but no href returned for session step';
-      }
+      results.FINAL_RESULT = 'PROCEED TO SESSION CREATION';
+    } else if (createEventStatus === 0) {
+      results.step_D_error = 'All paths returned 404 — event creation endpoint not found';
+      results.FINAL_RESULT = 'FAILED — no valid event creation path found';
+      results.step_D_recommendation = 'Check Arlo account has API write permissions enabled. Contact Arlo support to confirm the correct event creation endpoint for your plan.';
     } else {
-      results.step_D_error = `Event creation failed with status ${eRes.status}`;
-      results.FINAL_RESULT = 'FAILED — could not create event in Arlo';
+      results.step_D_error = `Event creation returned ${createEventStatus} via ${successfulPath}`;
+      results.FINAL_RESULT = `FAILED — got ${createEventStatus} not 201`;
     }
   } catch (err) {
     results.unexpected_error = String(err);
