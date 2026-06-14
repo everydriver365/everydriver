@@ -22,7 +22,18 @@ Deno.serve(async (req) => {
   const baseUrl = `https://${platform}.arlo.co/api/2012-02-01/auth/resources`;
   const authHeaders = {
     'Authorization': `Basic ${basicAuth}`,
-    'Accept': 'application/json',
+    'Accept': 'application/xml',
+  };
+
+  const extractXmlValue = (xml: string, tag: string): string | null => {
+    const match = xml.match(new RegExp(`<${tag}[^>]*>(.*?)<\/${tag}>`, 's'));
+    return match ? match[1].trim() : null;
+  };
+
+  const extractXmlHref = (xml: string, rel: string): string | null => {
+    const m1 = xml.match(new RegExp(`<Link[^>]*rel="${rel}"[^>]*href="([^"]*)"`, 's'));
+    const m2 = xml.match(new RegExp(`<Link[^>]*href="([^"]*)"[^>]*rel="${rel}"`, 's'));
+    return m1?.[1] ?? m2?.[1] ?? null;
   };
 
   const findSelfHref = (item: any): string | null => {
@@ -40,15 +51,9 @@ Deno.serve(async (req) => {
 
     let templateHref: string | null = null;
     let templateName: string | null = null;
-    try {
-      const parsed = JSON.parse(tBody);
-      const first = parsed?.Items?.[0];
-      templateHref = findSelfHref(first);
-      templateName = first?.Name ?? null;
-      results.step_A_template_found = { templateHref, templateName };
-    } catch {
-      results.step_A_parse_error = 'Could not parse templates response as JSON';
-    }
+    templateHref = extractXmlHref(tBody, 'self');
+    templateName = extractXmlValue(tBody, 'Name');
+    results.step_A_template_found = { templateHref, templateName };
 
     if (!templateHref) {
       results.step_A_error = 'No template found — create an EventTemplate in your Arlo dashboard first (e.g. 10 Hour Intensive Course)';
@@ -65,15 +70,9 @@ Deno.serve(async (req) => {
 
     let venueHref: string | null = null;
     let venueName: string | null = null;
-    try {
-      const parsed = JSON.parse(vBody);
-      const first = parsed?.Items?.[0];
-      venueHref = findSelfHref(first);
-      venueName = first?.Name ?? null;
-      results.step_B_venue_found = { venueHref, venueName };
-    } catch {
-      results.step_B_parse_error = 'Could not parse venues response as JSON';
-    }
+    venueHref = extractXmlHref(vBody, 'self');
+    venueName = extractXmlValue(vBody, 'Name');
+    results.step_B_venue_found = { venueHref, venueName };
 
     // STEP C — presenters
     const pRes = await fetch(`${baseUrl}/presenters/`, { headers: authHeaders });
@@ -82,15 +81,9 @@ Deno.serve(async (req) => {
 
     let presenterHref: string | null = null;
     let presenterName: string | null = null;
-    try {
-      const parsed = JSON.parse(pBody);
-      const first = parsed?.Items?.[0];
-      presenterHref = findSelfHref(first);
-      presenterName = first?.Name ?? null;
-      results.step_C_presenter_found = { presenterHref, presenterName };
-    } catch {
-      results.step_C_parse_error = 'Could not parse presenters response as JSON';
-    }
+    presenterHref = extractXmlHref(pBody, 'self');
+    presenterName = extractXmlValue(pBody, 'Name');
+    results.step_C_presenter_found = { presenterHref, presenterName };
 
     // STEP D — create event
     const tomorrow = new Date();
@@ -115,7 +108,7 @@ Deno.serve(async (req) => {
       headers: {
         'Authorization': `Basic ${basicAuth}`,
         'Content-Type': 'application/xml',
-        'Accept': 'application/json',
+        'Accept': 'application/xml',
       },
       body: eventXml,
     });
@@ -126,16 +119,11 @@ Deno.serve(async (req) => {
       results.step_D_success = 'Event created in Arlo';
 
       let eventHref: string | null = null;
-      let eventId: number | null = null;
-      try {
-        const ej = JSON.parse(eBody);
-        eventHref = findSelfHref(ej);
-        eventId = ej?.EventID ?? null;
-        results.step_D_event_id = eventId;
-        results.step_D_event_href = eventHref;
-      } catch {
-        results.step_D_parse_error = 'Event created but could not parse response';
-      }
+      let eventId: string | null = null;
+      eventHref = extractXmlHref(eBody, 'self');
+      eventId = extractXmlValue(eBody, 'EventID');
+      results.step_D_event_id = eventId;
+      results.step_D_event_href = eventHref;
 
       if (eventHref) {
         const sessionXml = `<?xml version="1.0" encoding="utf-8"?>
@@ -153,12 +141,15 @@ Deno.serve(async (req) => {
           headers: {
             'Authorization': `Basic ${basicAuth}`,
             'Content-Type': 'application/xml',
-            'Accept': 'application/json',
+            'Accept': 'application/xml',
           },
           body: sessionXml,
         });
         const sBody = await sRes.text();
         results.step_E_create_session = { status: sRes.status, ok: sRes.ok, body: sBody.substring(0, 2000) };
+
+        const sessionId = extractXmlValue(sBody, 'SessionID');
+        results.step_E_session_id = sessionId;
 
         if (sRes.status === 201) {
           results.step_E_success = 'Session created — course fully created in Arlo with date and presenter';
