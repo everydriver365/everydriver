@@ -36,27 +36,40 @@ Deno.serve(async (req) => {
     return m1?.[1] ?? m2?.[1] ?? null;
   };
 
-  const findSelfHref = (item: any): string | null => {
-    const links = item?.Links ?? item?.Link;
-    if (!links) return null;
-    const arr = Array.isArray(links) ? links : [links];
-    return arr.find((l: any) => l?.rel === 'self')?.href ?? null;
+  const extractFirstResourceHref = (xml: string): string | null => {
+    const match = xml.match(/<Link[^>]*type="application\/xml"[^>]*href="([^"]*)"/)
+      || xml.match(/<Link[^>]*href="([^"]*)"[^>]*type="application\/xml"/);
+    return match ? match[1] : null;
   };
 
   try {
     // STEP A — templates
     const tRes = await fetch(`${baseUrl}/eventtemplates/`, { headers: authHeaders });
-    const tBody = await tRes.text();
-    results.step_A_get_templates = { status: tRes.status, ok: tRes.ok, body: tBody.substring(0, 1000) };
+    const templatesBody = await tRes.text();
+    results.step_A_get_templates = { status: tRes.status, ok: tRes.ok, body: templatesBody.substring(0, 1000) };
 
     let templateHref: string | null = null;
     let templateName: string | null = null;
-    templateHref = extractXmlHref(tBody, 'self');
-    templateName = extractXmlValue(tBody, 'Name');
-    results.step_A_template_found = { templateHref, templateName };
+
+    const firstTemplateHref = extractFirstResourceHref(templatesBody);
+    results.step_A_collection_first_href = firstTemplateHref;
+
+    if (firstTemplateHref) {
+      const templateDetailRes = await fetch(firstTemplateHref, {
+        headers: { 'Authorization': `Basic ${basicAuth}`, 'Accept': 'application/xml' },
+      });
+      const templateDetailBody = await templateDetailRes.text();
+      results.step_A_template_detail_status = templateDetailRes.status;
+      results.step_A_template_detail_body = templateDetailBody.substring(0, 500);
+
+      templateHref = extractXmlHref(templateDetailBody, 'self') || firstTemplateHref;
+      templateName = extractXmlValue(templateDetailBody, 'Name');
+      results.step_A_template_found = { templateHref, templateName };
+    }
 
     if (!templateHref) {
       results.step_A_error = 'No template found — create an EventTemplate in your Arlo dashboard first (e.g. 10 Hour Intensive Course)';
+      results.debug_templates_raw = templatesBody.substring(0, 2000);
       results.FINAL_RESULT = 'FAILED — no event template available';
       return new Response(JSON.stringify(results, null, 2), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -65,25 +78,70 @@ Deno.serve(async (req) => {
 
     // STEP B — venues
     const vRes = await fetch(`${baseUrl}/venues/`, { headers: authHeaders });
-    const vBody = await vRes.text();
-    results.step_B_get_venues = { status: vRes.status, ok: vRes.ok, body: vBody.substring(0, 1000) };
+    const venuesBody = await vRes.text();
+    results.step_B_get_venues = { status: vRes.status, ok: vRes.ok, body: venuesBody.substring(0, 1000) };
 
     let venueHref: string | null = null;
     let venueName: string | null = null;
-    venueHref = extractXmlHref(vBody, 'self');
-    venueName = extractXmlValue(vBody, 'Name');
-    results.step_B_venue_found = { venueHref, venueName };
 
-    // STEP C — presenters
-    const pRes = await fetch(`${baseUrl}/presenters/`, { headers: authHeaders });
-    const pBody = await pRes.text();
-    results.step_C_get_presenters = { status: pRes.status, ok: pRes.ok, body: pBody.substring(0, 1000) };
+    const firstVenueHref = extractFirstResourceHref(venuesBody);
+    results.step_B_collection_first_href = firstVenueHref;
 
+    if (firstVenueHref) {
+      const venueDetailRes = await fetch(firstVenueHref, {
+        headers: { 'Authorization': `Basic ${basicAuth}`, 'Accept': 'application/xml' },
+      });
+      const venueDetailBody = await venueDetailRes.text();
+      results.step_B_venue_detail_status = venueDetailRes.status;
+      venueHref = extractXmlHref(venueDetailBody, 'self') || firstVenueHref;
+      venueName = extractXmlValue(venueDetailBody, 'Name');
+      results.step_B_venue_found = { venueHref, venueName };
+    }
+
+    // STEP C — presenters (try multiple endpoints)
+    const presenterUrls = [
+      `${baseUrl}/presenters/`,
+      `${baseUrl}/contacts/?filter=IsPresenter=true`,
+      `${baseUrl}/contacts/`,
+    ];
+
+    let presentersBody = '';
+    let presentersStatus = 0;
     let presenterHref: string | null = null;
     let presenterName: string | null = null;
-    presenterHref = extractXmlHref(pBody, 'self');
-    presenterName = extractXmlValue(pBody, 'Name');
-    results.step_C_presenter_found = { presenterHref, presenterName };
+
+    for (const url of presenterUrls) {
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Basic ${basicAuth}`, 'Accept': 'application/xml' },
+      });
+      presentersBody = await res.text();
+      presentersStatus = res.status;
+      const key = `step_C_tried_${url.split('/').filter(Boolean).pop()}`;
+      results[key] = { status: res.status, body: presentersBody.substring(0, 300) };
+      if (res.ok) break;
+    }
+
+    results.step_C_get_presenters = {
+      status: presentersStatus,
+      ok: presentersStatus >= 200 && presentersStatus < 300,
+      body: presentersBody.substring(0, 500),
+    };
+
+    const firstPresenterHref = extractFirstResourceHref(presentersBody);
+    if (firstPresenterHref) {
+      const presenterDetailRes = await fetch(firstPresenterHref, {
+        headers: { 'Authorization': `Basic ${basicAuth}`, 'Accept': 'application/xml' },
+      });
+      const presenterDetailBody = await presenterDetailRes.text();
+      presenterHref = extractXmlHref(presenterDetailBody, 'self') || firstPresenterHref;
+      presenterName = extractXmlValue(presenterDetailBody, 'Name')
+        || extractXmlValue(presenterDetailBody, 'FirstName');
+      results.step_C_presenter_found = { presenterHref, presenterName };
+    }
+
+    // Debug — raw collection bodies
+    results.debug_templates_raw = templatesBody.substring(0, 2000);
+    results.debug_venues_raw = venuesBody.substring(0, 2000);
 
     // STEP D — create event
     const tomorrow = new Date();
@@ -118,10 +176,8 @@ Deno.serve(async (req) => {
     if (eRes.status === 201) {
       results.step_D_success = 'Event created in Arlo';
 
-      let eventHref: string | null = null;
-      let eventId: string | null = null;
-      eventHref = extractXmlHref(eBody, 'self');
-      eventId = extractXmlValue(eBody, 'EventID');
+      const eventHref = extractXmlHref(eBody, 'self');
+      const eventId = extractXmlValue(eBody, 'EventID');
       results.step_D_event_id = eventId;
       results.step_D_event_href = eventHref;
 
